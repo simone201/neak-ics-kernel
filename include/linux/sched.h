@@ -880,6 +880,7 @@ static inline int sd_balance_for_package_power(void)
 }
 
 extern int __weak arch_sd_sibiling_asym_packing(void);
+extern int __weak arch_sd_sibling_asym_packing(void);
 
 /*
  * Optimise SD flags for power savings:
