@@ -109,9 +109,6 @@ sysctl -w kernel.shmmax=268435456;
 	
 # NEAK Options
 	/sbin/busybox sh /sbin/near/neak-options.sh
-	
-read sync < /data/sync_fifo
-rm /data/sync_fifo
 
 echo $(date) PRE-INIT DONE of post-init.sh
 
