@@ -1979,6 +1979,12 @@ CONFIG_VIDEO_MALI400MP=y
 # CONFIG_MALI_DED_MMU is not set
 CONFIG_MALI_OSMEM_ONLY=y
 # CONFIG_MALI_DED_OSMEM is not set
+<<<<<<< HEAD:arch/arm/configs/neak_ics_defconfig
+=======
+# CONFIG_VIDEO_MALI400MP_DEBUG is not set
+CONFIG_VIDEO_MALI400MP_DVFS=y
+CONFIG_GPU_CLOCK_CONTROL=y
+>>>>>>> 0b92dba... mali: Enable GPU frequency and voltage adjustments:arch/arm/configs/xxKernel_defconfig
 CONFIG_VIDEO_FIMG2D=y
 # CONFIG_VIDEO_FIMG2D_DEBUG is not set
 CONFIG_VIDEO_FIMG2D3X=y
