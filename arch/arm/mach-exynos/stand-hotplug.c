@@ -48,8 +48,8 @@
 #endif
 
 #if defined(CONFIG_MACH_U1) || defined(CONFIG_MACH_PX)
-#define TRANS_LOAD_H0 30
-#define TRANS_LOAD_L1 20
+#define TRANS_LOAD_H0 75
+#define TRANS_LOAD_L1 35
 #define TRANS_LOAD_H1 100
 #endif
 
@@ -205,12 +205,11 @@ static void hotplug_timer(struct work_struct *work)
 
 	mutex_lock(&hotplug_lock);
 
-	// exit if we turned off dynamic hotplug by tegrak
-	// cancel the timer
+	/* tegrak second core  */
 	if (!hotplug_on) {
 		if (!second_core_on && cpu_online(1) == 1)
 			cpu_down(1);
-		goto no_hotplug;
+		goto off_hotplug;
 	}
 
 	if (user_lock == 1)
@@ -273,9 +272,9 @@ static void hotplug_timer(struct work_struct *work)
 	} 
 
 no_hotplug:
-
 	queue_delayed_work_on(0, hotplug_wq, &hotplug_work, hotpluging_rate);
 
+off_hotplug:
 	mutex_unlock(&hotplug_lock);
 }
 
@@ -449,7 +448,6 @@ static int __init exynos4_pm_hotplug_init(void)
 	struct cpufreq_frequency_table *table;
 
 	printk(KERN_INFO "EXYNOS4 PM-hotplug init function\n");
-	//hotplug_wq = create_workqueue("dynamic hotplug");
 	hotplug_wq = alloc_workqueue("dynamic hotplug", 0, 0);
 	if (!hotplug_wq) {
 		printk(KERN_ERR "Creation of hotplug work failed\n");
