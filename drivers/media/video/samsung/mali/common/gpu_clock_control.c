@@ -19,7 +19,7 @@
 #if defined(CONFIG_GPU_UNDERVOLTING)
 int gpu_clock_control[2] = { 100, 267 };
 #else
-int gpu_clock_control[2] = { 160, 267 };
+int gpu_clock_control[2] = { 133, 267 };
 #endif
 static ssize_t gpu_clock_show(struct device *dev, struct device_attribute *attr, char *buf) {
 	return sprintf(buf, "Step0: %d\nStep1: %d\n", gpu_clock_control[0], gpu_clock_control[1]);
