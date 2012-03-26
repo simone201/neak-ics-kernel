@@ -1,0 +1,35 @@
+#!/sbin/busybox sh
+
+/sbin/busybox mount -t rootfs -o remount,rw rootfs
+/sbin/busybox ln -s /sbin/recovery /sbin/busybox
+
+/sbin/busybox ln -s /sbin/busybox /sbin/sh
+
+/sbin/busybox rm /emmc
+/sbin/busybox mkdir /emmc
+/sbin/busybox chmod 777 /emmc
+
+/sbin/busybox rm /sdcard
+/sbin/busybox mkdir /sdcard
+/sbin/busybox chmod 777 /sdcard
+
+/sbin/busybox rm /etc
+/sbin/busybox mkdir /etc
+/sbin/busybox cat /res/etc/recovery.fstab > /etc/recovery.fstab
+
+start adbd
+stop tvout
+
+/sbin/busybox rm /cache
+/sbin/busybox mkdir /cache
+/sbin/busybox chmod 777 /cache
+/sbin/busybox mount -t ext4 /dev/block/mmcblk0p7 /cache
+
+if /sbin/busybox [ -f /cache/recovery/command ];
+then
+  /sbin/busybox cp /res/keys-samsung /res/keys
+  recovery-samsung
+else
+  echo 1 > /sbin/recovery-is-running
+  recovery
+fi;

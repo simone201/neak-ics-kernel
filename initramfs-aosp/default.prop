@@ -1,0 +1,25 @@
+#
+# ADDITIONAL_DEFAULT_PROPERTIES
+#
+ro.secure=0
+ro.allow.mock.location=0
+ro.debuggable=1
+persist.sys.usb.config=mtp,adb
+persist.service.adb.enable=1
+
+# For NEAK OTA Updater
+ro.kernel.id=Kernel Version-2.0
+# For NEAK Configurator
+ro.neak.version=2.0x
+
+# For CWM Manager
+customkernel.cf-root=true
+customkernel.base.cf-root=true
+customkernel.name=NEAKernel
+customkernel.namedisplay=NEAKernel
+customkernel.version.number=107
+customkernel.version.name=5.4
+customkernel.bootani.zip=true
+customkernel.bootani.bin=true
+customkernel.cwm=true
+customkernel.cwm.version=5.5.0.4
