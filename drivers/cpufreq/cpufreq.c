@@ -946,9 +946,7 @@ static int cpufreq_add_dev(struct sys_device *sys_dev)
 		struct cpufreq_policy *cp = per_cpu(cpufreq_cpu_data, sibling);
 		if (cp && cp->governor && (cpumask_test_cpu(cpu, cp->related_cpus))) {
 			policy->min = cp->min;
-			policy->min_suspend = cp->min_suspend;
 			policy->max = cp->max;
-			policy->max_suspend = cp->max_suspend;
 			break;
 		}
 	}
@@ -1658,8 +1656,7 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
 
 	pr_debug("new min and max freqs are %u - %u kHz,\n	\
 		  min&max_suspend freqs are %u - %u kHz\n",
-				data->min, data->max,
-				data->min_suspend, data->max_suspend);
+				data->min, data->max);
 
 	if (cpufreq_driver->setpolicy) {
 		data->policy = policy->policy;
