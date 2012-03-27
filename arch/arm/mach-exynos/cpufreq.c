@@ -553,11 +553,12 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
 		cpumask_setall(policy->cpus);
 	}
 
-	cpufreq_frequency_table_cpuinfo(policy, exynos_info->freq_table);
+	int ret = cpufreq_frequency_table_cpuinfo(policy, exynos_info->freq_table);
 	/* set safe default min and max speeds - netarchy */
 	policy->max = 1200000;
 	policy->min = 200000;
-	return 0;
+	
+	return ret;
 }
 
 static int exynos_cpufreq_reboot_notifier_call(struct notifier_block *this,
@@ -578,7 +579,7 @@ static struct notifier_block exynos_cpufreq_reboot_notifier = {
 };
 
 /* Make sure we have the scaling_available_freqs sysfs file */
-static struct freq_attr *ninphetamine_cpufreq_attr[] = {
+static struct freq_attr *exynos_cpufreq_attr[] = {
   &cpufreq_freq_attr_scaling_available_freqs,
   NULL,
 };
@@ -589,8 +590,8 @@ static struct cpufreq_driver exynos_driver = {
 	.target		= exynos_target,
 	.get		= exynos_getspeed,
 	.init		= exynos_cpufreq_cpu_init,
-	.attr 		= ninphetamine_cpufreq_attr,
 	.name		= "exynos_cpufreq",
+	.attr 		= exynos_cpufreq_attr,
 #ifdef CONFIG_PM
 	.suspend	= exynos_cpufreq_suspend,
 	.resume		= exynos_cpufreq_resume,
