@@ -68,8 +68,8 @@ setprop video.accelerate.hw 1;
 setprop debug.sf.hw 1;
 
 # Hotplug thresholds
-echo "35" > /sys/module/stand_hotplug/parameters/load_l1
-echo "75" > /sys/module/stand_hotplug/parameters/load_h0
+echo "30" > /sys/module/stand_hotplug/parameters/load_l1
+echo "45" > /sys/module/stand_hotplug/parameters/load_h0
 echo "200" > /sys/module/stand_hotplug/parameters/rate
 
 # Renice kswapd0 - kernel thread responsible for managing the memory
@@ -82,10 +82,10 @@ do
 	then
 		echo "0" > $i/queue/rotational; 
 	fi;
-	if [ -e $i/queue/nr_requests ];
-	then
-		echo "8192" > $i/queue/nr_requests;
-	fi;
+	#if [ -e $i/queue/nr_requests ];
+	#then
+	#	echo "8192" > $i/queue/nr_requests;
+	#fi;
 	if [ -e $i/queue/read_ahead_kb ];
 	then
 		echo "256" >  $i/queue/read_ahead_kb;
