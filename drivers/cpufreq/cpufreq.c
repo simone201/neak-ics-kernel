@@ -32,7 +32,7 @@
 
 #include <trace/events/power.h>
 
-int exynos4210_volt_table[6];
+int exynos4210_volt_table[7];
 
 /**
  * The "cpufreq driver" - the arch- or hardware-dependent low
