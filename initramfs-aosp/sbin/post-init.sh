@@ -82,10 +82,10 @@ do
 	then
 		echo "0" > $i/queue/rotational; 
 	fi;
-	#if [ -e $i/queue/nr_requests ];
-	#then
-	#	echo "8192" > $i/queue/nr_requests;
-	#fi;
+	if [ -e $i/queue/nr_requests ];
+	then
+		echo "8192" > $i/queue/nr_requests;
+	fi;
 	if [ -e $i/queue/read_ahead_kb ];
 	then
 		echo "256" >  $i/queue/read_ahead_kb;
