@@ -37,7 +37,7 @@ struct cpufreq_clkdiv {
 	unsigned int	clkdiv;
 };
 
-extern int exynos4210_volt_table[CPUFREQ_LEVEL_END];
+static unsigned int exynos4210_volt_table[CPUFREQ_LEVEL_END];
 
 static struct cpufreq_frequency_table exynos4210_freq_table[] = {
 	{L0, 1400*1000},
