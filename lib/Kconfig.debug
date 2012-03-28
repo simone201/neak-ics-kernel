@@ -160,7 +160,7 @@ config DEBUG_SHIRQ
 
 config LOCKUP_DETECTOR
 	bool "Detect Hard and Soft Lockups"
-	depends on DEBUG_KERNEL && !S390
+	depends on !S390
 	help
 	  Say Y here to enable the kernel to act as a watchdog to detect
 	  hard and soft lockups.
@@ -226,7 +226,6 @@ config BOOTPARAM_SOFTLOCKUP_PANIC_VALUE
 
 config DETECT_HUNG_TASK
 	bool "Detect Hung Tasks"
-	depends on DEBUG_KERNEL
 	default DETECT_SOFTLOCKUP
 	help
 	  Say Y here to enable the kernel to detect "hung tasks",
@@ -279,7 +278,7 @@ config BOOTPARAM_HUNG_TASK_PANIC_VALUE
 
 config SCHED_DEBUG
 	bool "Collect scheduler debugging info"
-	depends on DEBUG_KERNEL && PROC_FS
+	depends on PROC_FS
 	default y
 	help
 	  If you say Y here, the /proc/sched_debug file will be provided
@@ -288,7 +287,7 @@ config SCHED_DEBUG
 
 config SCHEDSTATS
 	bool "Collect scheduler statistics"
-	depends on DEBUG_KERNEL && PROC_FS
+	depends on PROC_FS
 	help
 	  If you say Y here, additional code will be inserted into the
 	  scheduler and related routines to collect statistics about
@@ -412,7 +411,7 @@ config SLUB_STATS
 	  Try running: slabinfo -DA
 
 config SLQB_DEBUG
-	default y
+	default n
 	bool "Enable SLQB debugging support"
 	depends on SLQB
 
@@ -719,7 +718,7 @@ config DEBUG_BUGVERBOSE
 	depends on BUG
 	depends on ARM || AVR32 || M32R || M68K || SPARC32 || SPARC64 || \
 		   FRV || SUPERH || GENERIC_BUG || BLACKFIN || MN10300 || TILE
-	default y
+	default n
 	help
 	  Say Y here to make BUG() panics output the file name and line number
 	  of the BUG call as well as the EIP and oops trace.  This aids

@@ -978,7 +978,7 @@ config KALLSYMS
 
 config KALLSYMS_ALL
 	bool "Include all symbols in kallsyms"
-	depends on DEBUG_KERNEL && KALLSYMS
+	depends on KALLSYMS
 	help
 	   Normally kallsyms only contains the symbols of functions for nicer
 	   OOPS messages and backtraces (i.e., symbols from the text and inittext
@@ -1257,7 +1257,7 @@ config COMPAT_BRK
 
 choice
 	prompt "Choose SLAB allocator"
-	default SLUB
+	default SLQB
 	help
 	   This option allows to select a slab allocator.
 
