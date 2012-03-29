@@ -112,9 +112,6 @@ sysctl -w kernel.shmmax=268435456;
 	
 # BLN liblights installer
 	/sbin/busybox sh /sbin/near/bln.sh
-	
-read sync < /data/sync_fifo
-rm /data/sync_fifo
 
 echo $(date) PRE-INIT DONE of post-init.sh
 

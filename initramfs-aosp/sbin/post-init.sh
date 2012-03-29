@@ -110,6 +110,9 @@ sysctl -w kernel.shmmax=268435456;
 # NEAK Options
 	/sbin/busybox sh /sbin/near/neak-options.sh
 
+# BLN liblights installer
+	/sbin/busybox sh /sbin/near/bln.sh
+
 echo $(date) PRE-INIT DONE of post-init.sh
 
 ##### Post-init phase #####

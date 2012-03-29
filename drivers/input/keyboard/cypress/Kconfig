@@ -7,10 +7,15 @@ config KEYBOARD_CYPRESS_TOUCH
 	help
 	  Say Y here to enable the cypress touchkey.
 
-	  To compile this driver as a module, choose M here.
-
 config TOUCHKEY_BLN
-	bool "BLN Support"
+	bool "For SAMMY ROMs - with BLN support"
 	depends on KEYBOARD_CYPRESS_TOUCH
 	help
-	  BLN support.
+	  Sammy ROMs BLN support.
+	  To compile this driver as a module, choose M here.
+	  
+config TARGET_CM_KERNEL
+	bool "For CM/AOSP Roms - with BLN support"
+	help
+	  CM Roms BLN support.
+	  To compile this driver as a module, choose M here.
