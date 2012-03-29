@@ -48,8 +48,8 @@
 #endif
 
 #if defined(CONFIG_MACH_U1) || defined(CONFIG_MACH_PX)
-#define TRANS_LOAD_H0 75
-#define TRANS_LOAD_L1 35
+#define TRANS_LOAD_H0 45
+#define TRANS_LOAD_L1 30
 #define TRANS_LOAD_H1 100
 #endif
 
