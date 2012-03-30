@@ -69,7 +69,7 @@ setprop debug.sf.hw 1;
 
 # Hotplug thresholds
 echo "30" > /sys/module/stand_hotplug/parameters/load_l1
-echo "45" > /sys/module/stand_hotplug/parameters/load_h0
+echo "40" > /sys/module/stand_hotplug/parameters/load_h0
 echo "200" > /sys/module/stand_hotplug/parameters/rate
 
 # Renice kswapd0 - kernel thread responsible for managing the memory
