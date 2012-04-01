@@ -75,7 +75,7 @@ static spinlock_t down_cpumask_lock;
 /*
  * The minimum amount of time to spend at a frequency before we can step up.
  */
-#define DEFAULT_UP_SAMPLE_TIME 18000
+#define DEFAULT_UP_SAMPLE_TIME 20000
 static unsigned long up_sample_time;
 
 /*
@@ -114,14 +114,14 @@ static unsigned long dec_cpu_load;
  * Increasing frequency table index
  * zero disables and causes to always jump straight to max frequency.
  */
-#define DEFAULT_PUMP_UP_STEP 2
+#define DEFAULT_PUMP_UP_STEP 1
 static unsigned long pump_up_step;
 
 /*
  * Decreasing frequency table index
  * zero disables and will calculate frequency according to load heuristic.
  */
-#define DEFAULT_PUMP_DOWN_STEP 2
+#define DEFAULT_PUMP_DOWN_STEP 1
 static unsigned long pump_down_step;
 
 /*
@@ -410,10 +410,10 @@ static void cpufreq_lulzactive_timer(unsigned long data)
 		}
 		
 		// scale down only by a single step - by simone201
-		index += 1;
+		/*index += 1;
 		if (index >= pcpu->freq_table_size) {
 			index = pcpu->freq_table_size - 1;
-		}
+		}*/
 		
 		new_freq = pcpu->freq_table[index].frequency;		
 	}
