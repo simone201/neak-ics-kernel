@@ -10,7 +10,7 @@ persist.service.adb.enable=1
 # For NEAK OTA Updater
 ro.kernel.id=Kernel Version-2.0
 # For NEAK Configurator
-ro.neak.version=2.0x
+ro.neak.version=2.0x SAMMY
 
 # For CWM Manager
 customkernel.cf-root=true
