@@ -75,13 +75,13 @@ static spinlock_t down_cpumask_lock;
 /*
  * The minimum amount of time to spend at a frequency before we can step up.
  */
-#define DEFAULT_UP_SAMPLE_TIME 20000
+#define DEFAULT_UP_SAMPLE_TIME 18000
 static unsigned long up_sample_time;
 
 /*
  * The minimum amount of time to spend at a frequency before we can step down.
  */
-#define DEFAULT_DOWN_SAMPLE_TIME 42000
+#define DEFAULT_DOWN_SAMPLE_TIME 50000
 static unsigned long down_sample_time;
 
 /*
@@ -100,14 +100,14 @@ enum {
 /*
  * CPU freq will be increased if measured load > inc_cpu_load;
  */
-#define DEFAULT_INC_CPU_LOAD 60
+#define DEFAULT_INC_CPU_LOAD 55
 static unsigned long inc_cpu_load;
 
 /*
  * CPU freq will be decreased if measured load < dec_cpu_load;
  * not implemented yet.
  */
-#define DEFAULT_DEC_CPU_LOAD 35
+#define DEFAULT_DEC_CPU_LOAD 30
 static unsigned long dec_cpu_load;
 
 /*
@@ -121,7 +121,7 @@ static unsigned long pump_up_step;
  * Decreasing frequency table index
  * zero disables and will calculate frequency according to load heuristic.
  */
-#define DEFAULT_PUMP_DOWN_STEP 1
+#define DEFAULT_PUMP_DOWN_STEP 2
 static unsigned long pump_down_step;
 
 /*
@@ -410,10 +410,10 @@ static void cpufreq_lulzactive_timer(unsigned long data)
 		}
 		
 		// scale down only by a single step - by simone201
-		/*index += 1;
+		index += 1;
 		if (index >= pcpu->freq_table_size) {
 			index = pcpu->freq_table_size - 1;
-		}*/
+		}
 		
 		new_freq = pcpu->freq_table[index].frequency;		
 	}
