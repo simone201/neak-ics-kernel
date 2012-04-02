@@ -716,6 +716,31 @@ static ssize_t store_inc_cpu_load(struct kobject *kobj,
 static struct global_attr inc_cpu_load_attr = __ATTR(inc_cpu_load, 0666,
 		show_inc_cpu_load, store_inc_cpu_load);
 
+// dec_cpu_load
+static ssize_t show_dec_cpu_load(struct kobject *kobj,
+				     struct attribute *attr, char *buf)
+{
+	return sprintf(buf, "%lu\n", dec_cpu_load);
+}
+
+static ssize_t store_dec_cpu_load(struct kobject *kobj,
+			struct attribute *attr, const char *buf, size_t count)
+{
+	ssize_t ret;
+	if(strict_strtoul(buf, 0, &dec_cpu_load)==-EINVAL) return -EINVAL;
+	
+	if (dec_cpu_load > 100) {
+		dec_cpu_load = 100;
+	}
+	else if (dec_cpu_load < 10) {
+		dec_cpu_load = 10;
+	}
+	return count;
+}
+
+static struct global_attr dec_cpu_load_attr = __ATTR(dec_cpu_load, 0666,
+		show_dec_cpu_load, store_dec_cpu_load);
+
 // down_sample_time
 static ssize_t show_down_sample_time(struct kobject *kobj,
 				struct attribute *attr, char *buf)
@@ -892,6 +917,7 @@ static struct global_attr freq_table_attr = __ATTR(freq_table, 0444,
 
 static struct attribute *lulzactive_attributes[] = {
 	&inc_cpu_load_attr.attr,
+	&dec_cpu_load_attr.attr,
 	&up_sample_time_attr.attr,
 	&down_sample_time_attr.attr,
 	&pump_up_step_attr.attr,
