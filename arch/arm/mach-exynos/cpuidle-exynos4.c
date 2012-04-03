@@ -71,7 +71,7 @@ struct check_device_op {
 #if defined(CONFIG_MACH_MIDAS)
 #define CPUDILE_ENABLE_MASK (ENABLE_LPA)
 #else
-#define CPUDILE_ENABLE_MASK (ENABLE_IDLE | ENABLE_LPA | ENABLE_AFTR)
+#define CPUDILE_ENABLE_MASK (ENABLE_AFTR | ENABLE_LPA)
 #endif
 
 static enum {
