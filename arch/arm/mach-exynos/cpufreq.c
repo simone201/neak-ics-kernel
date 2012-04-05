@@ -85,6 +85,9 @@ static unsigned int exynos_get_safe_armvolt(unsigned int old_index, unsigned int
 	return safe_arm_volt;
 }
 
+unsigned int smooth_target = L2;
+unsigned int smooth_offset = 2;
+unsigned int smooth_step = 2;
 static int exynos_target(struct cpufreq_policy *policy,
 			  unsigned int target_freq,
 			  unsigned int relation)
@@ -143,8 +146,11 @@ static int exynos_target(struct cpufreq_policy *policy,
 
 #if defined(CONFIG_CPU_EXYNOS4210)
 	/* Do NOT step up max arm clock directly to reduce power consumption */
-	if (index == exynos_info->max_support_idx && old_index > 3)
-		index = 3;
+	// reach 1200MHz step by step starting from 800MHz - thx to gm
+	if(index <= smooth_target && index < old_index)
+	{
+		index = max(index,min(smooth_target + smooth_offset, old_index - smooth_step));
+	}
 #endif
 
 	freqs.new = freq_table[index].frequency;
@@ -520,14 +526,7 @@ static int exynos_cpufreq_policy_notifier_call(struct notifier_block *this,
 
 	switch (code) {
 	case CPUFREQ_ADJUST:
-		if ((!strnicmp(policy->governor->name, "powersave", CPUFREQ_NAME_LEN))
-		|| (!strnicmp(policy->governor->name, "performance", CPUFREQ_NAME_LEN))
-		|| (!strnicmp(policy->governor->name, "userspace", CPUFREQ_NAME_LEN))) {
-			printk(KERN_DEBUG "cpufreq governor is changed to %s\n",
-							policy->governor->name);
-			exynos_cpufreq_lock_disable = true;
-		} else
-			exynos_cpufreq_lock_disable = false;
+		exynos_cpufreq_lock_disable = !policy->governor->disableScalingDuringSuspend;
 
 	case CPUFREQ_INCOMPATIBLE:
 	case CPUFREQ_NOTIFY:
@@ -721,4 +720,44 @@ void acpuclk_set_vdd(unsigned int khz, int vdd)
 
 		exynos_info->volt_table[i] = new_vdd;
 	}
+}
+
+extern unsigned int smooth_step;
+ssize_t show_smooth_step(struct cpufreq_policy *policy, char *buf) {
+      return sprintf(buf, "%d\n", smooth_step);
+}
+ssize_t store_smooth_step(struct cpufreq_policy *policy,
+                                      const char *buf, size_t count) {
+	unsigned int ret = -EINVAL, level;
+	ret = sscanf(buf, "%d", &level);
+	if(ret!=1) return -EINVAL;
+	if(level<0 || level>4) return -EINVAL;
+	smooth_step = level;
+	return count;
+}
+extern unsigned int smooth_target;
+ssize_t show_smooth_target(struct cpufreq_policy *policy, char *buf) {
+      return sprintf(buf, "%d\n", smooth_target);
+}
+ssize_t store_smooth_target(struct cpufreq_policy *policy,
+                                      const char *buf, size_t count) {
+	unsigned int ret = -EINVAL, level;
+	ret = sscanf(buf, "%d", &level);
+	if(ret!=1) return -EINVAL;
+	if(level<0 || level>7) return -EINVAL;
+	smooth_target = level;
+	return count;
+}
+extern unsigned int smooth_offset;
+ssize_t show_smooth_offset(struct cpufreq_policy *policy, char *buf) {
+      return sprintf(buf, "%d\n", smooth_offset);
+}
+ssize_t store_smooth_offset(struct cpufreq_policy *policy,
+                                      const char *buf, size_t count) {
+	unsigned int ret = -EINVAL, level;
+	ret = sscanf(buf, "%d", &level);
+	if(ret!=1) return -EINVAL;
+	if(level<0 || level>4) return -EINVAL;
+	smooth_offset = level;
+	return count;
 }
