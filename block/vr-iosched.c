@@ -42,7 +42,7 @@ BACKWARD,
 
 static const int sync_expire = HZ / 2; /* max time before a sync is submitted. */
 static const int async_expire = 5 * HZ; /* ditto for async, these limits are SOFT! */
-static const int fifo_batch = 1;
+static const int fifo_batch = 2;
 static const int rev_penalty = 1; /* penalty for reversing head direction */
 
 struct vr_data {
