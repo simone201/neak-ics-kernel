@@ -8,11 +8,11 @@ else
 	echo "near sdcard folder already exists"
 fi;
 
-if [ ! -f /sdcard/near/efsbackup.tar.gz ];
+if [ ! -f /emmc/near/efsbackup.tar.gz ];
 then
-  /sbin/busybox tar zcvf /sdcard/near/efsbackup.tar.gz /efs
-  /sbin/busybox dd if=/dev/block/mmcblk0p1 of=/sdcard/near/efsdev-mmcblk0p1.img bs=4096
-  /sbin/busybox gzip /sdcard/near/efsdev-mmcblk0p1.img
+  /sbin/busybox tar zcvf /emmc/near/efsbackup.tar.gz /efs
+  /sbin/busybox dd if=/dev/block/mmcblk0p1 of=/emmc/near/efsdev-mmcblk0p1.img bs=4096
+  /sbin/busybox gzip /emmc/near/efsdev-mmcblk0p1.img
 else
 	echo "efs backup already exists"
 fi;
