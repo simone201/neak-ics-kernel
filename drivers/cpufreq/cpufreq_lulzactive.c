@@ -73,6 +73,12 @@ static spinlock_t down_cpumask_lock;
 static struct mutex set_speed_lock;
 
 /*
+ * The minimum amount of time that our CPU can stay at a certain freq before ramping down or up
+ */
+#define DEFAULT_CPU_MIN_TIME 10 * USEC_PER_MSEC
+static unsigned long cpu_min_time;
+
+/*
  * The minimum amount of time to spend at a frequency before we can step up.
  */
 #define DEFAULT_UP_SAMPLE_TIME 20 * USEC_PER_MSEC
@@ -753,6 +759,11 @@ static ssize_t store_up_sample_time(struct kobject *kobj,
 			struct attribute *attr, const char *buf, size_t count)
 {
 	if(strict_strtoul(buf, 0, &up_sample_time)==-EINVAL) return -EINVAL;
+	
+	// safety floor for up_sample_time
+	if(up_sample_time < cpu_min_time)
+		up_sample_time = cpu_min_time;
+	
 	return count;
 }
 
@@ -1091,6 +1102,7 @@ void stop_lulzactive(void)
 static int __init cpufreq_lulzactive_init(void)
 {
 
+	cpu_min_time = DEFAULT_CPU_MIN_TIME;
 	up_sample_time = DEFAULT_UP_SAMPLE_TIME;
 	down_sample_time = DEFAULT_DOWN_SAMPLE_TIME;
 	debug_mode = DEFAULT_DEBUG_MODE;
