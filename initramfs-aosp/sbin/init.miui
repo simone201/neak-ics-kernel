@@ -1,0 +1,6 @@
+#!/sbin/busybox sh
+
+rm /init
+mv /init-aosp /init
+cd /
+exec /init
