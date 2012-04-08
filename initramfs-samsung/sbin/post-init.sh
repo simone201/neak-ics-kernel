@@ -70,10 +70,6 @@ echo $(date) START of post-init.sh
 # Hotplug thresholds
 #echo "30" > /sys/module/stand_hotplug/parameters/load_l1
 #echo "40" > /sys/module/stand_hotplug/parameters/load_h0
-#echo "200" > /sys/module/stand_hotplug/parameters/rate
-echo "35" > /sys/module/pm_hotplug/parameters/loadl
-echo "75" > /sys/module/pm_hotplug/parameters/loadh
-echo "200" > /sys/module/pm_hotplug/parameters/rate
 
 # Renice kswapd0 - kernel thread responsible for managing the memory
 renice 6 `pidof kswapd0`

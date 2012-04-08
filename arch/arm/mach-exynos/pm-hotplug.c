@@ -40,7 +40,7 @@
 
 #define CHECK_DELAY	(HZ >> 1)
 #define TRANS_LOAD_L	35
-#define TRANS_LOAD_H	75
+#define TRANS_LOAD_H	70
 
 #define HOTPLUG_UNLOCKED 0
 #define HOTPLUG_LOCKED 1
