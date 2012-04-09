@@ -4,10 +4,6 @@ mkdir /dev/block
 mknod /dev/block/mmcblk0p9 b 259 1
 /sbin/busybox mount -t ext4 /dev/block/mmcblk0p9 /system
 
-if [ -f /system/framework/kafdex.jar ]; then
-	touch /system/framework/kafdex.jar
-fi;
-
 busybox mount -t proc proc /proc
 busybox mount -t sysfs sysfs /sys
 
@@ -24,6 +20,7 @@ MIUI=0
 if [ "$MIUI" == 1 ]; 
 then
 mv /init.miui /init.rc
+/sbin/busybox umount /system
 exec /sbin/init.miui
 fi;
 

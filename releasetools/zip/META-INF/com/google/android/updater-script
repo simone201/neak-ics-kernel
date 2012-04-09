@@ -12,8 +12,11 @@ show_progress(0.100000, 70);
 write_raw_image("/tmp/zImage", "/dev/block/mmcblk0p5"),
 show_progress(0.100000, 90);
 delete("/tmp/zImage"));
-delete("/system/etc/init.d/S91voltctrl");
+
+ui_print("* Wiping init.d folder *");
+delete_recursive("/system/etc/init.d");
 delete_recursive("/data/neak");
+run_program("/sbin/busybox", "mkdir", "/system/etc/init.d");
 unmount("/system");
 
 show_progress(0.100000, 100);
