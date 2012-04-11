@@ -203,15 +203,8 @@ EXPORT_SYMBOL_GPL(cpu_idle_wait);
  */
 static void default_idle(void)
 {
-<<<<<<< HEAD
-	if (arm_pm_idle)
-		arm_pm_idle();
-	else
-		cpu_do_idle();
-=======
 	if (!need_resched())
 		arch_idle();
->>>>>>> parent of c5583c2... ARM: clean up idle handlers
 	local_irq_enable();
 }
 
