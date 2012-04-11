@@ -203,13 +203,7 @@ EXPORT_SYMBOL_GPL(cpu_idle_wait);
  */
 static void default_idle(void)
 {
-<<<<<<< HEAD
 	if (!need_resched())
-=======
-	if (arm_pm_idle)
-		arm_pm_idle();
-	else
->>>>>>> parent of 640871f... ARM: substitute arch_idle(), remove system.h
 		arch_idle();
 	local_irq_enable();
 }
