@@ -128,6 +128,14 @@ static int exynos_target(struct cpufreq_policy *policy,
 		ret = -EINVAL;
 		goto out;
 	}
+	
+	/* prevent freqs going above max policy - netarchy */
+	/* Do this before lock checks or the locks won't behave - A. Dodd */
+	if (freq_table[index].frequency > policy->max) {
+		while (freq_table[index].frequency > policy-> max) {
+			index += 1;
+		}
+	}
 
 	/* Need to set performance limitation */
 	if (!exynos_cpufreq_lock_disable && (index > g_cpufreq_lock_level))
