@@ -1,10 +1,6 @@
 VERSION = 3
 PATCHLEVEL = 0
-<<<<<<< HEAD
-SUBLEVEL = 15
-=======
 SUBLEVEL = 28
->>>>>>> 1448bea7... Linux 3.0.28
 EXTRAVERSION =
 NAME = Sneaky Weasel
 
@@ -1021,7 +1017,7 @@ define filechk_utsrelease.h
 	  echo '"$(KERNELRELEASE)" exceeds $(uts_len) characters' >&2;    \
 	  exit 1;                                                         \
 	fi;                                                               \
-	(echo \#define UTS_RELEASE \"3.0.27-NEAK-2.0.2x\";)
+	(echo \#define UTS_RELEASE \"3.0.28-NEAK-2.0.2x\";)
 endef
 
 define filechk_version.h
