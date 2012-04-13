@@ -1697,7 +1697,7 @@ int cpufreq_register_governor(struct cpufreq_governor *governor)
 		if (!strnicmp(governor->name, "powersave", CPUFREQ_NAME_LEN)
 		|| !strnicmp(governor->name, "performance", CPUFREQ_NAME_LEN)
 		|| !strnicmp(governor->name, "userspace", CPUFREQ_NAME_LEN)
-		|| !strnicmp(governor->name, "lulzactive", CPUFREQ_NAME_LEN)
+		//|| !strnicmp(governor->name, "lulzactive", CPUFREQ_NAME_LEN)
 		)
 			governor->disableScalingDuringSuspend = 0;
 		else
