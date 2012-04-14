@@ -487,6 +487,7 @@ CONFIG_EXYNOS4_MSHC_DDR=y
 # CONFIG_SEC_DEBUG_IRQ_EXIT_LOG is not set
 # CONFIG_SEC_LOG is not set
 # CONFIG_SEC_LOG_NONCACHED is not set
+# CONFIG_SEC_LOG_LAST_KMSG is not set
 
 #
 # Samsung Modem Feature
