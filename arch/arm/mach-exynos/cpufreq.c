@@ -85,9 +85,9 @@ static unsigned int exynos_get_safe_armvolt(unsigned int old_index, unsigned int
 	return safe_arm_volt;
 }
 
-unsigned int smooth_target = L2;
-unsigned int smooth_offset = 2;
-unsigned int smooth_step = 2;
+unsigned int smooth_target = L0;
+unsigned int smooth_offset = 1;
+unsigned int smooth_step = 1;
 static int exynos_target(struct cpufreq_policy *policy,
 			  unsigned int target_freq,
 			  unsigned int relation)
