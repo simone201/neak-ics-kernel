@@ -3,19 +3,24 @@
 #
 
 config KEYBOARD_CYPRESS_TOUCH
-	tristate "Cypress touchkey support"
+	tristate "Cypress touchkey support for SAMMY ROMs"
 	help
-	  Say Y here to enable the cypress touchkey.
+	  Say Y here to enable the cypress touchkey for sammy roms.
+	  
+config KEYBOARD_CYPRESS_AOSP
+	bool "Touchkey for AOSP ROMs"
+	depends on !KEYBOARD_CYPRESS_TOUCH
+	help
+	  Say Y here to enable the cypress touchkey for aosp roms.
 
 config TOUCHKEY_BLN
 	bool "For SAMMY ROMs - with BLN support"
-	depends on KEYBOARD_CYPRESS_TOUCH
+	depends on KEYBOARD_CYPRESS_TOUCH || KEYBOARD_CYPRESS_AOSP
 	help
-	  Sammy ROMs BLN support.
-	  To compile this driver as a module, choose M here.
+	  Samsung ROMs BLN support.
 	  
 config TARGET_CM_KERNEL
-	bool "For CM/AOSP Roms - with BLN support"
+	bool "For CM/AOSP Roms - Native Support"
+	depends on KEYBOARD_CYPRESS_AOSP
 	help
-	  CM Roms BLN support.
-	  To compile this driver as a module, choose M here.
+	  CM Roms Native Notification support.
