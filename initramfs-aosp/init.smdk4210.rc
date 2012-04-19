@@ -1,37 +1,36 @@
 import init.smdk4210.usb.rc
 
 on early-init
-	export EXTERNAL_STORAGE /mnt/emmc
+    export EXTERNAL_STORAGE /mnt/emmc
     export SECONDARY_STORAGE /mnt/sdcard
     mkdir /mnt 0775 system system
     mkdir /mnt/emmc 0775 system system
     mkdir /mnt/sdcard 0775 system system
     mkdir /mnt/usbdisk 0775 system system
     mkdir /efs 0771 radio system
-	mkdir /preload 0771 system system
-	mkdir /mnt/.lfs 0755 root root
+    mkdir /preload 0771 system system
+    mkdir /mnt/.lfs 0755 root root
 
-	# for backwards compatibility
-	symlink /mnt/emmc /emmc
-	symlink /mnt/sdcard /sdcard
+    # for backwards compatibility
+    symlink /mnt/emmc /emmc
+    symlink /mnt/sdcard /sdcard
 
 # Disable CFQ slice idle delay
     write /sys/block/mmcblk0/queue/iosched/slice_idle 0
 
 # FIXME: permissions for tvout
-	chmod 0777 /dev/graphics/fb0
-	chmod 0777 /dev/graphics/fb10
-	chmod 0777 /dev/graphics/fb11	
+    chmod 0777 /dev/graphics/fb0
+    chmod 0777 /dev/graphics/fb10
+    chmod 0777 /dev/graphics/fb11
     chown media graphics /sys/class/switch/hdmi
     chmod 0777 /sys/class/switch/hdmi
 
 # FIXME: permission for HDMI audio path
     chown media audio /sys/class/hdmi_audio/hdmi_audio/hdmi_audio_set_ext
-	chmod 0777 /sys/class/hdmi_audio/hdmi_audio/hdmi_audio_set_ext
+    chmod 0777 /sys/class/hdmi_audio/hdmi_audio/hdmi_audio_set_ext
 
 on fs
 # mount ext4 partitions
-    mount ext4 /dev/block/mmcblk0p9 /system
     mount ext4 /dev/block/mmcblk0p9 /system noatime wait ro
     mount ext4 /dev/block/mmcblk0p7 /cache nosuid nodev noatime wait
     mount ext4 /dev/block/mmcblk0p10 /data nosuid nodev noatime wait noauto_da_alloc
@@ -105,8 +104,8 @@ on post-fs-data
     chmod 0775 /efs/.files/.mp301
     
 # MTP Device permission.
-	chmod 0660 /dev/usb_mtp_gadget
-	chown system system /dev/usb_mtp_gadget
+    chmod 0660 /dev/usb_mtp_gadget
+    chown system system /dev/usb_mtp_gadget
 
 # terminal mode
     chmod 0660 /sys/class/android_usb/android0/terminal_version
@@ -169,10 +168,10 @@ on post-fs-data
     chown system radio /sys/devices/platform/sec-battery/power_supply/battery/batt_vfocv
     chown system radio /sys/devices/platform/sec-battery/power_supply/battery/batt_soc
     chown system radio /sys/devices/platform/sec-battery/power_supply/battery/batt_vol
-    
+
     chown system system /sys/class/backlight/panel/brightness
     chown system system /sys/class/power_supply/battery/temp
-    
+
 # Permissions for input devices
     chown system radio /sys/devices/virtual/sec/sec_key/sec_key_pressed
 
@@ -254,8 +253,8 @@ on post-fs-data
     chown system radio /mnt/.lfs/sw_sel
 
 # Permissions for OTG Test
-	chown system radio /sys/class/host_notify/usb_otg/booster
-	chmod 0664 /sys/class/host_notify/usb_otg/booster
+    chown system radio /sys/class/host_notify/usb_otg/booster
+    chmod 0664 /sys/class/host_notify/usb_otg/booster
 
 # Permission for radio
     chown system radio /sys/devices/platform/s5p-ehci/ehci_power
@@ -268,7 +267,7 @@ on post-fs-data
     chown system system /dev/ttyGS1
     chown system system /dev/ttyGS2
     chown system system /dev/ttyGS3
-    
+
 # DVFS - cpufreq ondemand
 #   write /sys/devices/system/cpu/cpufreq/ondemand/down_differential 5
 #   write /sys/devices/system/cpu/cpufreq/ondemand/up_threshold 85
@@ -277,12 +276,12 @@ on post-fs-data
     mkdir /data/pxtmpdir 0775
     chown system system /data/pxtmpdir
     chmod 0775 /data/pxtmpdir
-    
+
 # backlight permissions
-	chown system system /sys/class/backlight/pwm-backlight/brightness
-	chmod 0660 /sys/class/backlight/pwm-backlight/brightness
-	chown radio system /sys/devices/virtual/misc/melfas_touchkey/brightness
-	chmod 0660 /sys/devices/virtual/misc/melfas_touchkey/brightness
+    chown system system /sys/class/backlight/pwm-backlight/brightness
+    chmod 0660 /sys/class/backlight/pwm-backlight/brightness
+    chown radio system /sys/devices/virtual/misc/melfas_touchkey/brightness
+    chmod 0660 /sys/devices/virtual/misc/melfas_touchkey/brightness
 
 # Permissions for dvfs lock
     chown system system /sys/power/cpufreq_max_limit
@@ -301,14 +300,14 @@ on post-fs-data
     chown radio system /sys/devices/virtual/sec/gsensorcal/calibration
 
 # for device encryption
-	setprop vold.post_fs_data_done 1
-	
+    setprop vold.post_fs_data_done 1
+
 on boot
-	mount debugfs /sys/kernel/debug /sys/kernel/debug
-	
-	setprop ro.build.product GT-I9100
-	setprop ro.product.device GT-I9100
-	setprop ro.radio.noril yes
+    mount debugfs /sys/kernel/debug /sys/kernel/debug
+
+    setprop ro.build.product GT-I9100
+    setprop ro.product.device GT-I9100
+    setprop ro.radio.noril yes
 
 # permissions for NFC
     setprop ro.nfc.port "I2C"
@@ -317,7 +316,7 @@ on boot
 
 # Device Encryption by B2B Security Lab. 
     setprop ro.crypto.keyfile.userdata /efs/metadata
-    
+
 # fake some battery state
     setprop status.battery.state Slow
     setprop status.battery.level 5
@@ -353,8 +352,8 @@ service iprenew_p2p /system/bin/dhcpcd -n
 
 # for bluetooth
 service hciattach /system/bin/brcm_patchram_plus --enable_hci --enable_lpm --no2bytes --tosleep 50000 \
-	--baudrate 3000000 --use_baudrate_for_download --patchram /system/bin/bcm4330B1.hcd \
-	--scopcm=0,0,0,0,0,0,0,3,3,0  /dev/ttySAC0
+    --baudrate 3000000 --use_baudrate_for_download --patchram /system/bin/bcm4330B1.hcd \
+    --scopcm=0,0,0,0,0,0,0,3,3,0  /dev/ttySAC0
     class main
     user bluetooth
     group bluetooth net_bt_admin
@@ -373,10 +372,10 @@ service TvoutService_C /system/bin/bintvoutservice
      class main
      user system
      group graphics 
-    
+
 # bugreport is triggered by holding down volume down, volume up and power
 service bugreport /system/bin/bugmailer.sh -v
     class main
-	disabled
-	oneshot
-	keycodes 114 115 116
+    disabled
+    oneshot
+    keycodes 114 115 116
