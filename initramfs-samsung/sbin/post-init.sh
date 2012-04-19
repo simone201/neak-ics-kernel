@@ -42,8 +42,8 @@ echo $(date) START of post-init.sh
 # sysctl -w kernel.sched_wakeup_granularity_ns=100000;
 
 # SD cards (mmcblk) read ahead tweaks
-  echo "512" > /sys/devices/virtual/bdi/179:0/read_ahead_kb
-  echo "512" > /sys/devices/virtual/bdi/179:16/read_ahead_kb
+  echo "1024" > /sys/devices/virtual/bdi/179:0/read_ahead_kb
+  echo "1024" > /sys/devices/virtual/bdi/179:16/read_ahead_kb
   echo "256" > /sys/devices/virtual/bdi/default/read_ahead_kb
 
 # TCP tweaks

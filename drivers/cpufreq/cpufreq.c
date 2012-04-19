@@ -32,8 +32,6 @@
 
 #include <trace/events/power.h>
 
-int exynos4210_volt_table[7];
-
 /**
  * The "cpufreq driver" - the arch- or hardware-dependent low
  * level driver of CPUFreq support, and its spinlock. This lock
@@ -555,50 +553,6 @@ static ssize_t show_scaling_setspeed(struct cpufreq_policy *policy, char *buf)
 	return policy->governor->show_setspeed(policy, buf);
 }
 
-/* sysfs interface for UV control */
-ssize_t show_UV_mV_table(struct cpufreq_policy *policy, char *buf) {
-  
-  return sprintf(buf, "1200mhz: %d mV\n1000mhz: %d mV\n800mhz: %d mV\n500mhz: %d mV\n200mhz: %d mV\n100mhz: %d mV\n", exynos4210_volt_table[1]/1000, 
-					exynos4210_volt_table[2]/1000, exynos4210_volt_table[3]/1000, 
-					exynos4210_volt_table[4]/1000, exynos4210_volt_table[5]/1000, 
-					exynos4210_volt_table[6]/1000);
- 
-}
-
-ssize_t store_UV_mV_table(struct cpufreq_policy *policy,
-                                      const char *buf, size_t count) {
-
-      unsigned int ret = -EINVAL;
-      int i = 0;
-	  int u[6];
-      ret = sscanf(buf, "%d %d %d %d %d %d", &u[0], &u[1], &u[2], &u[3], &u[4], &u[5]);
-	  if(ret != 6) {
-	      ret = sscanf(buf, "%d %d %d %d %d", &u[0], &u[1], &u[2], &u[3], &u[4]);
-		  if(ret != 5) {
-		      ret = sscanf(buf, "%d %d %d %d", &u[1], &u[2], &u[3], &u[4]);
-			  if( ret != 4) return -EINVAL;
-		  }
-	  }
-		for( i = 0; i < 6; i++ )
-		{
-			if (u[i] > CPU_UV_MV_MAX / 1000)
-			{
-				u[i] = CPU_UV_MV_MAX / 1000;
-			}
-			else if (u[i] < CPU_UV_MV_MIN / 1000)
-			{
-				u[i] = CPU_UV_MV_MIN / 1000;
-			}
-		}
-		
-		for( i = 0; i < 6; i++ )
-		{
-			exynos4210_volt_table[i+1] = u[i] * 1000;
-		}
-		
-	return count;
-}
-
 /* vdd_levels interface for TEGRAK OC - thx to gm */
 
 extern ssize_t acpuclk_get_vdd_levels_str(char *buf);
@@ -674,6 +628,11 @@ extern ssize_t store_smooth_target(struct cpufreq_policy *policy,
                                       const char *buf, size_t count);
 extern ssize_t show_smooth_step(struct cpufreq_policy *policy, char *buf);
 extern ssize_t store_smooth_step(struct cpufreq_policy *policy,
+                                      const char *buf, size_t count);
+
+/* sysfs interface for UV control */
+extern ssize_t show_UV_mV_table(struct cpufreq_policy *policy, char *buf);
+extern ssize_t store_UV_mV_table(struct cpufreq_policy *policy,
                                       const char *buf, size_t count);
 
 /**
@@ -1057,17 +1016,11 @@ static int cpufreq_add_dev(struct sys_device *sys_dev)
 
 	/* Set governor before ->init, so that driver could check it */
 #ifdef CONFIG_HOTPLUG_CPU
-	struct cpufreq_policy *cp;
 	for_each_online_cpu(sibling) {
-		cp = per_cpu(cpufreq_cpu_data, sibling);
+		struct cpufreq_policy *cp = per_cpu(cpufreq_cpu_data, sibling);
 		if (cp && cp->governor &&
 		    (cpumask_test_cpu(cpu, cp->related_cpus))) {
-			pr_debug("found sibling CPU, copying policy\n");
 			policy->governor = cp->governor;
-			policy->min = cp->min;
-			policy->max = cp->max;
-			policy->user_policy.min = cp->user_policy.min;
-			policy->user_policy.max = cp->user_policy.max;
 			found = 1;
 			break;
 		}
@@ -1083,27 +1036,8 @@ static int cpufreq_add_dev(struct sys_device *sys_dev)
 		pr_debug("initialization failed\n");
 		goto err_unlock_policy;
 	}
-#ifdef CONFIG_HOTPLUG_CPU
-	for_each_online_cpu(sibling) {
-		struct cpufreq_policy *cp = per_cpu(cpufreq_cpu_data, sibling);
-		if (cp && cp->governor && (cpumask_test_cpu(cpu, cp->related_cpus))) {
-			policy->min = cp->min;
-			policy->max = cp->max;
-			break;
-		}
-	}
-#endif
 	policy->user_policy.min = policy->min;
 	policy->user_policy.max = policy->max;
-
-	if (found)
-	{
-		/* Calling the driver can overwrite policy frequencies again */
-		policy->min = cp->min;
-		policy->max = cp->max;
-		policy->user_policy.min = cp->user_policy.min;
-		policy->user_policy.max = cp->user_policy.max;
-	}
 
 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
 				     CPUFREQ_START, policy);
@@ -1697,13 +1631,14 @@ int cpufreq_register_governor(struct cpufreq_governor *governor)
 		if (!strnicmp(governor->name, "powersave", CPUFREQ_NAME_LEN)
 		|| !strnicmp(governor->name, "performance", CPUFREQ_NAME_LEN)
 		|| !strnicmp(governor->name, "userspace", CPUFREQ_NAME_LEN)
-		//|| !strnicmp(governor->name, "lulzactive", CPUFREQ_NAME_LEN)
 		)
 			governor->disableScalingDuringSuspend = 0;
 		else
 			governor->disableScalingDuringSuspend = 1;
 		if (!strnicmp(governor->name, "powersave", CPUFREQ_NAME_LEN)
 		|| !strnicmp(governor->name, "performance", CPUFREQ_NAME_LEN)
+		|| !strnicmp(governor->name, "lulzactive", CPUFREQ_NAME_LEN)
+		|| !strnicmp(governor->name, "interactive", 11)
 		)
 			governor->enableSmoothScaling = 0;
 		else
@@ -1819,9 +1754,8 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
 	data->min = policy->min;
 	data->max = policy->max;
 
-	pr_debug("new min and max freqs are %u - %u kHz,\n	\
-		  min&max_suspend freqs are %u - %u kHz\n",
-				data->min, data->max);
+	pr_debug("new min and max freqs are %u - %u kHz\n",
+					data->min, data->max);
 
 	if (cpufreq_driver->setpolicy) {
 		data->policy = policy->policy;

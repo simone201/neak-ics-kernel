@@ -37,7 +37,7 @@ struct cpufreq_clkdiv {
 	unsigned int	clkdiv;
 };
 
-extern int exynos4210_volt_table[CPUFREQ_LEVEL_END];
+static unsigned int exynos4210_volt_table[CPUFREQ_LEVEL_END];
 
 static struct cpufreq_frequency_table exynos4210_freq_table[] = {
 	{L0, 1400*1000},
@@ -159,7 +159,7 @@ static const unsigned int asv_voltage_A[CPUFREQ_LEVEL_END][8] = {
 	{ 1100000, 1050000, 1000000, 975000, 975000, 950000, 925000, 925000 },
 	{ 1050000, 1000000, 975000, 950000, 950000, 925000, 925000, 900000 },
 	{ 1025000, 1000000, 975000, 950000, 950000, 925000, 900000, 875000 },
-
+	
 };
 
 static const unsigned int asv_voltage_B[CPUFREQ_LEVEL_END][5] = {
@@ -313,30 +313,30 @@ static void __init set_volt_table(void)
 	tmp = exynos_result_of_asv;
 
 	asv_group = (tmp & 0xF);
-
-	switch (tmp  & (SUPPORT_FREQ_MASK << SUPPORT_FREQ_SHIFT)) {
-	case SUPPORT_1400MHZ:
-		for_1400 = true;
-		max_support_idx = L0;
-		break;
-	case SUPPORT_1200MHZ:
-		for_1200 = true;
-		max_support_idx = L1;
-		break;
-	case SUPPORT_1000MHZ:
-		for_1000 = true;
-		max_support_idx = L2;
-		break;
-	default:
-		for_1000 = true;
-		max_support_idx = L2;
-		break;
+	
+	switch (tmp & (SUPPORT_FREQ_MASK << SUPPORT_FREQ_SHIFT)) {
+		case SUPPORT_1400MHZ:
+			for_1400 = true;
+			max_support_idx = L0;
+			break;
+		case SUPPORT_1200MHZ:
+			for_1200 = true;
+			max_support_idx = L1;
+			break;
+		case SUPPORT_1000MHZ:
+			for_1000 = true;
+			max_support_idx = L2;
+			break;
+		default:
+			for_1000 = true;
+			max_support_idx = L2;
+			break;
 	}
 
-	/*
-	 * If ASV group is S, can not support 1.4GHz
-	 * Disabling table entry
-	 */
+   /*
+	* If ASV group is S, can not support 1.4GHz
+	* Disabling table entry
+	*/
 	if ((asv_group == 0) || !for_1400)
 		exynos4210_freq_table[L0].frequency = CPUFREQ_ENTRY_INVALID;
 
