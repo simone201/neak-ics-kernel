@@ -1,6 +1,6 @@
 #!/sbin/busybox sh
 
 rm /init
-mv /init-aosp /init
+mv /init-sam /init
 cd /
 exec /init
