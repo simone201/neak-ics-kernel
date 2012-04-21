@@ -366,9 +366,11 @@ KBUILD_CPPFLAGS := -D__KERNEL__
 
 NEAK_FLAGS   = -marm -march=armv7-a -mfloat-abi=hard \
 			   -mcpu=cortex-a9 -mfpu=vfp3 \
-			   -fsched-spec-load -floop-interchange -floop-strip-mine -floop-block \
+			   -fgraphite-identity -fsched-spec-load \
+			   -floop-interchange -floop-strip-mine -floop-block \
 			   -ffast-math -ftree-vectorize \
 			   -funswitch-loops -fpredictive-commoning -fgcse-after-reload -fno-tree-vectorize \
+			   -fmodulo-sched -fmodulo-sched-allow-regmoves \
 			   -fipa-cp-clone -pipe \
 			   -Wno-array-bounds
 
