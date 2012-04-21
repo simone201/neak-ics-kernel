@@ -20,9 +20,10 @@ MIUI=0
 if [ "$MIUI" == 1 ]; 
 then
 mv /init.miui /init.rc
-/sbin/busybox umount /system
+mv /default_miui.prop /default.prop
 fi;
 
 rm -f /init.miui
+rm -f default_miui.prop
 busybox umount /system
 exec /sbin/init.sammy
