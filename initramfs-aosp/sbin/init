@@ -12,5 +12,12 @@ if [ -f /system/recovery.cpio.gz ]; then
 	zcat /system/recovery.cpio.gz | cpio -idmu
 fi;
 
+if [ ! -d /system/lib/modules ]; then
+	mount -o remount,rw /system
+	mkdir /system/lib/modules
+fi;
+
+cp -f /lib/modules/* /system/lib/modules
+
 busybox umount /system
 exec /sbin/init.cm
