@@ -4,7 +4,7 @@
 ro.secure=0
 ro.allow.mock.location=0
 ro.debuggable=1
-persist.sys.usb.config=mtp,adb
+persist.sys.usb.config=mass_storage,adb
 persist.service.adb.enable=1
 
 # For NEAK OTA Updater
