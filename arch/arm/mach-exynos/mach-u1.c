@@ -3789,7 +3789,7 @@ struct gpio_keys_button u1_buttons[] = {
 		.wakeup = 1,
 		.isr_hook = sec_debug_check_crash_key,
 	},			/* power key */
-#if !defined(CONFIG_TARGET_LOCALE_NAATT_TEMP)
+#if !defined(CONFIG_TARGET_LOCALE_NAATT_TEMP)  /*	fix for I777	*/
 	{
 		.code = KEY_HOME,
 		.gpio = GPIO_OK_KEY,

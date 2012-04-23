@@ -763,7 +763,7 @@ static	SINT32	switch_clock
 }
 
 #ifdef CONFIG_SND_SOC_MC1N2_MIC_ADC_SWAP
-void swap_mic_adc_paths(MCDRV_PATH_INFO* psPathInfo)
+void swap_mic_adc_paths(MCDRV_PATH_INFO* psPathInfo) /*	mic swap func	*/
 {
     UINT8 temp_state;
 

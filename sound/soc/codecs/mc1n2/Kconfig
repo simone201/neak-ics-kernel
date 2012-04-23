@@ -19,4 +19,4 @@ config SND_SOC_MC1N2_MIC_ADC_SWAP
     SGH-I777 microphone configuration is swapped compared to GT-I9100.
     When using I9100 libaudio, this causes the microphones to not
     work properly in calls.  This allows proper microphone operation
-    when SGH-I777 is used with GT-I9100 libaudio.
+    when SGH-I777 is used with the GT-I9100 libaudio.
