@@ -35,11 +35,6 @@ echo $(date) START of post-init.sh
   echo "1500" > /proc/sys/vm/dirty_writeback_centisecs
   echo "200" > /proc/sys/vm/dirty_expire_centisecs
   echo "0" > /proc/sys/vm/swappiness
-  
-# Thunderbolt! CFS Tweaks - by pikachu01
-# sysctl -w kernel.sched_min_granularity_ns=200000;
-# sysctl -w kernel.sched_latency_ns=400000;
-# sysctl -w kernel.sched_wakeup_granularity_ns=100000;
 
 # SD cards (mmcblk) read ahead tweaks
   echo "1024" > /sys/devices/virtual/bdi/179:0/read_ahead_kb
@@ -61,15 +56,9 @@ echo $(date) START of post-init.sh
   echo "256960" > /proc/sys/net/core/wmem_default;
   echo "4096 16384 404480" > /proc/sys/net/ipv4/tcp_wmem;
   echo "4096 87380 404480" > /proc/sys/net/ipv4/tcp_rmem;
-
-# UI tweaks
-#setprop debug.performance.tuning 1; 
-#setprop video.accelerate.hw 1;
-#setprop debug.sf.hw 1;
-
-# Hotplug thresholds
-#echo "30" > /sys/module/stand_hotplug/parameters/load_l1
-#echo "40" > /sys/module/stand_hotplug/parameters/load_h0
+  
+# to help with wifi toggling problems (thanks to wjchen)
+  echo "16384" > /proc/sys/vm/min_free_kbytes;
 
 # Renice kswapd0 - kernel thread responsible for managing the memory
 renice 6 `pidof kswapd0`
