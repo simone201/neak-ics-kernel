@@ -1024,6 +1024,22 @@ config USB_G_ANDROID
 	  The functions can be configured via a board file and may be
 	  enabled and disabled dynamically.
 
+config USB_G_SAMMY
+	boolean "Android Gadget - For Sammy ROMs"
+	depends on USB_G_ANDROID
+	help
+	  The Android gadget driver supports multiple USB functions.
+	  The functions can be configured via a board file and may be
+	  enabled and disabled dynamically.
+	  
+config USB_G_AOSP
+	boolean "Android Gadget - For AOSP/AOKP ROMs"
+	depends on USB_G_ANDROID
+	help
+	  The Android gadget driver supports multiple USB functions.
+	  The functions can be configured via a board file and may be
+	  enabled and disabled dynamically.
+
 config USB_ANDROID_SAMSUNG_COMPOSITE
 	boolean "Samsung Composite function"
 	depends on USB_G_ANDROID
