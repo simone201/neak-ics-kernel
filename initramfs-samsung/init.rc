@@ -107,10 +107,10 @@ on fs
 # mount ext4 partitions
     # Mount /system rw first to give the filesystem a chance to save a checkpoint
     #mount ext4 /dev/block/mmcblk0p9 /system
-    mount ext4 /dev/block/mmcblk0p9 /system noatime wait ro
+    mount ext4 /dev/block/mmcblk0p9 /system noatime wait ro nodelalloc
     
     exec sfsck /dev/block/mmcblk0p7 ext4
-    mount ext4 /dev/block/mmcblk0p7 /cache nosuid nodev noatime wait
+    mount ext4 /dev/block/mmcblk0p7 /cache nosuid nodev noatime wait nodelalloc
 
     #exec sfsck /dev/block/mmcblk0p12 ext4
     #mount ext4 /dev/block/mmcblk0p12 /preload nosuid nodev noatime wait ro
@@ -118,7 +118,7 @@ on fs
     mkdir /efs
     #mount rfs /dev/block/mmcblk0p1 /efs nosuid nodev check=no
     exec sfsck /dev/block/mmcblk0p1 ext4
-    mount ext4 /dev/block/mmcblk0p1 /efs nosuid nodev noatime wait
+    mount ext4 /dev/block/mmcblk0p1 /efs nosuid nodev noatime wait nodelalloc
     chown radio system /efs
     chmod 0771 /efs
     mkdir /efs/bluetooth
@@ -561,10 +561,9 @@ on boot
 # Define TCP buffer sizes for various networks
 #   ReadMin, ReadInitial, ReadMax, WriteMin, WriteInitial, WriteMax,
     setprop net.tcp.buffersize.default 4096,87380,110208,4096,16384,110208
-    setprop net.tcp.buffersize.wifi    524288,1048576,2097152,262144,524288,1048576
-    setprop net.tcp.buffersize.lte     524288,1048576,2097152,262144,524288,1048576
+#    setprop net.tcp.buffersize.wifi    4095,87380,110208,4096,16384,110208
+    setprop net.tcp.buffersize.wifi    4095,131072,196608,4096,16384,110208
     setprop net.tcp.buffersize.umts    4094,87380,110208,4096,16384,110208
-    setprop net.tcp.buffersize.hspa    4094,87380,262144,4096,16384,262144
     setprop net.tcp.buffersize.edge    4093,26280,35040,4096,16384,35040
     setprop net.tcp.buffersize.gprs    4092,8760,11680,4096,8760,11680
 
@@ -612,7 +611,7 @@ on property:vold.decrypt=trigger_shutdown_framework
     class_reset main
 
 on property:persist.sys.storage_preload=1
-    mount ext4 /dev/block/mmcblk0p12 /preload nosuid nodev noatime wait ro
+    mount ext4 /dev/block/mmcblk0p12 /preload nosuid nodev noatime wait ro nodelalloc
     setprop storage.preload.complete 1
 
 on property:persist.sys.storage_preload=0
@@ -886,7 +885,7 @@ service rtc_log /system/bin/sh /system/bin/rtc_log.sh
     user shell
     group log
     oneshot
-    
+
 # 2011-12-08/systemsw/kyo/ bugreport is triggered by holding down volume down, volume up and power
 service bugreport /system/bin/bugmailer.sh -v
 	class main
