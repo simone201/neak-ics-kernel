@@ -2770,9 +2770,9 @@ dhd_attach(osl_t *osh, struct dhd_bus *bus, uint bus_hdrlen)
 
 #ifdef WL_CFG80211
 	/* Attach and link in the cfg80211 */
-	while (unlikely(wl_cfg80211_attach(net, &dhd->pub))) {
+	if (unlikely(wl_cfg80211_attach(net, &dhd->pub))) {
 		DHD_ERROR(("wl_cfg80211_attach failed\n"));
-		//goto fail;
+		goto fail;
 	}
 
 	dhd_monitor_init(&dhd->pub);
