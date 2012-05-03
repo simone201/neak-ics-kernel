@@ -85,9 +85,6 @@ echo "10" > /proc/sys/fs/lease-break-time;
 sysctl -w kernel.sem="500 512000 100 2048";
 sysctl -w kernel.shmmax=268435456;
 
-# Install Superuser apk + binary
-	/sbin/busybox sh /sbin/near/install-su.sh
-
 # Doing some cleanup before init.d support & neak options
     /sbin/busybox sh /sbin/near/cleanup.sh
 	
