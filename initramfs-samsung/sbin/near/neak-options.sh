@@ -5,12 +5,12 @@
 
 mount -o remount,rw /data
 
-# Check if our folder is there...
+# Check if our folder is there...again
 if [ ! -d /data/neak ]; then
 	echo "creating /data/neak folder"
 	mkdir /data/neak
 else
-	echo "neak data folder already exists"
+	echo "neak data folder already exists...again"
 fi;
 
 # Conservative Module

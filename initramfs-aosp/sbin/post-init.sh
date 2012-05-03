@@ -14,6 +14,9 @@ echo $(date) START of post-init.sh
 
 ##### Early-init phase #####
 
+# Setting Bus ASV TABLE first to be sure that works fine
+  /sbin/busybox sh /sbin/near/bus-asv.sh
+
 # IPv6 privacy tweak
   echo "2" > /proc/sys/net/ipv6/conf/all/use_tempaddr
 
