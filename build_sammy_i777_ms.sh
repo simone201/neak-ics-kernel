@@ -21,6 +21,7 @@ export KBUILD_BUILD_VERSION="N.E.A.K-2.0.3x"
 export KERNELDIR=$KERNEL_PATH
 
 export USE_SEC_FIPS_MODE=true
+export CROSS_COMPILE=$TOOLCHAIN
 
 echo "Cleaning latest build"
 make ARCH=arm CROSS_COMPILE=$TOOLCHAIN -j`grep 'processor' /proc/cpuinfo | wc -l` mrproper
