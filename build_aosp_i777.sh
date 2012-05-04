@@ -23,6 +23,9 @@ export KERNELDIR=$KERNEL_PATH
 export USE_SEC_FIPS_MODE=true
 export CROSS_COMPILE=$TOOLCHAIN
 
+echo "Setting Permissions"
+chmod -R g-w initramfs-aosp/*
+
 echo "Cleaning latest build"
 make ARCH=arm CROSS_COMPILE=$TOOLCHAIN -j`grep 'processor' /proc/cpuinfo | wc -l` mrproper
 
