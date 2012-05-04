@@ -139,7 +139,7 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 		}
 		selected = p;
 		selected_tasksize = tasksize;
-		sselected_oom_score_adj = oom_score_adj;
+		selected_oom_score_adj = oom_score_adj;
 		lowmem_print(2, "select %d (%s), adj %d, size %d, to kill\n",
 			      p->pid, p->comm, oom_score_adj, tasksize);
 	}
