@@ -2914,6 +2914,14 @@ hub_port_init (struct usb_hub *hub, struct usb_device *udev, int port1,
 		udev->ttport = hdev->ttport;
 	} else if (udev->speed != USB_SPEED_HIGH
 			&& hdev->speed == USB_SPEED_HIGH) {
+<<<<<<< HEAD
+=======
+/*		if (!hub->tt.hub) {
+			dev_err(&udev->dev, "parent hub has no TT\n");
+			retval = -EINVAL;
+			goto fail;
+		} */
+>>>>>>> 47e3d62... usb: disable parent hub tt detection to get HID devices working
 		udev->tt = &hub->tt;
 		udev->ttport = port1;
 	}
