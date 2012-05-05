@@ -3965,7 +3965,7 @@ static u8 t8_config[] = { GEN_ACQUISITIONCONFIG_T8,
 static u8 t9_config[] = { TOUCH_MULTITOUCHSCREEN_T9,
 	131, 0, 0, 19, 11, 0, 32, MXT224_THRESHOLD_BATT, 2, 1,
 	0,
-	3,			/* MOVHYSTI */
+	4,			/* MOVHYSTI */
 	1, MXT224_MOVFILTER_BATT, MXT224_MAX_MT_FINGERS, 5, 40, 10, 31, 3,
 	223, 1, 0, 0, 0, 0, 143, 55, 143, 90, 18
 };
@@ -4105,7 +4105,7 @@ static u8 t8_config_e[] = { GEN_ACQUISITIONCONFIG_T8,
 static u8 t9_config_e[] = { TOUCH_MULTITOUCHSCREEN_T9,
 	139, 0, 0, 19, 11, 0, MXT224E_BLEN_BATT, MXT224E_THRESHOLD_BATT, 2, 1,
 	10,
-	10,			/* MOVHYSTI */
+	4,			/* MOVHYSTI */
 	1, MXT224E_MOVFILTER_BATT, MXT224_MAX_MT_FINGERS, 5, 40, 10, 31, 3,
 	223, 1, 10, 10, 10, 10, 143, 40, 143, 80,
 	18, 15, 50, 50, 0
@@ -4115,7 +4115,7 @@ static u8 t9_config_e[] = { TOUCH_MULTITOUCHSCREEN_T9,
 static u8 t9_config_e[] = { TOUCH_MULTITOUCHSCREEN_T9,
 	139, 0, 0, 19, 11, 0, MXT224E_BLEN_BATT, MXT224E_THRESHOLD_BATT, 2, 1,
 	10,
-	10,			/* MOVHYSTI */
+	4,			/* MOVHYSTI */
 	1, MXT224E_MOVFILTER_BATT, MXT224_MAX_MT_FINGERS, 5, 40, 10, 31, 3,
 	223, 1, 10, 10, 10, 10, 143, 40, 143, 80,
 	18, 15, 50, 50, 2
@@ -4125,7 +4125,7 @@ static u8 t9_config_e[] = { TOUCH_MULTITOUCHSCREEN_T9,
 static u8 t9_config_e[] = { TOUCH_MULTITOUCHSCREEN_T9,
 	139, 0, 0, 19, 11, 0, MXT224E_BLEN_BATT, MXT224E_THRESHOLD_BATT, 2, 1,
 	10,
-	3,			/* MOVHYSTI */
+	4,			/* MOVHYSTI */
 	1, MXT224E_MOVFILTER_BATT, MXT224_MAX_MT_FINGERS, 5, 40, 10, 31, 3,
 	223, 1, 10, 10, 10, 10, 143, 40, 143, 80,
 	18, 15, 50, 50, MXT224E_NEXTTCHDI_NORMAL
@@ -4182,7 +4182,7 @@ static u8 t48_config_chrg_e[] = { PROCG_NOISESUPPRESSION_T48,
 	0, 0, 0, 6, 6, 0, 0, 64, 4, 64,
 	10, 0, 10, 5, 0, 19, 0, 20, 0, 0,
 	0, 0, 0, 0, 0, 40, 2,	/*blen=0,threshold=50 */
-	10,			/* MOVHYSTI */
+	4,			/* MOVHYSTI */
 	1, 47,
 	10, 5, 40, 240, 245, 10, 10, 148, 50, 143,
 	80, 18, 10, 0
@@ -4204,7 +4204,7 @@ static u8 t48_config_chrg_e[] = { PROCG_NOISESUPPRESSION_T48,
 	0, 0, 0, 6, 6, 0, 0, 100, 4, 64,
 	10, 0, 20, 5, 0, 38, 0, 20, 0, 0,
 	0, 0, 0, 0, 0, 40, 2,	/*blen=0,threshold=50 */
-	10,			/* MOVHYSTI */
+	4,			/* MOVHYSTI */
 	1, 15,
 	10, 5, 40, 240, 245, 10, 10, 148, 50, 143,
 	80, 18, 10, 2
@@ -4227,7 +4227,7 @@ static u8 t48_config_chrg_e[] = { PROCG_NOISESUPPRESSION_T48,
 	0, 0, 0, 6, 6, 0, 0, 64, 4, 64,
 	10, 0, 9, 5, 0, 15, 0, 20, 0, 0,
 	0, 0, 0, 0, 0, MXT224E_THRESHOLD_CHRG, 2,
-	3,			/* MOVHYSTI */
+	4,			/* MOVHYSTI */
 	1, 47,
 	MXT224_MAX_MT_FINGERS, 5, 40, 235, 235, 10, 10, 160, 50, 143,
 	80, 18, 10, 0
