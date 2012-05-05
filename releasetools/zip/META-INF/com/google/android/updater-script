@@ -13,9 +13,10 @@ write_raw_image("/tmp/zImage", "/dev/block/mmcblk0p5"),
 show_progress(0.100000, 90);
 delete("/tmp/zImage"));
 
-ui_print("* Wiping init.d folder *");
-delete_recursive("/system/etc/init.d");
+ui_print("* Moving init.d folder to init.d-old *");
 delete_recursive("/data/neak");
+delete_recursive("/system/etc/init.d-old");
+run_program("/sbin/busybox", "mv", "-f /system/etc/init.d /system/etc/init.d-old");
 run_program("/sbin/busybox", "mkdir", "/system/etc/init.d");
 unmount("/system");
 
