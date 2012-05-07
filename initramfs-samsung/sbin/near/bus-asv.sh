@@ -15,7 +15,7 @@ fi;
 # Check if the asv set file is there, if not create it
 if [ ! -e /data/neak/bus_asv_table ]; then
 	touch /data/neak/bus_asv_table
-	echo 4 > /data/neak/bus_asv_table
+	echo 3 > /data/neak/bus_asv_table
 fi;
 
 # Checking ASV group set
