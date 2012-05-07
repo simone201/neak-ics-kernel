@@ -136,6 +136,9 @@ static void disable_led_notification(void);
 static struct wake_lock bln_wake_lock;
 #endif
 
+// For brightness control
+int led_brightness;
+
 struct i2c_touchkey_driver {
 	struct i2c_client *client;
 	struct input_dev *input_dev;
@@ -254,6 +257,11 @@ int touchkey_ldo_on(bool on)
 	return 1;
 }
 
+static ssize_t brightness_read( struct device *dev, struct device_attribute *attr, char *buf )
+{
+	return sprintf(buf,"%d\n", led_brightness);
+}
+
 static void change_touch_key_led_voltage(int vol_mv)
 {
 	struct regulator *tled_regulator;
@@ -268,6 +276,19 @@ static void change_touch_key_led_voltage(int vol_mv)
 	regulator_put(tled_regulator);
 }
 
+static void get_touch_key_led_voltage(void)
+{
+	struct regulator *tled_regulator;
+
+	tled_regulator = regulator_get(NULL, "touch_led");
+	if (IS_ERR(tled_regulator)) {
+		pr_err("%s: failed to get resource %s\n", __func__,
+			"touch_led");
+		return;
+	}
+	led_brightness = regulator_get_voltage(tled_regulator) / 1000;
+}
+
 static ssize_t brightness_control(struct device *dev,
 				  struct device_attribute *attr,
 				  const char *buf, size_t size)
@@ -277,6 +298,7 @@ static ssize_t brightness_control(struct device *dev,
 	if (sscanf(buf, "%d\n", &data) == 1) {
 		printk(KERN_ERR "[TouchKey] touch_led_brightness: %d\n", data);
 		change_touch_key_led_voltage(data);
+		led_brightness = data;
 	} else {
 		printk(KERN_ERR "[TouchKey] touch_led_brightness Error\n");
 	}
@@ -1372,6 +1394,9 @@ static int i2c_touchkey_probe(struct i2c_client *client,
         wake_lock_init(&bln_wake_lock, WAKE_LOCK_SUSPEND, "bln_wake_lock");
 #endif
 
+	/* read key led voltage */
+	get_touch_key_led_voltage();
+
 	return 0;
 }
 
@@ -1885,7 +1910,7 @@ static DEVICE_ATTR(touchkey_firm_version_panel, S_IRUGO | S_IWUSR | S_IWGRP,
 		   set_touchkey_firm_version_read_show, NULL);
 /*PART*/
 /*end N1 firmware sync*/
-static DEVICE_ATTR(touchkey_brightness, S_IRUGO | S_IWUSR | S_IWGRP, NULL,
+static DEVICE_ATTR(touchkey_brightness, S_IRUGO | S_IWUSR | S_IWGRP, brightness_read,
 		   brightness_control);
 
 #if defined(CONFIG_TARGET_LOCALE_NAATT)
