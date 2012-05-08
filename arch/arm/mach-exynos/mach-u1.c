@@ -6442,3 +6442,4 @@ MACHINE_START(SMDKC210, MODEL_NAME)
 	.timer		= &exynos4_timer,
 	.init_early	= &exynos_init_reserve,
 MACHINE_END
+
