@@ -68,11 +68,6 @@ touchkey register
  */
 #include <linux/wakelock.h>
 
-<<<<<<< HEAD:drivers/input/keyboard/cypress/cypress-touchkey-aosp.c
-#define ENABLE_BL 1
-#define BL_ALWAYS_ON -1
-#define BL_ALWAYS_OFF -2
-=======
 #define ENABLE_BL	1
 #define BL_ALWAYS_ON	-1
 #define BL_ALWAYS_OFF	-2
@@ -81,7 +76,6 @@ touchkey register
 #define BREATHING_STEP_INRC	50
 #define BREATHING_STEP_INT	100
 #define BREATHING_MAX_VOLT	3300
->>>>>>> 3657600... keyboard: cypress: Add LED breathing effect:drivers/input/keyboard/cypress/cypress-touchkey.c
 
 #ifdef CONFIG_TARGET_CM_KERNEL
 #define DISABLE_BL 2
