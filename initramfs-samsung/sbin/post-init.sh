@@ -60,8 +60,8 @@ echo $(date) START of post-init.sh
   echo "4096 16384 404480" > /proc/sys/net/ipv4/tcp_wmem;
   echo "4096 87380 404480" > /proc/sys/net/ipv4/tcp_rmem;
   
-# to help with wifi toggling problems (thanks to wjchen)
-# echo "8192" > /proc/sys/vm/min_free_kbytes;
+# seems that helps in general toggling issues, not wifi only
+  echo "8192" > /proc/sys/vm/min_free_kbytes;
 
 # Renice kswapd0 - kernel thread responsible for managing the memory
 renice 6 `pidof kswapd0`
