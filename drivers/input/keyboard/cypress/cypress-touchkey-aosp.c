@@ -85,17 +85,6 @@ touchkey register
 #define BLINKING_INTERVAL_ON	1000	/* 1 second on */
 #define BLINKING_INTERVAL_OFF	1000	/* 1 second off */
 
-<<<<<<< HEAD:drivers/input/keyboard/cypress/cypress-touchkey-aosp.c
-#ifdef CONFIG_TARGET_CM_KERNEL
-#define DISABLE_BL 2
-#else
-#define DISABLE_BL 0
-#define BL_STANDARD 1000
-#define BLN_VERSION 10
-#endif
-
-=======
->>>>>>> 6fa6f99... keyboard: cypress: Refactor breathing code:drivers/input/keyboard/cypress/cypress-touchkey.c
 int screen_on = 1;
 bool bln_blinking_enabled = 0;
 int notification_enabled = -1;		/* disabled by default */
