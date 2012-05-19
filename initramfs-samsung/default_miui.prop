@@ -8,9 +8,9 @@ persist.sys.usb.config=mass_storage,adb
 persist.service.adb.enable=1
 
 # For NEAK OTA Updater
-ro.kernel.id=Kernel Version-2.0.4
+ro.kernel.id=Kernel Version-2.0.5
 # For NEAK Configurator
-ro.neak.version=2.0.4x
+ro.neak.version=2.0.5x
 
 # For CWM Manager
 customkernel.cf-root=true
