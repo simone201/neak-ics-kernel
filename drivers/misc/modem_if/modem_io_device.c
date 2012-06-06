@@ -277,16 +277,21 @@ static int rx_hdlc_data_check(struct io_device *iod, struct link_device *ld,
 	struct sk_buff *skb = fragdata(iod, ld)->skb_recv;
 	int head_size = get_header_size(iod);
 	int data_size = get_hdlc_size(iod, hdr->hdr) - head_size;
-	int alloc_size;
+	int alloc_size = min(data_size, MAX_RXDATA_SIZE);
 	int len = 0;
 	int done_len = 0;
 	int rest_len = data_size - hdr->frag_len;
+<<<<<<< HEAD:drivers/misc/modem_if/modem_io_device.c
+=======
+	struct sk_buff *skb_new = NULL;
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver":drivers/misc/modem_if/modem_io_device.c
 
 	pr_debug("[IOD] head_size : %d, data_size : %d (%d)\n", head_size,
 				data_size, __LINE__);
 
 	/* first payload data - alloc skb */
 	if (!skb) {
+<<<<<<< HEAD:drivers/misc/modem_if/modem_io_device.c
 		/* make skb data size under MAX_RXDATA_SIZE */
 		alloc_size = min(data_size, MAX_RXDATA_SIZE);
 		alloc_size = min(alloc_size, rest_len);
@@ -296,67 +301,97 @@ static int rx_hdlc_data_check(struct io_device *iod, struct link_device *ld,
 		 */
 		if (iod->format == IPC_RFS) {
 			skb = rx_alloc_skb(head_size, GFP_ATOMIC, iod, ld);
+=======
+		switch (iod->format) {
+		case IPC_RFS:
+			alloc_size = min_t(int, data_size, rest) + head_size;
+			alloc_size = min(alloc_size, MAX_RXDATA_SIZE);
+			skb = rx_alloc_skb(alloc_size, GFP_ATOMIC, iod, ld);
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver":drivers/misc/modem_if/modem_io_device.c
 			if (unlikely(!skb))
 				return -ENOMEM;
+
+			/* copy the RFS haeder to skb->data */
 			memcpy(skb_put(skb, head_size), hdr->hdr, head_size);
-			rx_iodev_skb(skb);
-		}
+			break;
 
-		/* allocate first packet for data, when its size exceed
-		 * MAX_RXDATA_SIZE, this packet will split to
-		 * multiple packets
-		 */
-		if (iod->use_handover)
-			alloc_size += sizeof(struct ethhdr);
+		case IPC_MULTI_RAW:
+			if (iod->use_handover)
+				skb = rx_alloc_skb(alloc_size +
+					sizeof(struct ethhdr), GFP_ATOMIC,
+					iod, ld);
+			else
+				skb = rx_alloc_skb(alloc_size, GFP_ATOMIC,
+					iod, ld);
 
+<<<<<<< HEAD:drivers/misc/modem_if/modem_io_device.c
 		skb = rx_alloc_skb(alloc_size, GFP_ATOMIC, iod, ld);
 		if (unlikely(!skb))
 			return -ENOMEM;
+=======
+			if (unlikely(!skb))
+				return -ENOMEM;
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver":drivers/misc/modem_if/modem_io_device.c
 
-		if (iod->use_handover)
-			skb_reserve(skb, sizeof(struct ethhdr));
+			if (iod->use_handover)
+				skb_reserve(skb, sizeof(struct ethhdr));
+			break;
+
+		default:
+			skb = rx_alloc_skb(alloc_size, GFP_ATOMIC, iod, ld);
+			if (unlikely(!skb))
+				return -ENOMEM;
+			break;
+		}
 		fragdata(iod, ld)->skb_recv = skb;
 	}
 
-	while (rest) {
-		/* copy length cannot exceed rest_len */
-		len = min_t(int, rest_len, rest);
-		/* copy length should be under skb tailroom size */
-		len = min(len, skb_tailroom(skb));
-		/* when skb tailroom is bigger than MAX_RXDATA_SIZE
-		 * restrict its size to MAX_RXDATA_SIZE just for convinience */
-		len = min(len, MAX_RXDATA_SIZE);
-
-		/* copy bytes to skb */
+	/* if recv packet size is larger than user space */
+	while ((rest_len > MAX_RXDATA_SIZE) && (rest > 0)) {
+		len = MAX_RXDATA_SIZE - skb->len;
+		len = min_t(int, len, rest);
+		len = min(len, rest_len);
 		memcpy(skb_put(skb, len), buf, len);
-
-		/* adjusting variables */
 		buf += len;
-		rest -= len;
 		done_len += len;
+		rest -= len;
 		rest_len -= len;
-		hdr->frag_len += len;
 
+<<<<<<< HEAD:drivers/misc/modem_if/modem_io_device.c
 		/* check if it is final for this packet sequence */
+=======
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver":drivers/misc/modem_if/modem_io_device.c
 		if (!rest_len)
 			break;
 
-		/* more bytes are remain for this packet sequence
-		 * pass fully loaded skb to rx queue
-		 * and allocate another skb for continues data recv chain
-		 */
-		rx_iodev_skb(skb);
+		rx_iodev_skb(fragdata(iod, ld)->skb_recv);
 		fragdata(iod, ld)->skb_recv =  NULL;
 
 		alloc_size = min(rest_len, MAX_RXDATA_SIZE);
+<<<<<<< HEAD:drivers/misc/modem_if/modem_io_device.c
 		skb = rx_alloc_skb(alloc_size, GFP_ATOMIC, iod, ld);
 		if (unlikely(!skb))
 			return -ENOMEM;
 		fragdata(iod, ld)->skb_recv = skb;
 	}
 
+=======
+		skb_new = rx_alloc_skb(alloc_size, GFP_ATOMIC, iod, ld);
+		if (unlikely(!skb_new))
+			return -ENOMEM;
+		skb = fragdata(iod, ld)->skb_recv = skb_new;
+	}
+
+	/* copy data to skb */
+	len = min(rest, alloc_size - skb->len);
+	len = min(len, rest_len);
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver":drivers/misc/modem_if/modem_io_device.c
 	pr_debug("[IOD] rest : %d, alloc_size : %d , len : %d (%d)\n",
 				rest, alloc_size, skb->len, __LINE__);
+
+	memcpy(skb_put(skb, len), buf, len);
+	done_len += len;
+	hdr->frag_len += done_len;
 
 	return done_len;
 }
@@ -436,11 +471,16 @@ static int rx_iodev_skb_raw(struct sk_buff *skb)
 {
 	int err;
 	struct io_device *iod = skbpriv(skb)->real_iod;
+<<<<<<< HEAD:drivers/misc/modem_if/modem_io_device.c
+=======
+	struct link_device *ld = skbpriv(skb)->ld;
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver":drivers/misc/modem_if/modem_io_device.c
 	struct net_device *ndev;
 	struct iphdr *ip_header;
 	struct ethhdr *ehdr;
 	const char source[ETH_ALEN] = SOURCE_MAC_ADDR;
 
+<<<<<<< HEAD:drivers/misc/modem_if/modem_io_device.c
 	/* check the real_iod is open? */
 	if (atomic_read(&iod->opened) == 0) {
 		pr_err("[IOD/E] <%s:%d:%s> is not opened.\n",
@@ -449,6 +489,8 @@ static int rx_iodev_skb_raw(struct sk_buff *skb)
 		return -ENOENT;
 	}
 
+=======
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver":drivers/misc/modem_if/modem_io_device.c
 	switch (iod->io_typ) {
 	case IODEV_MISC:
 		skb_queue_tail(&iod->sk_rx_q, skb);
@@ -747,6 +789,7 @@ static int io_dev_recv_data_from_link_dev(struct io_device *iod,
 	struct sk_buff *skb;
 	int err;
 
+<<<<<<< HEAD:drivers/misc/modem_if/modem_io_device.c
 	/* check the iod(except IODEV_DUMMY) is open?
 	 * if the iod is MULTIPDP, check this data on rx_iodev_skb_raw()
 	 * because, we cannot know the channel no in here.
@@ -758,6 +801,8 @@ static int io_dev_recv_data_from_link_dev(struct io_device *iod,
 		return -ENOENT;
 	}
 
+=======
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver":drivers/misc/modem_if/modem_io_device.c
 	switch (iod->format) {
 	case IPC_RFS:
 #ifdef CONFIG_IPC_CMC22x_OLD_RFS
@@ -809,7 +854,11 @@ static void io_dev_modem_state_changed(struct io_device *iod,
 			enum modem_state state)
 {
 	iod->mc->phone_state = state;
+<<<<<<< HEAD:drivers/misc/modem_if/modem_io_device.c
 	pr_notice("[IOD] <%s> modem state changed. (iod: %s, state: %d)\n",
+=======
+	pr_err("[IOD] <%s> modem state changed. (iod: %s, state: %d)\n",
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver":drivers/misc/modem_if/modem_io_device.c
 		__func__, iod->name, state);
 
 	if ((state == STATE_CRASH_RESET) || (state == STATE_CRASH_EXIT)
@@ -817,6 +866,7 @@ static void io_dev_modem_state_changed(struct io_device *iod,
 		wake_up(&iod->wq);
 }
 
+<<<<<<< HEAD:drivers/misc/modem_if/modem_io_device.c
 /**
  * io_dev_sim_state_changed
  * @iod:	IPC's io_device
@@ -841,13 +891,19 @@ static void io_dev_sim_state_changed(struct io_device *iod, bool sim_online)
 	}
 }
 
+=======
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver":drivers/misc/modem_if/modem_io_device.c
 static int misc_open(struct inode *inode, struct file *filp)
 {
 	struct io_device *iod = to_io_device(filp->private_data);
 	filp->private_data = (void *)iod;
 
+<<<<<<< HEAD:drivers/misc/modem_if/modem_io_device.c
 	pr_info("[IOD] <%s> iod = %s\n", __func__, iod->name);
 	atomic_inc(&iod->opened);
+=======
+	pr_err("[IOD] <%s> iod = %s\n", __func__, iod->name);
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver":drivers/misc/modem_if/modem_io_device.c
 	if (iod->link->init_comm)
 		return iod->link->init_comm(iod->link, iod);
 
@@ -858,10 +914,14 @@ static int misc_release(struct inode *inode, struct file *filp)
 {
 	struct io_device *iod = (struct io_device *)filp->private_data;
 
+<<<<<<< HEAD:drivers/misc/modem_if/modem_io_device.c
 	pr_info("[IOD] <%s> iod = %s\n", __func__, iod->name);
 	atomic_dec(&iod->opened);
 
 	skb_queue_purge(&iod->sk_rx_q);
+=======
+	pr_err("[IOD] <%s> iod = %s\n", __func__, iod->name);
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver":drivers/misc/modem_if/modem_io_device.c
 
 	if (iod->link->terminate_comm)
 		iod->link->terminate_comm(iod->link, iod);
@@ -880,14 +940,13 @@ static unsigned int misc_poll(struct file *filp, struct poll_table_struct *wait)
 		return POLLIN | POLLRDNORM;
 	else if ((iod->mc->phone_state == STATE_CRASH_RESET) ||
 			(iod->mc->phone_state == STATE_CRASH_EXIT) ||
-			(iod->mc->phone_state == STATE_NV_REBUILDING) ||
-			(iod->mc->sim_state.changed)) {
-		if (iod->format == IPC_RAW) {
-			msleep(20);
-			return 0;
-		}
+			(iod->mc->phone_state == STATE_NV_REBUILDING))
 		return POLLHUP;
+<<<<<<< HEAD:drivers/misc/modem_if/modem_io_device.c
 	} else
+=======
+	else
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver":drivers/misc/modem_if/modem_io_device.c
 		return 0;
 }
 
@@ -934,11 +993,14 @@ static long misc_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 			(p_state == STATE_CRASH_EXIT)) {
 			pr_err("[IOD] send err state : %d\n", p_state);
 		/*	iod->mc->phone_state = STATE_OFFLINE; */
+<<<<<<< HEAD:drivers/misc/modem_if/modem_io_device.c
 		} else if (iod->mc->sim_state.changed) {
 			int s_state = iod->mc->sim_state.online ?
 					STATE_SIM_ATTACH : STATE_SIM_DETACH;
 			iod->mc->sim_state.changed = false;
 			return s_state;
+=======
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver":drivers/misc/modem_if/modem_io_device.c
 		} else if (p_state == STATE_NV_REBUILDING) {
 			pr_info("[IOD] send nv rebuild state : %d\n",
 				p_state);
@@ -947,7 +1009,11 @@ static long misc_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		return p_state;
 
 	case IOCTL_MODEM_PROTOCOL_SUSPEND:
+<<<<<<< HEAD:drivers/misc/modem_if/modem_io_device.c
 		pr_notice("[IOD] misc_ioctl : IOCTL_MODEM_PROTOCOL_SUSPEND\n");
+=======
+		pr_info("[IOD] misc_ioctl : IOCTL_MODEM_PROTOCOL_SUSPEND\n");
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver":drivers/misc/modem_if/modem_io_device.c
 
 		if (iod->format != IPC_MULTI_RAW)
 			return -EINVAL;
@@ -958,14 +1024,22 @@ static long misc_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 			(io_raw_devs->raw_devices[i]->io_typ == IODEV_NET)) {
 				netif_stop_queue(
 					io_raw_devs->raw_devices[i]->ndev);
+<<<<<<< HEAD:drivers/misc/modem_if/modem_io_device.c
 				pr_notice("[IOD] netif stopped : %s\n",
+=======
+				pr_info("[IOD] netif stopped : %s\n",
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver":drivers/misc/modem_if/modem_io_device.c
 					io_raw_devs->raw_devices[i]->name);
 			}
 		}
 		return 0;
 
 	case IOCTL_MODEM_PROTOCOL_RESUME:
+<<<<<<< HEAD:drivers/misc/modem_if/modem_io_device.c
 		pr_notice("[IOD] misc_ioctl : IOCTL_MODEM_PROTOCOL_RESUME\n");
+=======
+		pr_info("[IOD] misc_ioctl : IOCTL_MODEM_PROTOCOL_RESUME\n");
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver":drivers/misc/modem_if/modem_io_device.c
 
 		if (iod->format != IPC_MULTI_RAW)
 			return -EINVAL;
@@ -976,7 +1050,11 @@ static long misc_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 			(io_raw_devs->raw_devices[i]->io_typ == IODEV_NET)) {
 				netif_wake_queue(
 					io_raw_devs->raw_devices[i]->ndev);
+<<<<<<< HEAD:drivers/misc/modem_if/modem_io_device.c
 				pr_notice("[IOD] netif woke : %s\n",
+=======
+				pr_info("[IOD] netif woke : %s\n",
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver":drivers/misc/modem_if/modem_io_device.c
 					io_raw_devs->raw_devices[i]->name);
 			}
 		}
@@ -1182,7 +1260,11 @@ static int misc_mmap(struct file *filp, struct vm_area_struct *vma)
 		return -EAGAIN;
 	}
 
+<<<<<<< HEAD:drivers/misc/modem_if/modem_io_device.c
 	pr_info("[IOD] <%s> VA = 0x%08lx, offset = 0x%lx, size = %lu\n",
+=======
+	pr_err("[IOD] <%s> VA = 0x%08lx, offset = 0x%lx, size = %lu\n",
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver":drivers/misc/modem_if/modem_io_device.c
 		__func__, vma->vm_start, offset, size);
 
 	return 0;
@@ -1204,16 +1286,12 @@ static const struct file_operations misc_io_fops = {
 
 static int vnet_open(struct net_device *ndev)
 {
-	struct vnet *vnet = netdev_priv(ndev);
 	netif_start_queue(ndev);
-	atomic_inc(&vnet->iod->opened);
 	return 0;
 }
 
 static int vnet_stop(struct net_device *ndev)
 {
-	struct vnet *vnet = netdev_priv(ndev);
-	atomic_dec(&vnet->iod->opened);
 	netif_stop_queue(ndev);
 	return 0;
 }
@@ -1312,8 +1390,6 @@ int init_io_device(struct io_device *iod)
 
 	/* Get modem state from modem control device */
 	iod->modem_state_changed = io_dev_modem_state_changed;
-
-	iod->sim_state_changed = io_dev_sim_state_changed;
 
 	/* Get data from link device */
 	iod->recv = io_dev_recv_data_from_link_dev;

@@ -31,6 +31,7 @@
 #include "modem_link_device_dpram.h"
 #include "modem_utils.h"
 
+<<<<<<< HEAD
 static int dpram_lock_write(struct dpram_link_device *dpld)
 {    
 	int lock_value;
@@ -53,6 +54,8 @@ static void dpram_unlock_write(struct dpram_link_device *dpld)
 			__func__, lock_value);
 }
 
+=======
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 static int memcmp16_to_io(const void __iomem *to, void *from, int size)
 {
 	int count = size >> 1;
@@ -351,6 +354,7 @@ static int dpram_write
 			__func__, ld->name, dev_id);
 		return -EINVAL;
 	}
+<<<<<<< HEAD
 
 	if (dpctl->wakeup) {
 		/* Wakeup DPRAM, then check magic and access */
@@ -423,6 +427,63 @@ static int dpram_write
 			__func__, ld->name, size);
 		print_sipc4_hdlc_fmt_frame(buff);
 		pr_err("\n");
+=======
+
+	if (dpctl->wakeup) {
+		/* Wakeup DPRAM, then check magic and access */
+		if (dpctl->wakeup())
+			return -EINVAL;
+	} else {
+		/* Check magic and access */
+		head = dpctl->get_magic();
+		tail = dpctl->get_access();
+		if (head != DPRAM_MAGIC_CODE || tail != 1) {
+			pr_err("\n[LNK/E] <%s:%s> magic=0x%X, access=0x%X\n\n",
+				__func__, ld->name, head, tail);
+			return -EINVAL;
+		}
+	}
+
+#if 0
+	if (dev_id == IPC_FMT)
+		pr_err("[LNK] <%s:%s> FMT, size = %d\n",
+			__func__, ld->name, size);
+#endif
+#if 0
+	if (dev_id == IPC_RAW)
+		pr_err("[LNK] <%s:%s> RAW, size = %d\n",
+			__func__, ld->name, size);
+#endif
+#if 0
+	if (dev_id == IPC_RFS)
+		pr_err("[LNK] <%s:%s> RFS, size = %d\n",
+			__func__, ld->name, size);
+#endif
+
+	head = dpctl->get_tx_head(dev_id);
+	tail = dpctl->get_tx_tail(dev_id);
+	qsize = dpctl->get_tx_buff_size(dev_id);
+
+	if (!dpram_circ_valid(qsize, head, tail)) {
+		pr_err("[LNK/E] <%s:%s> invalid circular buffer\n",
+			__func__, ld->name);
+		dpctl->set_tx_head(dev_id, 0);
+		dpctl->set_tx_tail(dev_id, 0);
+		len = -EINVAL;
+		goto exit;
+	}
+
+	space = (head < tail) ? (tail - head - 1) : (qsize + tail - head - 1);
+	if (size > space) {
+		pr_info("[LNK] <%s:%s> NO_SPC in TXQ[%d] "
+			"(qsize[%d] free[%d] head[%d] tail[%d] vs. size[%d])\n",
+			__func__, ld->name,
+			dev_id, qsize, space, head, tail, size);
+		mask = dpctl->get_mask_req_ack(dev_id);
+		dpctl->send_intr(INT_NON_CMD(mask));
+		len = -EAGAIN;
+		goto exit;
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 	}
 #endif
 #if 0
@@ -442,6 +503,66 @@ static int dpram_write
 	}
 #endif
 
+<<<<<<< HEAD
+	if (head < tail) {
+		/* +++++++++ head ---------- tail ++++++++++ */
+		dst = dpctl->get_tx_buff(dev_id) + head;
+		src = (u8 *)buff;
+		len = size;
+		memcpy(dst, src, len);
+	} else {
+		/* ------ tail +++++++++++ head ------------ */
+		space = qsize - head;
+
+		dst = dpctl->get_tx_buff(dev_id) + head;
+		src = (u8 *)buff;
+		len = (size > space) ? space : size;
+
+		/* 1) head -> buffer end */
+		memcpy(dst, src, len);
+
+		/* 2) buffer start -> tail */
+		if (size > space) {
+			dst = dpctl->get_tx_buff(dev_id);
+			src = (u8 *)(buff + space);
+			len = (size - space);
+			memcpy(dst, src, len);
+		}
+=======
+#if 0
+	if (dev_id == IPC_FMT) {
+		pr_err("\n[LNK] <%s:%s> Tx HDLC FMT frame (len %d)\n",
+			__func__, ld->name, size);
+		print_sipc4_hdlc_fmt_frame(buff);
+		pr_err("\n");
+	}
+#endif
+#if 0
+	if (dev_id == IPC_RAW) {
+		pr_err("\n[LNK] <%s:%s> Tx HDLC RAW frame (len %d)\n",
+			__func__, ld->name, size);
+		mif_print_data((char *)buff, (size < 64 ? size : 64));
+		pr_err("\n");
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
+	}
+#endif
+#if 0
+	if (dev_id == IPC_RFS) {
+		pr_err("\n[LNK] <%s:%s> Tx HDLC RFS frame (len %d)\n",
+			__func__, ld->name, size);
+		mif_print_data((char *)buff, (size < 64 ? size : 64));
+		pr_err("\n");
+	}
+#endif
+
+<<<<<<< HEAD
+	/* Update new head */
+	head = (u32)((head + size) % qsize);
+	dpctl->set_tx_head(dev_id, head);
+
+	/* Unlock dpram_write_lock */
+	dpram_unlock_write(dpld);
+=======
 	if (head < tail) {
 		/* +++++++++ head ---------- tail ++++++++++ */
 		dst = dpctl->get_tx_buff(dev_id) + head;
@@ -471,9 +592,7 @@ static int dpram_write
 	/* Update new head */
 	head = (u32)((head + size) % qsize);
 	dpctl->set_tx_head(dev_id, head);
-
-	/* Unlock dpram_write_lock */
-	dpram_unlock_write(dpld);
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 
 	/* Send interrupt to CP */
 	mask = dpctl->get_mask_send(dev_id);
@@ -499,7 +618,11 @@ static void dpram_tx_work(struct work_struct *work)
 
 	for (i = 0; i < dpld->max_ipc_dev; i++) {
 		while ((skb = skb_dequeue(ld->skb_txq[i]))) {
+<<<<<<< HEAD
 			if (ld->mode == LINK_MODE_IPC) {
+=======
+			if (dpld->mode == DPRAM_LINK_MODE_IPC) {
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 				ret = dpram_write(dpld, i, skb->data, skb->len);
 				if (ret < 0) {
 					skb_queue_head(ld->skb_txq[i], skb);
@@ -507,9 +630,14 @@ static void dpram_tx_work(struct work_struct *work)
 					break;
 				}
 			} else {
+<<<<<<< HEAD
 				pr_err("[LNK] <%s:%s> "
 				       "ld->mode != LINK_MODE_IPC\n",
 					__func__, ld->name);
+=======
+				pr_err("[LNK] <%s> dpld->mode != IPC_MODE\n",
+					__func__);
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 			}
 
 			dev_kfree_skb_any(skb);
@@ -535,8 +663,13 @@ static void non_command_handler(struct dpram_link_device *dpld, u16 non_cmd)
 	u16 mask = 0;
 
 	/* Check DPRAM mode */
+<<<<<<< HEAD
 	if (ld->mode != LINK_MODE_IPC) {
 		pr_err("[LNK/E] <%s:%s> ld->mode != LINK_MODE_IPC",
+=======
+	if (dpld->mode != DPRAM_LINK_MODE_IPC) {
+		pr_err("[LNK/E] <%s:%s> dpld->mode != DPRAM_LINK_MODE_IPC",
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 			__func__, ld->name);
 		return;
 	}
@@ -594,7 +727,11 @@ static int dpram_init_ipc(struct dpram_link_device *dpld)
 	magic = dpctl->get_magic();
 	access = dpctl->get_access();
 
+<<<<<<< HEAD
 	if ((ld->mode == LINK_MODE_IPC) &&
+=======
+	if ((dpld->mode == DPRAM_LINK_MODE_IPC) &&
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 	    (magic == DPRAM_MAGIC_CODE && access == 1)) {
 		pr_err("[LNK] <%s:%s> IPC is already initialized!\n",
 			__func__, ld->name);
@@ -644,7 +781,11 @@ static int dpram_init_ipc(struct dpram_link_device *dpld)
 		return -1;
 	}
 
+<<<<<<< HEAD
 	ld->mode = LINK_MODE_IPC;
+=======
+	dpld->mode = DPRAM_LINK_MODE_IPC;
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 
 	return 0;
 }
@@ -819,13 +960,21 @@ static int cmc22x_idpram_send_boot(struct link_device *ld, unsigned long arg)
 	struct dpram_boot_img cp_img;
 	u8 *img_buff = NULL;
 
+<<<<<<< HEAD
 	ld->mode = LINK_MODE_BOOT;
+=======
+	dpld->mode = DPRAM_LINK_MODE_BOOT;
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 	cmc22x_idpram_disable_ipc(dpld);
 
 	/* Test memory... After testing, memory is cleared. */
 	if (dpram_test_memory(ld->name, bt_buff, dpld->bt_map.size) < 0) {
 		pr_err("\n[LNK/E] <%s> dpram_test_memory fail!\n\n", __func__);
+<<<<<<< HEAD
 		ld->mode = LINK_MODE_INVALID;
+=======
+		dpld->mode = DPRAM_LINK_MODE_INVALID;
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 		return -EIO;
 	}
 
@@ -840,7 +989,11 @@ static int cmc22x_idpram_send_boot(struct link_device *ld, unsigned long arg)
 	img_buff = kzalloc(dpld->bt_map.size, GFP_KERNEL);
 	if (!img_buff) {
 		pr_err("[LNK/E] <%s> kzalloc fail\n", __func__);
+<<<<<<< HEAD
 		ld->mode = LINK_MODE_INVALID;
+=======
+		dpld->mode = DPRAM_LINK_MODE_INVALID;
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 		return -ENOMEM;
 	}
 
@@ -885,7 +1038,7 @@ static int cmc22x_idpram_send_boot(struct link_device *ld, unsigned long arg)
 	return 0;
 
 err:
-	ld->mode = LINK_MODE_INVALID;
+	dpld->mode = DPRAM_LINK_MODE_INVALID;
 	kfree(img_buff);
 
 	pr_err("[LNK/E] <%s> Boot send fail!!!\n\n", __func__);
@@ -895,7 +1048,6 @@ err:
 static int cmc22x_idpram_send_main(struct link_device *ld, struct sk_buff *skb)
 {
 	int err = 0;
-	int ret = 0;
 	struct dpram_link_device *dpld = to_dpram_link_device(ld);
 	struct dpram_boot_frame *bf = (struct dpram_boot_frame *)skb->data;
 	u8 __iomem *buff = (dpld->bt_map.buff + bf->offset);
@@ -933,14 +1085,8 @@ static int cmc22x_idpram_send_main(struct link_device *ld, struct sk_buff *skb)
 	}
 
 exit:
-	if (err < 0)
-		ret = err;
-	else
-		ret = skb->len;
-
 	dev_kfree_skb_any(skb);
-
-	return ret;
+	return err;
 }
 
 static void cmc22x_idpram_wait_dump(unsigned long arg)
@@ -1103,6 +1249,7 @@ static int dpram_upload
 		if (ret < 0) {
 			pr_err("[LNK/E] <%s> copy_to_user fail\n", __func__);
 			goto err_out;
+<<<<<<< HEAD
 		}
 
 		tlen += plen;
@@ -1117,6 +1264,22 @@ static int dpram_upload
 				region = 1;
 			}
 		}
+=======
+		}
+
+		tlen += plen;
+
+		if (header.total_frame == header.curr_frame) {
+			if (region) {
+				uploaddata->is_delta = tlen - uploaddata->size;
+				dpld->dpctl->send_intr(CMD_UL_RECEIVE_RESP);
+				break;
+			} else {
+				uploaddata->size = tlen;
+				region = 1;
+			}
+		}
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 		dpld->dpctl->send_intr(CMD_UL_RECEIVE_RESP);
 	}
 
@@ -1210,6 +1373,7 @@ static int dpram_download
 		}
 
 		curframe++;
+<<<<<<< HEAD
 	}
 
 	dpld->dpctl->send_intr(CMD_DL_SEND_DONE_REQ);
@@ -1220,6 +1384,18 @@ static int dpram_download
 		return -ENXIO;
 	}
 
+=======
+	}
+
+	dpld->dpctl->send_intr(CMD_DL_SEND_DONE_REQ);
+	ret = wait_for_completion_interruptible_timeout(
+			&dpld->gota_update_done, GOTA_TIMEOUT);
+	if (!ret) {
+		pr_err("[GOTA/E] No UPDATE_DONE_NOTIFICATION!!!\n");
+		return -ENXIO;
+	}
+
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 	return 0;
 }
 
@@ -1263,6 +1439,7 @@ static void gota_cmd_handler(struct dpram_link_device *dpld, u16 cmd)
 	case GOTA_CMD_RECEIVE_READY:
 		pr_debug("[GOTA] Send CP-->AP RECEIVE_READY\n");
 		dpld->dpctl->send_intr(CMD_DL_START_REQ);
+<<<<<<< HEAD
 		break;
 
 	case GOTA_CMD_DOWNLOAD_START_RESP:
@@ -1275,6 +1452,20 @@ static void gota_cmd_handler(struct dpram_link_device *dpld, u16 cmd)
 		complete_all(&dpld->gota_send_done);
 		break;
 
+=======
+		break;
+
+	case GOTA_CMD_DOWNLOAD_START_RESP:
+		pr_debug("[GOTA] Send CP-->AP DOWNLOAD_START_RESP\n");
+		complete_all(&dpld->gota_start_complete);
+		break;
+
+	case GOTA_CMD_SEND_DONE_RESP:
+		pr_debug("[GOTA] Send CP-->AP SEND_DONE_RESP\n");
+		complete_all(&dpld->gota_send_done);
+		break;
+
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 	case GOTA_CMD_UPDATE_DONE:
 		pr_debug("[GOTA] Send CP-->AP UPDATE_DONE\n");
 		complete_all(&dpld->gota_update_done);
@@ -1359,7 +1550,11 @@ static int dpram_send(struct link_device *ld, struct io_device *iod,
 		return dpram_send_binary(ld, skb);
 
 	case IPC_FMT:
+		skb_queue_tail(&ld->sk_fmt_tx_q, skb);
+		break;
+
 	case IPC_RAW:
+<<<<<<< HEAD
 	case IPC_RFS:
 		skb_queue_tail(ld->skb_txq[iod->format], skb);
 		break;
@@ -1367,6 +1562,16 @@ static int dpram_send(struct link_device *ld, struct io_device *iod,
 	default:
 		pr_err("[LNK] <%s:%s> No TXQ for %s\n",
 			__func__, ld->name, iod->name);
+=======
+		skb_queue_tail(&ld->sk_raw_tx_q, skb);
+		break;
+
+	case IPC_RFS:
+		skb_queue_tail(&ld->sk_rfs_tx_q, skb);
+		break;
+
+	default:
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 		dev_kfree_skb_any(skb);
 		return 0;
 	}
@@ -1380,7 +1585,7 @@ static int dpram_set_dl_magic(struct link_device *ld, struct io_device *iod)
 {
 	struct dpram_link_device *dpld = to_dpram_link_device(ld);
 
-	ld->mode = LINK_MODE_DLOAD;
+	dpld->mode = DPRAM_LINK_MODE_DLOAD;
 
 	iowrite32(DP_MAGIC_DMDL, dpld->dl_map.magic);
 
@@ -1400,7 +1605,7 @@ static int dpram_set_ul_magic(struct link_device *ld, struct io_device *iod)
 	struct dpram_link_device *dpld = to_dpram_link_device(ld);
 	u8 *dest = dpld->ul_map.buff;
 
-	ld->mode = LINK_MODE_ULOAD;
+	dpld->mode = DPRAM_LINK_MODE_ULOAD;
 
 	if (ld->mdm_data->modem_type == SEC_CMC221) {
 		wake_lock(&dpld->dpram_wake_lock);
@@ -1429,9 +1634,15 @@ static int dpram_modem_update(struct link_device *ld, struct io_device *iod,
 	int ret;
 	struct dpram_link_device *dpld = to_dpram_link_device(ld);
 	struct dpram_firmware fw;
+<<<<<<< HEAD
 
 	pr_debug("[GOTA] <%s>\n", __func__);
 
+=======
+
+	pr_debug("[GOTA] <%s>\n", __func__);
+
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 	ret = copy_from_user(&fw, (void __user *)arg, sizeof(fw));
 	if (ret  < 0) {
 		pr_err("[GOTA/E] <%s> copy_from_user fail\n", __func__);
@@ -1550,8 +1761,11 @@ static int dpram_link_ioctl
 			err = dpld->dpctl->cpupload_step2(
 					(void *)arg, dpld->dpctl);
 			if (err < 0) {
+<<<<<<< HEAD
 				dpld->dpctl->clear_intr();
 				enable_irq(dpld->irq);
+=======
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 				lnk_err(dpld, "cpupload_step2 fail\n");
 				goto exit;
 			}
@@ -1691,8 +1905,11 @@ struct link_device *dpram_create_link_device(struct platform_device *pdev)
 	wake_lock_init(&dpld->dpram_wake_lock,
 		       WAKE_LOCK_SUSPEND,
 		       dpld->dpctl->dpram_wlock_name);
+<<<<<<< HEAD
 
 	atomic_set(&dpld->dpram_write_lock, 0);
+=======
+>>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 
 	init_completion(&dpld->dpram_init_cmd);
 	init_completion(&dpld->modem_pif_init_done);
