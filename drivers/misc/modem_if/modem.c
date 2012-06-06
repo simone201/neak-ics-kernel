@@ -93,10 +93,7 @@ static struct io_device *create_io_device(struct modem_io_t *io_t,
 	iod->link_types = io_t->links;
 	iod->net_typ = pdata->modem_net;
 	iod->use_handover = pdata->use_handover;
-<<<<<<< HEAD:drivers/misc/modem_if/modem.c
 	atomic_set(&iod->opened, 0);
-=======
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver":drivers/misc/modem_if/modem.c
 
 	/* link between io device and modem control */
 	iod->mc = modemctl;

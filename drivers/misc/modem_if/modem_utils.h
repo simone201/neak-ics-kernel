@@ -15,7 +15,6 @@
 #ifndef __MODEM_UTILS_H__
 #define __MODEM_UTILS_H__
 
-<<<<<<< HEAD
 #define RAW_DEV(rdevs, i) (((struct io_raw_devices *)rdevs)->raw_devices[i])
 
 /**
@@ -38,31 +37,6 @@
 	list_for_each_entry(iod, (ld)->list_of_io_devices, list) \
 		if (iod->link_types & LINKTYPE((ld)->link_type))
 
-=======
-#define MAX_SKB_LOG_LEN ((size_t)16)
-#define RAW_DEV(rdevs, i) (((struct io_raw_devices *)rdevs)->raw_devices[i])
-
-/**
- * raw_devs_for_each - iterate raw devices of multi raw device
- * @iod:	struct io_device *iod
- * @index:	int index
- * @multiraw:	struct io_device *multiraw
- */
-#define raw_devs_for_each(multiraw, index, iod) \
-	for (index = 0; iod = RAW_DEV(multiraw->private_data, index), \
-		index < MAX_RAW_DEVS; index++) \
-		if (iod)
-
-/**
- * io_devs_for_each - iterate io devices of list_of_io_devices
- * @iod:	struct io_device *iod
- * @ld:		struct link_device *ld
- */
-#define io_devs_for_each(iod, ld) \
-	list_for_each_entry(iod, (ld)->list_of_io_devices, list) \
-		if (iod->link_types & LINKTYPE((ld)->link_type))
-
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 
 static inline struct io_device *find_iodev(struct link_device *ld,
 		enum dev_format format)
@@ -92,7 +66,6 @@ int pr_buffer(const char *tag, const char *data, size_t data_len,
 							size_t max_len);
 
 /* print a sk_buff as hex string */
-<<<<<<< HEAD
 #define pr_skb(tag, skb) \
 	pr_buffer(tag, (char *)((skb)->data), (size_t)((skb)->len), (size_t)16)
 
@@ -100,12 +73,6 @@ int pr_buffer(const char *tag, const char *data, size_t data_len,
 #define pr_urb(tag, urb) \
 	pr_buffer(tag, (char *)((urb)->transfer_buffer), \
 			(size_t)((urb)->actual_length), (size_t)16)
-=======
-static inline int pr_skb(const char *tag, struct sk_buff *skb)
-{
-	return pr_buffer(tag, skb->data, skb->len, MAX_SKB_LOG_LEN);
-}
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 
 /* flow control CMD from CP, it use in serial devices */
 int link_rx_flowctl_cmd(struct link_device *ld, const char *data, size_t len);

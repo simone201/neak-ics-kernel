@@ -103,12 +103,9 @@ struct link_pm_data {
 	bool dpm_suspending;
 
 	int (*port_enable)(int, int);
-<<<<<<< HEAD
 
 	int (*cpufreq_lock)(void);
 	int (*cpufreq_unlock)(void);
-=======
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 };
 
 struct usb_link_device {
@@ -121,6 +118,7 @@ struct usb_link_device {
 	struct usb_device	*usbdev;
 	struct if_usb_devdata	devdata[IF_USB_DEVNUM_MAX];
 	struct delayed_work	runtime_pm_work;
+	struct delayed_work	post_resume_work;
 	struct delayed_work     wait_enumeration;
 	struct work_struct	disconnect_work;
 

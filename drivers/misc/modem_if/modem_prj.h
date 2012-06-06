@@ -90,6 +90,8 @@ enum modem_state {
 	STATE_ONLINE,
 	STATE_NV_REBUILDING, /* <= rebuilding start */
 	STATE_LOADER_DONE,
+	STATE_SIM_ATTACH,
+	STATE_SIM_DETACH,
 };
 
 enum com_state {
@@ -100,7 +102,6 @@ enum com_state {
 	COM_CRASH,
 };
 
-<<<<<<< HEAD
 enum link_mode {
 	LINK_MODE_INVALID = 0,
 	LINK_MODE_IPC,
@@ -114,8 +115,6 @@ struct sim_state {
 	bool changed;	/* online is changed? */
 };
 
-=======
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 struct header_data {
 	char hdr[HDLC_HEADER_MAX_SIZE];
 	unsigned len;
@@ -202,11 +201,8 @@ struct io_device {
 	enum modem_io      io_typ;
 	enum modem_network net_typ;
 	bool               use_handover;	/* handover 2+ link devices */
-<<<<<<< HEAD
 
 	atomic_t opened;
-=======
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 
 	/* Rx queue of sk_buff */
 	struct sk_buff_head sk_rx_q;
@@ -231,12 +227,9 @@ struct io_device {
 	 */
 	void (*modem_state_changed)(struct io_device *iod, enum modem_state);
 
-<<<<<<< HEAD
 	/* inform the IO device that the SIM is not inserting or removing */
 	void (*sim_state_changed)(struct io_device *iod, bool sim_online);
 
-=======
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 	struct link_device *link;
 	struct modem_ctl   *mc;
 
@@ -261,13 +254,10 @@ struct link_device {
 	/* Modem data */
 	struct modem_data *mdm_data;
 
-<<<<<<< HEAD
 	/* Operation mode of the link device */
 	enum link_mode mode;
 
 	/* TX queue of socket buffers */
-=======
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 	struct sk_buff_head sk_fmt_tx_q;
 	struct sk_buff_head sk_raw_tx_q;
 	struct sk_buff_head sk_rfs_tx_q;
@@ -336,12 +326,8 @@ struct modem_ctl {
 	char *name;
 	struct modem_data *mdm_data;
 
-<<<<<<< HEAD
 	enum modem_state phone_state;
 	struct sim_state sim_state;
-=======
-	int phone_state;
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 
 	unsigned gpio_cp_on;
 	unsigned gpio_reset_req_n;
@@ -352,12 +338,10 @@ struct modem_ctl {
 	unsigned gpio_flm_uart_sel;
 	unsigned gpio_cp_warm_reset;
 	unsigned gpio_cp_off;
-<<<<<<< HEAD
 	unsigned gpio_sim_detect;
-=======
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 
 	int irq_phone_active;
+	int irq_sim_detect;
 
 #ifdef CONFIG_LTE_MODEM_CMC221
 	const struct attribute_group *group;

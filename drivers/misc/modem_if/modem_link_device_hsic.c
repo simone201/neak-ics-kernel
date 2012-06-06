@@ -98,7 +98,6 @@ static void stop_ipc(struct link_device *ld)
 static int usb_init_communication(struct link_device *ld,
 			struct io_device *iod)
 {
-<<<<<<< HEAD
 #ifndef CONFIG_SLP
 	struct task_struct *task = get_current();
 	char str[TASK_COMM_LEN];
@@ -106,8 +105,6 @@ static int usb_init_communication(struct link_device *ld,
 	printk(KERN_DEBUG "%s:%d:%s\n", __func__, task->pid,
 		get_task_comm(str, task));
 
-=======
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 	/* Send IPC Start ASCII 'a' */
 	if (iod->id == 0x1 && strncmp(get_task_comm(str, task), "rild", 4) == 0)
 #else
@@ -178,9 +175,12 @@ static void usb_rx_complete(struct urb *urb)
 		/* how we can distinguish boot ch with fmt ch ?? */
 		switch (pipe_data->format) {
 		case IF_USB_FMT_EP:
-			iod_format = IPC_FMT;
-			pr_buffer("IPC-RX", (char *)urb->transfer_buffer,
-				(size_t)urb->actual_length, MAX_SKB_LOG_LEN);
+			if (usb_ld->if_usb_is_main) {
+				pr_urb("IPC-RX", urb);
+				iod_format = IPC_FMT;
+			} else {
+				iod_format = IPC_BOOT;
+			}
 			break;
 		case IF_USB_RAW_EP:
 			iod_format = IPC_MULTI_RAW;
@@ -208,17 +208,6 @@ static void usb_rx_complete(struct urb *urb)
 		}
 
 		io_devs_for_each(iod, &usb_ld->ld) {
-<<<<<<< HEAD
-=======
-			/* during boot stage fmt end point */
-			/* shared with boot io device */
-			/* when we use fmt device only for boot and ipc,
-				it can be reduced to 1 device */
-			if (iod_format == IPC_FMT &&
-				unlikely(iod->mc->phone_state == STATE_BOOTING))
-				iod_format = IPC_BOOT;
-
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 			if (iod->format == iod_format) {
 				ret = iod->recv(iod,
 						&usb_ld->ld,
@@ -407,11 +396,7 @@ static void usb_tx_work(struct work_struct *work)
 				continue;
 			}
 
-<<<<<<< HEAD
 			if (iod->format == IPC_FMT && usb_ld->if_usb_is_main)
-=======
-			if (iod->format == IPC_FMT)
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 				pr_skb("IPC-TX", skb);
 
 			usb_mark_last_busy(usb_ld->usbdev);
@@ -426,11 +411,7 @@ static void usb_tx_work(struct work_struct *work)
 					skb_queue_purge(&ld->sk_raw_tx_q);
 					/* when if disconnected, runtime call
 					 * for 'dev pointer' makes bugs, dev
-<<<<<<< HEAD
 					 * already has broken through
-=======
-					 * has already broken through
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 					 * disconnection, so do not call
 					 * runtime_put here */
 					return;
@@ -477,11 +458,7 @@ static void usb_tx_work(struct work_struct *work)
 					skb_queue_purge(&ld->sk_raw_tx_q);
 					/* when if disconnected, runtime call
 					 * for 'dev pointer' makes bugs, dev
-<<<<<<< HEAD
 					 * already has broken through
-=======
-					 * has already broken through
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 					 * disconnection, so do not call
 					 * runtime_put here */
 					return;
@@ -593,6 +570,7 @@ static void link_pm_change_modem_state(struct link_pm_data *pm_data,
 
 	pr_err("%s: set modem state %d\n", __func__, state);
 	mc->iod->modem_state_changed(mc->iod, state);
+	mc->bootd->modem_state_changed(mc->bootd, state);
 }
 
 static void link_pm_reconnect_work(struct work_struct *work)
@@ -636,19 +614,11 @@ static inline int link_pm_slave_wake(struct link_pm_data *pm_data)
 				!= HOSTWAKE_TRIGLEVEL) {
 		if (gpio_get_value(pm_data->gpio_link_slavewake)) {
 			gpio_set_value(pm_data->gpio_link_slavewake, 0);
-<<<<<<< HEAD
 			pr_debug("[MIF] gpio [SWK] set [0]\n");
 			mdelay(5);
 		}
 		gpio_set_value(pm_data->gpio_link_slavewake, 1);
 		pr_debug("[MIF] gpio [SWK] set [1]\n");
-=======
-			pr_info("[MIF] gpio [SWK] set [0]\n");
-			mdelay(5);
-		}
-		gpio_set_value(pm_data->gpio_link_slavewake, 1);
-		pr_info("[MIF] gpio [SWK] set [1]\n");
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 		mdelay(5);
 
 		/* wait host wake signal*/
@@ -658,11 +628,7 @@ static inline int link_pm_slave_wake(struct link_pm_data *pm_data)
 	}
 	/* runtime pm goes to active */
 	if (!gpio_get_value(pm_data->gpio_link_active)) {
-<<<<<<< HEAD
 		pr_debug("[MIF] gpio [H ACTV : %d] set 1\n",
-=======
-		pr_info("[MIF] gpio [H ACTV : %d] set 1\n",
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 				gpio_get_value(pm_data->gpio_link_active));
 		gpio_set_value(pm_data->gpio_link_active, 1);
 	}
@@ -710,11 +676,7 @@ static void link_pm_runtime_work(struct work_struct *work)
 			/* force to go runtime idle before retry resume */
 			if (dev->power.timer_expires == 0 &&
 						!dev->power.request_pending) {
-<<<<<<< HEAD
 				pr_debug("%s:run time idle\n", __func__);
-=======
-				pr_info("%s:run time idle\n", __func__);
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 				pm_runtime_idle(dev);
 			}
 		}
@@ -743,6 +705,10 @@ static irqreturn_t link_pm_irq_handler(int irq, void *data)
 	int value;
 	struct link_pm_data *pm_data = data;
 
+#if defined(CONFIG_SLP)
+	pm_wakeup_event(pm_data->miscdev.this_device, 0);
+#endif
+
 	if (!pm_data->link_pm_active)
 		return IRQ_HANDLED;
 
@@ -757,11 +723,7 @@ static irqreturn_t link_pm_irq_handler(int irq, void *data)
 		runtime pm status changes to ACTIVE
 	*/
 	value = gpio_get_value(pm_data->gpio_link_hostwake);
-<<<<<<< HEAD
 	pr_debug("[MIF] gpio [HWK] get [%d]\n", value);
-=======
-	pr_err("[MIF] gpio [HWK] get [%d]\n", value);
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 	/*
 	* igonore host wakeup interrupt at suspending kernel
 	*/
@@ -791,11 +753,7 @@ static irqreturn_t link_pm_irq_handler(int irq, void *data)
 		*/
 		/* clear slave cpu wake up pin */
 		gpio_set_value(pm_data->gpio_link_slavewake, 0);
-<<<<<<< HEAD
 		pr_debug("[MIF] gpio [SWK] set [0]\n");
-=======
-		pr_info("[MIF] gpio [SWK] set [0]\n");
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 	}
 	return IRQ_HANDLED;
 }
@@ -878,19 +836,11 @@ static int link_pm_notifier_event(struct notifier_block *this,
 	switch (event) {
 	case PM_SUSPEND_PREPARE:
 		pm_data->dpm_suspending = true;
-<<<<<<< HEAD
 		pr_debug("%s : dpm suspending set to true\n", __func__);
 		return NOTIFY_OK;
 	case PM_POST_SUSPEND:
 		pm_data->dpm_suspending = false;
 		pr_debug("%s : dpm suspending set to false\n", __func__);
-=======
-		pr_info("%s : dpm suspending set to true\n", __func__);
-		return NOTIFY_OK;
-	case PM_POST_SUSPEND:
-		pm_data->dpm_suspending = false;
-		pr_info("%s : dpm suspending set to false\n", __func__);
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 		return NOTIFY_OK;
 	}
 	return NOTIFY_DONE;
@@ -924,11 +874,7 @@ static int if_usb_suspend(struct usb_interface *intf, pm_message_t message)
 	devdata->usb_ld->suspended++;
 
 	if (devdata->usb_ld->suspended == LINKPM_DEV_NUM) {
-<<<<<<< HEAD
 		pr_debug("[if_usb_suspended]\n");
-=======
-		pr_info("[if_usb_suspended]\n");
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 		wake_unlock(&pm_data->l2_wake);
 	}
 	return 0;
@@ -952,11 +898,7 @@ static int if_usb_resume(struct usb_interface *intf)
 
 	devdata->usb_ld->suspended--;
 	if (!devdata->usb_ld->suspended) {
-<<<<<<< HEAD
 		pr_debug("[if_usb_resumed]\n");
-=======
-		pr_info("[if_usb_resumed]\n");
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 		wake_lock(&pm_data->l2_wake);
 	}
 
@@ -984,11 +926,7 @@ static void if_usb_disconnect(struct usb_interface *intf)
 	struct link_pm_data *pm_data = devdata->usb_ld->link_pm_data;
 	struct device *dev, *ppdev;
 
-<<<<<<< HEAD
 	pr_notice("%s\n", __func__);
-=======
-	pr_info("%s\n", __func__);
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 
 	if (devdata->disconnected)
 		return;
@@ -1001,11 +939,7 @@ static void if_usb_disconnect(struct usb_interface *intf)
 	ppdev = dev->parent->parent;
 	pm_runtime_forbid(ppdev); /*ehci*/
 
-<<<<<<< HEAD
 	pr_notice("%s put dev 0x%p\n", __func__, devdata->usbdev);
-=======
-	pr_info("%s put dev 0x%p\n", __func__, devdata->usbdev);
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 	usb_put_dev(devdata->usbdev);
 
 	devdata->data_intf = NULL;
@@ -1047,11 +981,7 @@ static int if_usb_set_pipe(struct usb_link_device *usb_ld,
 		return -EINVAL;
 	}
 
-<<<<<<< HEAD
 	pr_info("%s: set %d\n", __func__, pipe);
-=======
-	pr_err("%s: set %d\n", __func__, pipe);
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 
 	if ((usb_pipein(desc->endpoint[0].desc.bEndpointAddress)) &&
 	    (usb_pipeout(desc->endpoint[1].desc.bEndpointAddress))) {
@@ -1073,6 +1003,9 @@ static int if_usb_set_pipe(struct usb_link_device *usb_ld,
 	return 0;
 }
 
+
+static struct usb_id_info hsic_channel_info;
+
 static int __devinit if_usb_probe(struct usb_interface *intf,
 					const struct usb_device_id *id)
 {
@@ -1088,19 +1021,12 @@ static int __devinit if_usb_probe(struct usb_interface *intf,
 	struct usb_id_info *info = (struct usb_id_info *)id->driver_info;
 	struct usb_link_device *usb_ld = info->usb_ld;
 
-<<<<<<< HEAD
 	pr_info("%s:  usbdev = 0x%p\n", __func__, usbdev);
-=======
-	pr_err("%s:  usbdev = 0x%p\n", __func__, usbdev);
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 
 	usb_ld->usbdev = usbdev;
 	pm_runtime_forbid(&usbdev->dev);
 	usb_ld->link_pm_data->link_pm_active = false;
-<<<<<<< HEAD
 	usb_ld->if_usb_is_main = (info == &hsic_channel_info);
-=======
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 
 	union_hdr = NULL;
 	/* for WMC-ACM compatibility, WMC-ACM use an end-point for control msg*/
@@ -1171,11 +1097,7 @@ static int __devinit if_usb_probe(struct usb_interface *intf,
 		return -EINVAL;
 
 	usb_ld->devdata[pipe].usbdev = usb_get_dev(usbdev);
-<<<<<<< HEAD
 	pr_info("%s:  devdata usbdev = 0x%p\n", __func__,
-=======
-	pr_err("%s:  devdata usbdev = 0x%p\n", __func__,
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 		usb_ld->devdata[pipe].usbdev);
 	usb_ld->devdata[pipe].usb_ld = usb_ld;
 	usb_ld->devdata[pipe].data_intf = data_intf;
@@ -1201,7 +1123,6 @@ static int __devinit if_usb_probe(struct usb_interface *intf,
 	usb_rx_submit(usb_ld, &usb_ld->devdata[pipe], GFP_KERNEL);
 
 	if (info->intf_id == IPC_CHANNEL &&
-<<<<<<< HEAD
 		!work_pending(&usb_ld->link_pm_data->link_pm_start.work)) {
 			queue_delayed_work(usb_ld->link_pm_data->wq,
 					&usb_ld->link_pm_data->link_pm_start,
@@ -1214,16 +1135,6 @@ static int __devinit if_usb_probe(struct usb_interface *intf,
 	if (pipe == IF_USB_CMD_EP)
 		link_pm_change_modem_state(usb_ld->link_pm_data, STATE_ONLINE);
 
-=======
-		!(work_pending(&usb_ld->link_pm_data->link_pm_start.work))) {
-		queue_delayed_work(usb_ld->link_pm_data->wq,
-				&usb_ld->link_pm_data->link_pm_start,
-				msecs_to_jiffies(10000));
-		wake_lock(&usb_ld->link_pm_data->l2_wake);
-		wake_unlock(&usb_ld->link_pm_data->boot_wake);
-	}
-
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 	pr_info("[USB-IPC] %s successfully done\n", __func__);
 
 	return 0;
@@ -1385,13 +1296,10 @@ static int usb_link_pm_init(struct usb_link_device *usb_ld, void *data)
 	wake_lock_init(&pm_data->l2_wake, WAKE_LOCK_SUSPEND, "l2_hsic");
 	wake_lock_init(&pm_data->boot_wake, WAKE_LOCK_SUSPEND, "boot_hsic");
 	wake_lock_init(&pm_data->rpm_wake, WAKE_LOCK_SUSPEND, "rpm_hsic");
-<<<<<<< HEAD
 
 #if defined(CONFIG_SLP)
 	device_init_wakeup(pm_data->miscdev.this_device, true);
 #endif
-=======
->>>>>>> 1369860... Revert "modem_if: n7000 modem driver"
 
 	return 0;
 
