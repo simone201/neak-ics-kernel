@@ -89,11 +89,7 @@ static int exynos_target(struct cpufreq_policy *policy,
 			  unsigned int target_freq,
 			  unsigned int relation)
 {
-<<<<<<< HEAD
-	unsigned int index, old_index;
-=======
 	unsigned int index, old_index = UINT_MAX, max_index = 0;
->>>>>>> b1fdf66... mach-exynos: cpufreq: Align with Samsung i9300 Update 1
 	unsigned int arm_volt, safe_arm_volt = 0;
 	int ret = 0, i;
 	struct cpufreq_frequency_table *freq_table = exynos_info->freq_table;
@@ -568,15 +564,8 @@ static int exynos_cpufreq_notifier_event(struct notifier_block *this,
 		unsigned long event, void *ptr)
 {
 	int ret = 0;
-<<<<<<< HEAD
-	unsigned int safe_arm_volt, arm_volt;
-	unsigned int *volt_table;
-
-	volt_table = exynos_info->volt_table;
-=======
 	unsigned int cpu = 0;
 	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
->>>>>>> b1fdf66... mach-exynos: cpufreq: Align with Samsung i9300 Update 1
 
 	switch (event) {
 	case PM_SUSPEND_PREPARE:
@@ -608,33 +597,11 @@ static int exynos_cpufreq_notifier_event(struct notifier_block *this,
 #if defined(CONFIG_CPU_EXYNOS4210)
 		exynos_cpufreq_upper_limit_free(DVFS_LOCK_ID_PM);
 #endif
-<<<<<<< HEAD
-		// In case of using performance governor,
-		// max level should be used after sleep and wakeup
-		if (exynos_cpufreq_lock_disable) {
-			mutex_lock(&set_freq_lock);
-
-			/* get the voltage value */
-			safe_arm_volt = exynos_get_safe_armvolt(exynos_info->pm_lock_idx, exynos_info->max_support_idx);
-			if (safe_arm_volt)
-				regulator_set_voltage(arm_regulator, safe_arm_volt,
-					safe_arm_volt + 25000);
-
-			arm_volt = volt_table[exynos_info->max_support_idx];
-			regulator_set_voltage(arm_regulator, arm_volt,
-				arm_volt + 25000);
-
-			exynos_info->set_freq(exynos_info->pm_lock_idx, exynos_info->max_support_idx);
-
-			mutex_unlock(&set_freq_lock);
-		}
-=======
 		/* If current governor is userspace or performance or powersave,
 		 * restore the saved cpufreq after waekup.
 		 */
 		if (exynos_cpufreq_lock_disable)
 			exynos_restore_gov_freq(policy);
->>>>>>> b1fdf66... mach-exynos: cpufreq: Align with Samsung i9300 Update 1
 		exynos_cpufreq_disable = false;
 
 		return NOTIFY_OK;
