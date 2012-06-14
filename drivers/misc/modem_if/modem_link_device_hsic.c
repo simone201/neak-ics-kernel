@@ -175,12 +175,20 @@ static void usb_rx_complete(struct urb *urb)
 		/* how we can distinguish boot ch with fmt ch ?? */
 		switch (pipe_data->format) {
 		case IF_USB_FMT_EP:
+<<<<<<< HEAD
 			if (usb_ld->if_usb_is_main) {
 				pr_urb("IPC-RX", urb);
 				iod_format = IPC_FMT;
 			} else {
 				iod_format = IPC_BOOT;
 			}
+=======
+			iod_format = IPC_FMT;
+#if 0
+			pr_buffer("IPC-RX", (char *)urb->transfer_buffer,
+				(size_t)urb->actual_length, MAX_SKB_LOG_LEN);
+#endif
+>>>>>>> 3e4b058... modem_if: Stop printing IPC RX/TX messages
 			break;
 		case IF_USB_RAW_EP:
 			iod_format = IPC_MULTI_RAW;
@@ -396,8 +404,14 @@ static void usb_tx_work(struct work_struct *work)
 				continue;
 			}
 
+<<<<<<< HEAD
 			if (iod->format == IPC_FMT && usb_ld->if_usb_is_main)
+=======
+#if 0
+			if (iod->format == IPC_FMT)
+>>>>>>> 3e4b058... modem_if: Stop printing IPC RX/TX messages
 				pr_skb("IPC-TX", skb);
+#endif
 
 			usb_mark_last_busy(usb_ld->usbdev);
 			ret = usb_tx_urb_with_skb(usb_ld->usbdev,
