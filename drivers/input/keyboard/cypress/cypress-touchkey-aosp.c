@@ -808,6 +808,11 @@ static ssize_t led_timeout_read( struct device *dev, struct device_attribute *at
 static ssize_t led_timeout_write( struct device *dev, struct device_attribute *attr, const char *buf, size_t size )
 {
 	sscanf(buf,"%d\n", &led_timeout);
+	if (led_timeout == BL_ALWAYS_OFF)
+		touchkey_led_ldo_on(0);
+	else
+		touchkey_led_ldo_on(1);
+
 	return size;
 }
 
@@ -1140,7 +1145,6 @@ static int sec_touchkey_late_resume(struct early_suspend *h)
 	irq_set_irq_type(IRQ_TOUCH_INT, IRQF_TRIGGER_FALLING);
 	s3c_gpio_cfgpin(_3_GPIO_TOUCH_INT, _3_GPIO_TOUCH_INT_AF);
 	s3c_gpio_setpull(_3_GPIO_TOUCH_INT, S3C_GPIO_PULL_NONE);
-	touchkey_led_ldo_on(1);
 
 	touchkey_enable = 1;
 
@@ -1162,13 +1166,22 @@ static int sec_touchkey_late_resume(struct early_suspend *h)
 
 	if (led_timeout != BL_ALWAYS_OFF) {
 		/* ensure the light is ON */
+		touchkey_led_ldo_on(1);
 		enable_touchkey_backlights();
 		change_touch_key_led_voltage(led_brightness);
+	} else {
+		/* ensure the light is OFF */
+		disable_touchkey_backlights();
 	}
 
 	/* restart the timer if needed */
 	if (led_timeout > 0) {
 		mod_timer(&led_timer, jiffies + msecs_to_jiffies(led_timeout));
+	}
+
+	/* disable the breathing timer */
+	if (breathing_enabled || blinking_enabled) {
+		del_timer(&breathing_timer);
 	}
 
 	/* all done, turn on IRQ */
