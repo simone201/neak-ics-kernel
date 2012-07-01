@@ -324,6 +324,15 @@ int exynos_cpufreq_lock(unsigned int nId,
 			}
 		}
 		if (old_idx == -EINVAL) {
+			/* Find out freq_new level index since current level index was not found*/
+			for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
+				if (freq_new == freq_table[i].frequency) {
+					old_idx = freq_table[i].index;
+					break;
+				}
+			}
+		}
+		if (old_idx == -EINVAL) {
 			printk(KERN_ERR "%s: Level not found\n", __func__);
 			mutex_unlock(&set_freq_lock);
 			return -EINVAL;
