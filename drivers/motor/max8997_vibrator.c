@@ -47,9 +47,6 @@ struct vibrator_drvdata {
 struct vibrator_drvdata *g_data;
 #endif
 
-#define VIBRATOR_PERIOD  38022
-extern int vibrator_duty;
-
 static int vibetonz_clk_on(struct device *dev, bool en)
 {
 	struct clk *vibetonz_clk = NULL;
@@ -125,13 +122,8 @@ static void vibrator_work(struct work_struct *_work)
 		else
 			regulator_enable(data->regulator);
 		i2c_max8997_hapticmotor(data, true);
-<<<<<<< HEAD
-		pwm_config(data->pwm,
-			vibrator_duty, VIBRATOR_PERIOD);
-=======
 		pwm_config(data->pwm, pwm_duty, data->pdata->period);
 		pr_info("[VIB] %s: pwm_config duty=%d\n", __func__, pwm_duty);
->>>>>>> 12ef675... max8997_vibrator: user configurable vibrator intensity
 		pwm_enable(data->pwm);
 
 		data->running = true;
