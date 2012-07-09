@@ -3671,6 +3671,7 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 
 #ifdef PKT_FILTER_SUPPORT
 	/* Setup defintions for pktfilter , enable in suspend */
+<<<<<<< HEAD
 	dhd->pktfilter_count = 4;
 #ifdef GAN_LITE_NAT_KEEPALIVE_FILTER
 	/* Setup filter to block broadcast and NAT Keepalive packets */
@@ -3685,6 +3686,12 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 	dhd->pktfilter[2] = NULL;
 	dhd->pktfilter[3] = NULL;
 #endif /* GAN_LITE_NAT_KEEPALIVE_FILTER */
+=======
+	dhd->pktfilter_count = 1;
+	/* Setup filter to allow unicast only */
+	dhd->pktfilter[0] = "100 0 0 0 0x01 0x00";
+
+>>>>>>> f50e0cf... bcmdhd: Change packet filter settings to block multicast
 #if defined(SOFTAP)
 	if (ap_fw_loaded) {
 		int i;
