@@ -370,11 +370,7 @@ wl_cfgp2p_ifadd(struct wl_priv *wl, struct ether_addr *mac, u8 if_type,
 		if (unlikely(err < 0))
 			printk("'wl scb_timeout' error %d\n", err);
 	}
-<<<<<<< HEAD
-		
-=======
 
->>>>>>> a468aa0... Samsung i9100 update6 sources
 	return err;
 }
 
@@ -1300,11 +1296,6 @@ wl_cfgp2p_listen_complete(struct wl_priv *wl, struct net_device *ndev,
 			complete(&wl->wait_next_af);
 		}
 #endif /* WL_CFG80211_SYNC_GON_TIME */
-<<<<<<< HEAD
-		if (wl_get_drv_status_all(wl, REMAINING_ON_CHANNEL)) {
-			WL_DBG(("Listen DONE for ramain on channel expired\n"));
-			wl_clr_drv_status(wl, REMAINING_ON_CHANNEL, ndev);
-=======
 
 		if (wl_get_drv_status_all(wl, REMAINING_ON_CHANNEL)
 #ifdef WL_CFG80211_VSDB_PRIORITIZE_SCAN_REQUEST
@@ -1316,7 +1307,6 @@ wl_cfgp2p_listen_complete(struct wl_priv *wl, struct net_device *ndev,
 #ifdef WL_CFG80211_VSDB_PRIORITIZE_SCAN_REQUEST
 			wl_clr_drv_status(wl, FAKE_REMAINING_ON_CHANNEL, ndev);
 #endif /* WL_CFG80211_VSDB_PRIORITIZE_SCAN_REQUEST */
->>>>>>> a468aa0... Samsung i9100 update6 sources
 			cfg80211_remain_on_channel_expired(ndev, wl->last_roc_id,
 				&wl->remain_on_chan, wl->remain_on_chan_type, GFP_KERNEL);
 		}
@@ -1357,25 +1347,10 @@ wl_cfgp2p_listen_expired(unsigned long data)
 s32
 wl_cfgp2p_discover_listen(struct wl_priv *wl, s32 channel, u32 duration_ms)
 {
-<<<<<<< HEAD
-#define INIT_TIMER(timer, func, duration, extra_delay)	\
-	do {                   \
-		init_timer(timer); \
-		timer->function = func; \
-		timer->expires = jiffies + msecs_to_jiffies(duration + extra_delay); \
-		timer->data = (unsigned long) wl; \
-		add_timer(timer); \
-	} while (0);
-#define EXTRA_DEAY_TIME	100
-	s32 ret = BCME_OK;
-	struct timer_list *_timer;
-	s32 extar_delay;
-=======
 #define EXTRA_DEAY_TIME	100
 	s32 ret = BCME_OK;
 	struct timer_list *_timer;
 	s32 extra_delay;
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 	CFGP2P_DBG((" Enter Listen Channel : %d, Duration : %d\n", channel, duration_ms));
 	if (unlikely(wl_get_p2p_status(wl, DISCOVERY_ON) == 0)) {
@@ -1399,13 +1374,6 @@ wl_cfgp2p_discover_listen(struct wl_priv *wl, s32 channel, u32 duration_ms)
 	/*  We will wait to receive WLC_E_P2P_DISC_LISTEN_COMPLETE from dongle ,
 	 *  otherwise we will wait up to duration_ms + 200ms
 	 */
-<<<<<<< HEAD
-	extar_delay = EXTRA_DEAY_TIME;
-
-	INIT_TIMER(_timer, wl_cfgp2p_listen_expired, duration_ms, extar_delay);
-
-#undef INIT_TIMER
-=======
 	if (ret == BCME_OK) {
 		extra_delay = EXTRA_DEAY_TIME + (duration_ms / 20);
 	} else {
@@ -1416,7 +1384,6 @@ wl_cfgp2p_discover_listen(struct wl_priv *wl, s32 channel, u32 duration_ms)
 
 	INIT_TIMER(_timer, wl_cfgp2p_listen_expired, duration_ms, extra_delay);
 
->>>>>>> a468aa0... Samsung i9100 update6 sources
 #undef EXTRA_DEAY_TIME
 exit:
 	return ret;

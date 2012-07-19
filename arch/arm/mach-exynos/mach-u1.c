@@ -3014,14 +3014,6 @@ void sec_set_main_mic_bias(bool on)
 
 int sec_set_ldo1_constraints(int disabled)
 {
-<<<<<<< HEAD
-#if defined(CONFIG_TARGET_LOCALE_NAATT_TEMP)
-	/* VDD33_ADC */
-	ldo1_init_data.constraints.state_mem.disabled = disabled;
-	ldo1_init_data.constraints.state_mem.enabled = !disabled;
-#endif
-=======
-
 	struct regulator *regulator;
 
 	if (!disabled) {
@@ -3040,7 +3032,6 @@ int sec_set_ldo1_constraints(int disabled)
 	}
 
 	return 0;
->>>>>>> a468aa0... Samsung i9100 update6 sources
 }
 
 static struct mc1n2_platform_data mc1n2_pdata = {

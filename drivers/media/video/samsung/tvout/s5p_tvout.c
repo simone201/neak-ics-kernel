@@ -79,12 +79,8 @@ static ssize_t hdmi_set_audio_read(struct device *dev,
 static ssize_t hdmi_set_audio_store(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t size)
 {
-<<<<<<< HEAD
-	unsigned long value = !strncmp(buf, "1", 1) ? true : false;
-=======
 	char *after;
 	bool value = !strncmp(buf, "1", 1) ? true : false;
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 	printk(KERN_ERR "[HDMI] Change AUDIO PATH: %d\n", (int)value);
 

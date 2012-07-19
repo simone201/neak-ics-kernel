@@ -2,21 +2,13 @@
  * Linux Wireless Extensions support
  *
  * Copyright (C) 1999-2012, Broadcom Corporation
-<<<<<<< HEAD
- * 
-=======
  *
->>>>>>> a468aa0... Samsung i9100 update6 sources
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
  * under the terms of the GNU General Public License version 2 (the "GPL"),
  * available at http://www.broadcom.com/licenses/GPLv2.php, with the
  * following added to such license:
-<<<<<<< HEAD
- * 
-=======
  *
->>>>>>> a468aa0... Samsung i9100 update6 sources
  *      As a special exception, the copyright holders of this software give you
  * permission to link this software with independent modules, and to copy and
  * distribute the resulting executable under terms of your choice, provided that
@@ -24,11 +16,7 @@
  * the license of that module.  An independent module is a module which is not
  * derived from this software.  The special exception does not apply to any
  * modifications of the software.
-<<<<<<< HEAD
- * 
-=======
  *
->>>>>>> a468aa0... Samsung i9100 update6 sources
  *      Notwithstanding the above, under no circumstances may you combine this
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
@@ -43,10 +31,6 @@
 #define WL_DBG(x)
 
 #define MAX_ROAM_CACHE 100
-<<<<<<< HEAD
-#define WL_CHANSPEC_CTL_SB_NONE 0x0300 /*chanyun temp : fix chan spec*/
-=======
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 typedef struct {
 	chanspec_t chanspec;
@@ -55,19 +39,8 @@ typedef struct {
 } roam_channel_cache;
 
 static int n_roam_cache = 0;
-<<<<<<< HEAD
-static int roam_band = WLC_BAND_AUTO;
 static roam_channel_cache roam_cache[MAX_ROAM_CACHE];
 
-void set_roam_band(int band)
-{
-	roam_band = band;
-}
-
-=======
-static roam_channel_cache roam_cache[MAX_ROAM_CACHE];
-
->>>>>>> a468aa0... Samsung i9100 update6 sources
 void reset_roam_cache(void)
 {
 	n_roam_cache = 0;
@@ -112,21 +85,11 @@ int get_roam_channel_list(int target_chan, chanspec_t *channels, const wlc_ssid_
 	*channels++ = (target_chan & WL_CHANSPEC_CHAN_MASK) | band | WL_CHANSPEC_BW_20 | WL_CHANSPEC_CTL_SB_NONE;
 
 	for (i = 0; i < n_roam_cache; i++) {
-<<<<<<< HEAD
-		chanspec_t ch = roam_cache[i].chanspec;
-		if ((roam_cache[i].ssid_len == ssid->SSID_len) &&
-			((ch & WL_CHANSPEC_CHAN_MASK) != target_chan) &&
-			((roam_band == WLC_BAND_AUTO) || ((roam_band == WLC_BAND_2G) && CHSPEC_IS2G(ch)) || ((roam_band == WLC_BAND_5G) && CHSPEC_IS5G(ch))) &&
-			(memcmp(roam_cache[i].ssid, ssid->SSID, ssid->SSID_len) == 0)) {
-			/* match found, add it */
-			*channels = ch & WL_CHANSPEC_CHAN_MASK;
-=======
 		if ((roam_cache[i].ssid_len == ssid->SSID_len) &&
 			((roam_cache[i].chanspec & WL_CHANSPEC_CHAN_MASK) != target_chan) &&
 			(memcmp(roam_cache[i].ssid, ssid->SSID, ssid->SSID_len) == 0)) {
 			/* match found, add it */
 			*channels = roam_cache[i].chanspec & WL_CHANSPEC_CHAN_MASK;
->>>>>>> a468aa0... Samsung i9100 update6 sources
 			WL_DBG((" %s: %02d\n", __FUNCTION__, *channels));
 			if (*channels <= 14)
 				*channels |= WL_CHANSPEC_BAND_2G | WL_CHANSPEC_BW_20 | WL_CHANSPEC_CTL_SB_NONE;

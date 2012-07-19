@@ -30,26 +30,12 @@
 
 #define	EPI_MINOR_VERSION	15
 
-<<<<<<< HEAD
-#define	EPI_RC_NUMBER		0
-=======
 #define	EPI_RC_NUMBER		3
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 #define	EPI_INCREMENTAL_NUMBER	0
 
 #define	EPI_BUILD_NUMBER	0
 
-<<<<<<< HEAD
-#define	EPI_VERSION		1, 15, 0, 0
-
-#define	EPI_VERSION_NUM		0x010f0000
-
-#define EPI_VERSION_DEV		1.15.0
-
-
-#define	EPI_VERSION_STR		"1.15.0"
-=======
 #define	EPI_VERSION		1, 15, 3, 1
 
 #define	EPI_VERSION_NUM		0x010f0301
@@ -58,6 +44,5 @@
 
 
 #define	EPI_VERSION_STR		"1.15.3.camp.1 (r315426)"
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 #endif /* _epivers_h_ */

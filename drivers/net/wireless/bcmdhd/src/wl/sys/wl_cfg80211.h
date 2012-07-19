@@ -126,11 +126,7 @@ do {									\
 
 #define WL_SCAN_RETRY_MAX	3
 #define WL_NUM_PMKIDS_MAX	MAXPMKID
-<<<<<<< HEAD
-#define WL_SCAN_BUF_MAX			(1024 * 8)
-=======
 #define WL_SCAN_BUF_MAX		(1024 * 8)
->>>>>>> a468aa0... Samsung i9100 update6 sources
 #define WL_TLV_INFO_MAX 	1500 /* customer want to large size IE, so increase ie length */
 #define WL_SCAN_IE_LEN_MAX      2048
 #define WL_BSS_INFO_MAX		2048
@@ -164,15 +160,12 @@ enum wl_status {
 	WL_STATUS_SENDING_ACT_FRM,	/* includes scanning peer chan and sending af via "actframe" */
 	WL_STATUS_SCANNING_PEER_CHANNEL, /* scanning peer chan for searching peer's channel */
 	WL_STATUS_REMAINING_ON_CHANNEL,
-<<<<<<< HEAD
-=======
 #ifdef WL_CFG80211_VSDB_PRIORITIZE_SCAN_REQUEST
 	/* it will be set when upper layer requests listen but scan is running.
 	 * it's fake listen state to keep current scan process.
 	 * if set, other scan request will not abort scan. */
 	WL_STATUS_FAKE_REMAINING_ON_CHANNEL,
 #endif /* WL_CFG80211_VSDB_PRIORITIZE_SCAN_REQUEST */
->>>>>>> a468aa0... Samsung i9100 update6 sources
 #ifdef WL_CFG80211_SYNC_GON_TIME
 	/* waiting for next af to sync time of supplicant.
 	 * it includes SENDING_ACT_FRM and WAITING_MORE_TIME_NEXT_ACT_FRM
@@ -364,17 +357,10 @@ struct wl_pmk_list {
 #define ESCAN_BUF_SIZE (64 * 1024)
 
 struct escan_info {
-<<<<<<< HEAD
-    u32 escan_state;
-	u8 *escan_buf[2];
-	u8 cur_sync_id;
-    struct wiphy *wiphy;
-=======
 	u32 escan_state;
 	u8 *escan_buf[2];
 	u8 cur_sync_id;
 	struct wiphy *wiphy;
->>>>>>> a468aa0... Samsung i9100 update6 sources
 	struct net_device *ndev;
 };
 

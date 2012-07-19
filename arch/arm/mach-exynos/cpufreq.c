@@ -264,14 +264,6 @@ int exynos_cpufreq_lock(unsigned int nId,
 	if (!exynos_info)
 		return -EPERM;
 
-<<<<<<< HEAD
-	if (exynos_cpufreq_disable) {
-		pr_info("CPUFreq is already fixed\n");
-		return -EPERM;
-	}
-
-=======
->>>>>>> a468aa0... Samsung i9100 update6 sources
 	if (cpufreq_level < exynos_info->max_support_idx
 			|| cpufreq_level > exynos_info->min_support_idx) {
 		pr_warn("%s: invalid cpufreq_level(%d:%d)\n", __func__, nId,

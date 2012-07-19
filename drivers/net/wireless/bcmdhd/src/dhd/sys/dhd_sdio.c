@@ -424,7 +424,7 @@ static bool dhd_readahead;
 
 /* To check if there's window offered */
 #define DATAOK(bus) \
-	(((uint8)(bus->tx_max - bus->tx_seq) > 2) && \
+	(((uint8)(bus->tx_max - bus->tx_seq) > 1) && \
 	(((uint8)(bus->tx_max - bus->tx_seq) & 0x80) == 0))
 
 /* To check if there's window offered for ctrl frame */
@@ -603,10 +603,7 @@ dhdsdio_oobwakeup_init(dhd_bus_t *bus)
 }
 #endif /* USE_OOB_GPIO1 */
 
-<<<<<<< HEAD
-=======
 #ifdef BCM4334_CHIP
->>>>>>> a468aa0... Samsung i9100 update6 sources
 /*
  * Query if FW is in SR mode
  */
@@ -658,10 +655,6 @@ dhdsdio_sr_init(dhd_bus_t *bus)
 	if ((bus->sih->chip == BCM4334_CHIP_ID) && (bus->sih->chiprev == 2))
 		dhdsdio_srwar_init(bus);
 
-<<<<<<< HEAD
-	bus->srmemsize = si_socram_srmem_size(bus->sih);
-=======
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 	val = bcmsdh_cfg_read(bus->sdh, SDIO_FUNC_1, SBSDIO_FUNC1_WAKEUPCTRL, NULL);
 	val |= 1 << SBSDIO_FUNC1_WCTRL_HTWAIT_SHIFT;
@@ -682,10 +675,7 @@ dhdsdio_sr_init(dhd_bus_t *bus)
 
 	return 0;
 }
-<<<<<<< HEAD
-=======
 #endif /* BCM4334_CHIP */
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 /*
  * FIX: Be sure KSO bit is enabled
@@ -819,11 +809,7 @@ dhdsdio_clk_devsleep_iovar(dhd_bus_t *bus, bool on)
 		 * else device can go back to sleep immediately
 		 */
 		if (!SLPAUTO_ENAB(bus))
-<<<<<<< HEAD
-		dhdsdio_clkctl(bus, CLK_AVAIL, FALSE);
-=======
 			dhdsdio_clkctl(bus, CLK_AVAIL, FALSE);
->>>>>>> a468aa0... Samsung i9100 update6 sources
 		else {
 			val = bcmsdh_cfg_read(bus->sdh, SDIO_FUNC_1, SBSDIO_FUNC1_CHIPCLKCSR, &err);
 			if ((val & SBSDIO_CSR_MASK) == 0) {
@@ -874,11 +860,7 @@ dhdsdio_clk_devsleep_iovar(dhd_bus_t *bus, bool on)
 			/* Toggle sleep to resync with host and device */
 			err = bcmsdh_sleep(bus->sdh, TRUE);
 			OSL_DELAY(10000);
-<<<<<<< HEAD
-		err = bcmsdh_sleep(bus->sdh, FALSE);
-=======
 			err = bcmsdh_sleep(bus->sdh, FALSE);
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 			if (err) {
 				OSL_DELAY(10000);
@@ -1171,8 +1153,7 @@ dhdsdio_clkctl(dhd_bus_t *bus, uint target, bool pendok)
 	uint oldstate = bus->clkstate;
 #endif /* DHD_DEBUG */
 
-	DHD_TRACE(("%s: Enter bus->clkstate %u target %u\n", __FUNCTION__,
-		bus->clkstate, target));
+	DHD_TRACE(("%s: Enter\n", __FUNCTION__));
 
 	/* Early exit if we're already there */
 	if (bus->clkstate == target) {
@@ -1274,22 +1255,13 @@ dhdsdio_bussleep(dhd_bus_t *bus, bool sleep)
 			dhdsdio_clkctl(bus, CLK_SDONLY, FALSE);
 
 			bcmsdh_cfg_write(sdh, SDIO_FUNC_1, SBSDIO_FUNC1_CHIPCLKCSR,
-<<<<<<< HEAD
-			                 SBSDIO_FORCE_HW_CLKREQ_OFF, NULL);
-=======
 				SBSDIO_FORCE_HW_CLKREQ_OFF, NULL);
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 			/* Isolate the bus */
 			if (bus->sih->chip != BCM4329_CHIP_ID &&
 				bus->sih->chip != BCM4319_CHIP_ID) {
-<<<<<<< HEAD
-			bcmsdh_cfg_write(sdh, SDIO_FUNC_1, SBSDIO_DEVICE_CTL,
-			                 SBSDIO_DEVCTL_PADS_ISO, NULL);
-=======
 				bcmsdh_cfg_write(sdh, SDIO_FUNC_1, SBSDIO_DEVICE_CTL,
 					SBSDIO_DEVCTL_PADS_ISO, NULL);
->>>>>>> a468aa0... Samsung i9100 update6 sources
 			}
 		} else {
 			/* Leave interrupts enabled since device can exit sleep and
@@ -1943,7 +1915,7 @@ dhd_bus_rxctl(struct dhd_bus *bus, uchar *msg, uint msglen)
 {
 	int timeleft;
 	uint rxlen = 0;
-	bool pending = FALSE;
+	bool pending;
 
 	DHD_TRACE(("%s: Enter\n", __FUNCTION__));
 
@@ -1965,13 +1937,6 @@ dhd_bus_rxctl(struct dhd_bus *bus, uchar *msg, uint msglen)
 	} else if (timeleft == 0) {
 		DHD_ERROR(("%s: resumed on timeout\n", __FUNCTION__));
 #ifdef DHD_DEBUG
-<<<<<<< HEAD
-		if (!SLPAUTO_ENAB(bus)) {
-			dhd_os_sdlock(bus->dhd);
-			dhdsdio_checkdied(bus, NULL, 0);
-			dhd_os_sdunlock(bus->dhd);
-		}
-=======
 #if !defined(CUSTOMER_HW_SAMSUNG)
 #error need debug message if dongle trap occured
 		if (!SLPAUTO_ENAB(bus)) {
@@ -1982,7 +1947,6 @@ dhd_bus_rxctl(struct dhd_bus *bus, uchar *msg, uint msglen)
 #if !defined(CUSTOMER_HW_SAMSUNG)
 		}
 #endif
->>>>>>> a468aa0... Samsung i9100 update6 sources
 #endif /* DHD_DEBUG */
 	} else if (pending == TRUE) {
 		DHD_CTL(("%s: canceled\n", __FUNCTION__));
@@ -2349,15 +2313,6 @@ static int
 dhdsdio_readshared(dhd_bus_t *bus, sdpcm_shared_t *sh)
 {
 	uint32 addr;
-<<<<<<< HEAD
-	int rv;
-	uint32 shaddr = 0;
-
-	shaddr = bus->ramsize - bus->srmemsize - 4;
-	/* Read last word in memory to determine address of sdpcm_shared structure */
-	if ((rv = dhdsdio_membytes(bus, FALSE, shaddr, (uint8 *)&addr, 4)) < 0)
-		return rv;
-=======
 	int rv, i;
 	uint32 shaddr = 0;
 
@@ -2368,7 +2323,6 @@ dhdsdio_readshared(dhd_bus_t *bus, sdpcm_shared_t *sh)
 		/* Read last word in memory to determine address of sdpcm_shared structure */
 		if ((rv = dhdsdio_membytes(bus, FALSE, shaddr, (uint8 *)&addr, 4)) < 0)
 			return rv;
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 	addr = ltoh32(addr);
 
@@ -3399,9 +3353,6 @@ dhdsdio_download_state(dhd_bus_t *bus, bool enter)
 	uint retries;
 	int bcmerror = 0;
 
-	if (!bus->sih)
-		return BCME_ERROR;
-
 	/* To enter download state, disable ARM and reset SOCRAM.
 	 * To exit download state, simply reset ARM (default is RAM boot).
 	 */
@@ -3688,13 +3639,6 @@ dhd_bus_stop(struct dhd_bus *bus, bool enforce_mutex)
 	bus->rxskip = FALSE;
 	bus->tx_seq = bus->rx_seq = 0;
 
-	/* Set to a safe default.  It gets updated when we
-	 * receive a packet from the fw but when we reset,
-	 * we need a safe default to be able to send the
-	 * initial mac address.
-	 */
-	bus->tx_max = 4;
-
 	if (enforce_mutex)
 		dhd_os_sdunlock(bus->dhd);
 }
@@ -3798,17 +3742,11 @@ dhd_bus_init(dhd_pub_t *dhdp, bool enforce_mutex)
 		bcmsdh_cfg_write(bus->sdh, SDIO_FUNC_0, SDIOD_CCCR_IOEN, enable, NULL);
 	}
 
-<<<<<<< HEAD
-	if (dhdsdio_sr_cap(bus))
-		dhdsdio_sr_init(bus);
-	else
-=======
 #ifdef BCM4334_CHIP
 	if (dhdsdio_sr_cap(bus))
 		dhdsdio_sr_init(bus);
 	else
 #endif /* BCM4334_CHIP */
->>>>>>> a468aa0... Samsung i9100 update6 sources
 		bcmsdh_cfg_write(bus->sdh, SDIO_FUNC_1,
 			SBSDIO_FUNC1_CHIPCLKCSR, saveclk, &err);
 
@@ -5307,15 +5245,6 @@ clkwait:
 
 	if (TXCTLOK(bus) && bus->ctrl_frame_stat && (bus->clkstate == CLK_AVAIL))  {
 		int ret, i;
-		uint8* frame_seq = bus->ctrl_frame_buf + SDPCM_FRAMETAG_LEN;
-
-		if (((bus->sih->chip == BCM4329_CHIP_ID) ||   /* limit to 4329 & 4330 for now  */
-			 (bus->sih->chip == BCM4330_CHIP_ID)) && (*frame_seq != bus->tx_seq)) {
-			DHD_ERROR(("%s IOCTL frame seq lag detected!"
-				" frm_seq:%d != bus->tx_seq:%d, corrected\n",
-				__FUNCTION__, *frame_seq, bus->tx_seq));
-			*frame_seq = bus->tx_seq;
-		}
 
 		ret = dhd_bcmsdh_send_buf(bus, bcmsdh_cur_sbwad(sdh), SDIO_FUNC_2, F2SYNC,
 		                      (uint8 *)bus->ctrl_frame_buf, (uint32)bus->ctrl_frame_len,
@@ -5438,15 +5367,9 @@ dhdsdio_isr(void *arg)
 
 	/* Shouldn't get this interrupt if we're sleeping? */
 	if (!SLPAUTO_ENAB(bus)) {
-<<<<<<< HEAD
-	if (bus->sleeping) {
-		DHD_ERROR(("INTERRUPT WHILE SLEEPING??\n"));
-		return;
-=======
 		if (bus->sleeping) {
 			DHD_ERROR(("INTERRUPT WHILE SLEEPING??\n"));
 			return;
->>>>>>> a468aa0... Samsung i9100 update6 sources
 		} else if (!KSO_ENAB(bus)) {
 			DHD_ERROR(("ISR in devsleep 1\n"));
 		}
@@ -5490,7 +5413,7 @@ dhdsdio_pktgen_init(dhd_bus_t *bus)
 
 	/* Default to per-watchdog burst with 10s print time */
 	bus->pktgen_freq = 1;
-	bus->pktgen_print = dhd_watchdog_ms ? 10000 / dhd_watchdog_ms : 0;
+	bus->pktgen_print = 10000 / dhd_watchdog_ms;
 	bus->pktgen_count = (dhd_pktgen * dhd_watchdog_ms + 999) / 1000;
 
 	/* Default to echo mode */
@@ -5862,11 +5785,7 @@ dhd_bus_watchdog(dhd_pub_t *dhdp)
 				if (SLPAUTO_ENAB(bus))
 					dhdsdio_bussleep(bus, TRUE);
 				else
-<<<<<<< HEAD
-				dhdsdio_clkctl(bus, CLK_NONE, FALSE);
-=======
 					dhdsdio_clkctl(bus, CLK_NONE, FALSE);
->>>>>>> a468aa0... Samsung i9100 update6 sources
 			}
 		}
 #endif /* DHD_USE_IDLECOUNT */
@@ -6380,10 +6299,8 @@ dhdsdio_probe_attach(struct dhd_bus *bus, osl_t *osh, void *sdh, void *regsva,
 	return TRUE;
 
 fail:
-	if (bus->sih != NULL) {
+	if (bus->sih != NULL)
 		si_detach(bus->sih);
-		bus->sih = NULL;
-	}
 	return FALSE;
 }
 
@@ -6546,11 +6463,6 @@ dhdsdio_release(dhd_bus_t *bus, osl_t *osh)
 		bcmsdh_intr_dereg(bus->sdh);
 
 		if (bus->dhd) {
-<<<<<<< HEAD
-			dongle_isolation = bus->dhd->dongle_isolation;
-			dhd_detach(bus->dhd);
-=======
->>>>>>> a468aa0... Samsung i9100 update6 sources
 			dhdsdio_release_dongle(bus, osh, dongle_isolation, TRUE);
 			dhd_free(bus->dhd);
 			bus->dhd = NULL;
@@ -6624,7 +6536,6 @@ dhdsdio_release_dongle(dhd_bus_t *bus, osl_t *osh, bool dongle_isolation, bool r
 			dhdsdio_clkctl(bus, CLK_NONE, FALSE);
 		}
 		si_detach(bus->sih);
-		bus->sih = NULL;
 		if (bus->vars && bus->varsz)
 			MFREE(osh, bus->vars, bus->varsz);
 		bus->vars = NULL;

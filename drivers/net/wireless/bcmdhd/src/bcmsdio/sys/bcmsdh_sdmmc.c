@@ -965,108 +965,6 @@ sdioh_request_packet(sdioh_info_t *sd, uint fix_inc, uint write, uint func,
 			sg_set_buf(&sd->sg_list[SGCount++],
 				(uint8*)PKTDATA(sd->osh, pnext),
 				pkt_len);
-<<<<<<< HEAD
-
-			if (SGCount >= SDIOH_SDMMC_MAX_SG_ENTRIES) {
-				sd_err(("%s: sg list entries exceed limit\n",
-					__FUNCTION__));
-				return (SDIOH_API_RC_FAIL);
-			}
-		}
-
-		mmc_dat.sg = sd->sg_list;
-		mmc_dat.sg_len = SGCount;
-		mmc_dat.blksz = sd->client_block_size[func];
-		mmc_dat.blocks = blk_num;
-		mmc_dat.flags = write ? MMC_DATA_WRITE : MMC_DATA_READ;
-
-		mmc_cmd.opcode = 53;		/* SD_IO_RW_EXTENDED */
-		mmc_cmd.arg = write ? 1<<31 : 0;
-		mmc_cmd.arg |= (func & 0x7) << 28;
-		mmc_cmd.arg |= 1<<27;
-		mmc_cmd.arg |= fifo ? 0 : 1<<26;
-		mmc_cmd.arg |= (addr & 0x1FFFF) << 9;
-		mmc_cmd.arg |= blk_num & 0x1FF;
-		mmc_cmd.flags = MMC_RSP_SPI_R5 | MMC_RSP_R5 | MMC_CMD_ADTC;
-
-		mmc_req.cmd = &mmc_cmd;
-		mmc_req.data = &mmc_dat;
-
-		sdio_claim_host(gInstance->func[func]);
-		mmc_set_data_timeout(&mmc_dat, gInstance->func[func]->card);
-		mmc_wait_for_req(gInstance->func[func]->card->host, &mmc_req);
-		sdio_release_host(gInstance->func[func]);
-
-		err_ret = mmc_cmd.error? mmc_cmd.error : mmc_dat.error;
-		if (0 != err_ret) {
-			sd_err(("%s:CMD53 %s failed with code %d\n",
-			       __FUNCTION__,
-			       write ? "write" : "read",
-			       err_ret));
-			sd_err(("%s:Disabling rxchain and fire it with PIO\n",
-			       __FUNCTION__));
-			sd->use_rxchain = FALSE;
-			pkt = pprev;
-			lft_len = ttl_len;
-		} else if (!fifo) {
-			addr = addr + ttl_len - lft_len - dma_len;
-		}
-	}
-
-	/* PIO mode */
-	if (0 != lft_len) {
-	/* Claim host controller */
-	sdio_claim_host(gInstance->func[func]);
-	for (pnext = pkt; pnext; pnext = PKTNEXT(sd->osh, pnext)) {
-			uint8 *buf = (uint8*)PKTDATA(sd->osh, pnext) +
-				xfred_len;
-			pkt_len = PKTLEN(sd->osh, pnext);
-			if (0 != xfred_len) {
-				pkt_len -= xfred_len;
-				xfred_len = 0;
-			}
-			pkt_len = (pkt_len + 3) & 0xFFFFFFFC;
-#ifdef CONFIG_MMC_MSM7X00A
-		if ((pkt_len % 64) == 32) {
-			sd_trace(("%s: Rounding up TX packet +=32\n", __FUNCTION__));
-			pkt_len += 32;
-		}
-#endif /* CONFIG_MMC_MSM7X00A */
-
-			if ((write) && (!fifo))
-				err_ret = sdio_memcpy_toio(
-						gInstance->func[func],
-						addr, buf, pkt_len);
-			else if (write)
-				err_ret = sdio_memcpy_toio(
-						gInstance->func[func],
-						addr, buf, pkt_len);
-			else if (fifo)
-				err_ret = sdio_readsb(
-						gInstance->func[func],
-						buf, addr, pkt_len);
-			else
-				err_ret = sdio_memcpy_fromio(
-						gInstance->func[func],
-						buf, addr, pkt_len);
-
-			if (err_ret)
-				sd_err(("%s: %s FAILED %p[%d], addr=0x%05x, pkt_len=%d, ERR=%d\n",
-				__FUNCTION__,
-				(write) ? "TX" : "RX",
-				pnext, SGCount, addr, pkt_len, err_ret));
-			else
-			sd_trace(("%s: %s xfr'd %p[%d], addr=0x%05x, len=%d\n",
-				__FUNCTION__,
-				(write) ? "TX" : "RX",
-				pnext, SGCount, addr, pkt_len));
-
-			if (!fifo)
-			addr += pkt_len;
-		SGCount ++;
-	}
-	sdio_release_host(gInstance->func[func]);
-=======
 
 			if (SGCount >= SDIOH_SDMMC_MAX_SG_ENTRIES) {
 				sd_err(("%s: sg list entries exceed limit\n",
@@ -1173,7 +1071,6 @@ sdioh_request_packet(sdioh_info_t *sd, uint fix_inc, uint write, uint func,
 			SGCount ++;
 		}
 		sdio_release_host(gInstance->func[func]);
->>>>>>> a468aa0... Samsung i9100 update6 sources
 	}
 
 	sd_trace(("%s: Exit\n", __FUNCTION__));

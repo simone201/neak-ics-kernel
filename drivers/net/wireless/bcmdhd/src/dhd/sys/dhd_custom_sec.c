@@ -67,15 +67,8 @@ start_readmac:
 			get_random_bytes(randommac, 3);
 
 			sprintf(macbuffer, "%02X:%02X:%02X:%02X:%02X:%02X\n",
-<<<<<<< HEAD
-					0x60, 0xd0, 0xa9, randommac[0],
-					randommac[1], randommac[2]);
-			DHD_INFO(("[WIFI] The Random Generated MAC ID : %s\n",
-					macbuffer));
-=======
 					0x00, 0x12, 0x34, randommac[0], randommac[1], randommac[2]);
 		DHD_ERROR(("[WIFI]The Random Generated MAC ID: %s\n", macbuffer));
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 			if (fp->f_mode & FMODE_WRITE) {
 			ret = fp->f_op->write(fp, (const char *)macbuffer, sizeof(macbuffer), &fp->f_pos);
@@ -92,51 +85,12 @@ start_readmac:
 		ret = kernel_read(fp, 0, buf, 18);
 /* to prevent abnormal string display when mac address is displayed on the screen. */
 		buf[17] = '\0';
-<<<<<<< HEAD
-
-		DHD_INFO(("Read MAC : [%s] [%d] \r\n", buf,
-			strncmp(buf , "00:00:00:00:00:00", 17)));
-		if (strncmp(buf , "00:00:00:00:00:00" , 17) == 0) {
-			filp_close(fpnv, NULL);
-			goto start_readmac;
-		}
-
-		/* File is always created. */
-		fp = filp_open(filepath, O_RDWR | O_CREAT, 0666);
-		if (IS_ERR(fp)) {
-			DHD_ERROR(("[WIFI] %s: File open error\n", filepath));
-			if (fpnv)
-				filp_close(fpnv, NULL);
-			return -1;
-		} else {
-			oldfs = get_fs();
-			set_fs(get_ds());
-
-			if (fp->f_mode & FMODE_WRITE) {
-				ret = fp->f_op->write(fp, (const char *)buf,
-						sizeof(buf), &fp->f_pos);
-				if (ret < 0)
-					DHD_ERROR(("[WIFI] Mac address [%s]"
-					" Failed to write into File: %s\n",
-					buf, filepath));
-				else
-					DHD_INFO(("[WIFI] Mac address [%s]"
-					" written into File: %s\n",
-					buf, filepath));
-			}
-			set_fs(oldfs);
-
-			ret = kernel_read(fp, 0, buf, 18);
-		}
-
-=======
 		DHD_ERROR(("Read MAC : [%s] [%d] \r\n" , buf, strncmp(buf , "00:00:00:00:00:00" , 17)));
 		if (strncmp(buf , "00:00:00:00:00:00" , 17) < 1) {
 			DHD_ERROR(("goto start_readmac \r\n"));
 			filp_close(fp, NULL);
 			goto start_readmac;
 		}
->>>>>>> a468aa0... Samsung i9100 update6 sources
 	}
 
 	if (ret)
@@ -180,7 +134,7 @@ int dhd_write_rdwr_macaddr(struct ether_addr *mac)
 	mm_segment_t oldfs    = {0};
 	int ret = -1;
 
-	if ((g_imac_flag != MACADDR_COB) /*&& (g_imac_flag != MACADDR_MOD)*/)
+	if ((g_imac_flag != MACADDR_COB) && (g_imac_flag != MACADDR_MOD))
 		return 0;
 
 	sprintf(buf, "%02X:%02X:%02X:%02X:%02X:%02X\n",
@@ -252,7 +206,7 @@ int dhd_check_rdwr_macaddr(struct dhd_info *dhd, dhd_pub_t *dhdp,
 			memset(cur_mac , 0 , ETHER_ADDR_LEN);
 			return -1;
 		} else {
-			DHD_INFO(("MAC (OTP) : "
+			DHD_ERROR(("MAC (OTP) : "
 			"[%02X:%02X:%02X:%02X:%02X:%02X] \r\n",
 			cur_mac[0], cur_mac[1], cur_mac[2], cur_mac[3],
 			cur_mac[4], cur_mac[5]));
@@ -322,7 +276,7 @@ int dhd_check_rdwr_macaddr(struct dhd_info *dhd, dhd_pub_t *dhdp,
 		 * is displayed on the screen.
 		 */
 		buf[17] = '\0';
-		DHD_INFO(("Read MAC : [%s] [%d] \r\n", buf,
+		DHD_ERROR(("Read MAC : [%s] [%d] \r\n", buf,
 			strncmp(buf, "00:00:00:00:00:00", 17)));
 		if ((buf[0] == '\0') ||
 			(strncmp(buf, "00:00:00:00:00:00", 17) == 0)) {
@@ -337,11 +291,7 @@ int dhd_check_rdwr_macaddr(struct dhd_info *dhd, dhd_pub_t *dhdp,
 				(unsigned int *)&(mac->octet[5]));
 			/* Writing Newly generated MAC ID to the Dongle */
 			if (0 == _dhd_set_mac_address(dhd, 0, mac)) {
-<<<<<<< HEAD
-				DHD_ERROR(("%s: MACID is overwritten\n",
-=======
 				DHD_INFO(("%s: MACID is overwritten\n",
->>>>>>> a468aa0... Samsung i9100 update6 sources
 					__FUNCTION__));
 				g_imac_flag = MACADDR_COB;
 			} else {
@@ -358,7 +308,7 @@ int dhd_check_rdwr_macaddr(struct dhd_info *dhd, dhd_pub_t *dhdp,
 		sprintf(macbuffer, "%02X:%02X:%02X:%02X:%02X:%02X\n",
 			0x60, 0xd0, 0xa9, randommac[0], randommac[1],
 			randommac[2]);
-		DHD_INFO(("[WIFI] The Random Generated MAC ID : %s\n",
+		DHD_ERROR(("[WIFI] The Random Generated MAC ID : %s\n",
 			macbuffer));
 		sscanf(macbuffer, "%02X:%02X:%02X:%02X:%02X:%02X",
 			(unsigned int *)&(mac->octet[0]),
@@ -368,11 +318,7 @@ int dhd_check_rdwr_macaddr(struct dhd_info *dhd, dhd_pub_t *dhdp,
 			(unsigned int *)&(mac->octet[4]),
 			(unsigned int *)&(mac->octet[5]));
 		if (0 == _dhd_set_mac_address(dhd, 0, mac)) {
-<<<<<<< HEAD
-			DHD_ERROR(("%s: MACID is overwritten\n", __FUNCTION__));
-=======
 			DHD_INFO(("%s: MACID is overwritten\n", __FUNCTION__));
->>>>>>> a468aa0... Samsung i9100 update6 sources
 			g_imac_flag = MACADDR_COB;
 		} else {
 			DHD_ERROR(("%s: _dhd_set_mac_address() failed\n",
@@ -418,11 +364,7 @@ int dhd_write_rdwr_korics_macaddr(struct dhd_info *dhd, struct ether_addr *mac)
 		sprintf(macbuffer, "%02X:%02X:%02X:%02X:%02X:%02X\n",
 				0x60, 0xd0, 0xa9, randommac[0],
 				randommac[1], randommac[2]);
-<<<<<<< HEAD
-		DHD_INFO(("[WIFI] The Random Generated MAC ID : %s\n",
-=======
 		DHD_ERROR(("[WIFI] The Random Generated MAC ID : %s\n",
->>>>>>> a468aa0... Samsung i9100 update6 sources
 				macbuffer));
 
 		if (fp->f_mode & FMODE_WRITE) {
@@ -825,11 +767,7 @@ void sec_control_pm(dhd_pub_t *dhd, uint *power_mode)
 		filp_close(fp, NULL);
 }
 #endif
-<<<<<<< HEAD
-#ifdef CUSTOMER_SET_COUNTRY
-=======
 #ifdef GLOBALCONFIG_WLAN_COUNTRY_CODE
->>>>>>> a468aa0... Samsung i9100 update6 sources
 int dhd_customer_set_country(dhd_pub_t *dhd)
 {
 	struct file *fp = NULL;

@@ -63,21 +63,12 @@
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 0))
 #define DAEMONIZE(a) daemonize(a); \
 	allow_signal(SIGKILL); \
-<<<<<<< HEAD
-	allow_signal(SIGTERM);
-#else /* Linux 2.4 (w/o preemption patch) */
-#define DAEMONIZE(a) daemonize(); \
-        do { if (a) \
-		strncpy(current->comm, a, MIN(sizeof(current->comm), (strlen(a) + 1))); \
-        } while (0);
-=======
 allow_signal(SIGTERM);
 #else /* Linux 2.4 (w/o preemption patch) */
 #define DAEMONIZE(a) daemonize(); \
 	do { if (a) \
 		strncpy(current->comm, a, MIN(sizeof(current->comm), (strlen(a) + 1))); \
 	} while (0);
->>>>>>> a468aa0... Samsung i9100 update6 sources
 #endif /* LINUX_VERSION_CODE  */
 
 #ifdef BCMWAPI_WPI
@@ -450,10 +441,6 @@ void reset_roam_cache(void);
 void add_roam_cache(wl_bss_info_t *bi);
 int  get_roam_channel_list(int target_chan, chanspec_t *channels, const wlc_ssid_t *ssid);
 void print_roam_cache(void);
-<<<<<<< HEAD
-void set_roam_band(int band);
-=======
->>>>>>> a468aa0... Samsung i9100 update6 sources
 #endif
 #define CHECK_SYS_UP(wlpriv)							\
 do {									\
@@ -1078,10 +1065,6 @@ wl_cfg80211_add_virtual_iface(struct wiphy *wiphy, char *name,
 
 		memset(wl->p2p->vir_ifname, 0, IFNAMSIZ);
 		strncpy(wl->p2p->vir_ifname, name, IFNAMSIZ - 1);
-<<<<<<< HEAD
-		wl_cfg80211_scan_abort(wl, _ndev);
-
-=======
 		WL_SCAN2((" Scan Abort %p(id %d)\n", _ndev, wl->escan_info.cur_sync_id));
 		wl_cfg80211_scan_abort(wl, _ndev);
 #ifdef PROP_TXSTATUS
@@ -1092,7 +1075,6 @@ wl_cfg80211_add_virtual_iface(struct wiphy *wiphy, char *name,
 			wl->wlfc_on = true;
 		}
 #endif
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 		/* In concurrency case, STA may be already associated in a particular channel.
 		 * so retrieve the current channel of primary interface and then start the virtual
@@ -1276,10 +1258,7 @@ wl_cfg80211_change_virtual_iface(struct wiphy *wiphy, struct net_device *ndev,
 			 * channel. so retrieve the current channel of primary interface and
 			 * then start the virtual interface on that.
 			 */
-<<<<<<< HEAD
-=======
 			WL_SCAN2(("Scan Abort %p(id %d)\n", ndev, wl->escan_info.cur_sync_id));
->>>>>>> a468aa0... Samsung i9100 update6 sources
 			wl_cfg80211_scan_abort(wl, ndev);
 			chspec = wl_cfg80211_get_shared_freq(wiphy);
 
@@ -1432,10 +1411,7 @@ wl_cfg80211_notify_ifchange(void)
 	return 0;
 }
 
-<<<<<<< HEAD
-=======
 
->>>>>>> a468aa0... Samsung i9100 update6 sources
 /* Find my listen channel value in my GON Req frame,
  * Save my listen channel for channel sync
  */
@@ -1528,15 +1504,6 @@ static void wl_scan_prep(struct wl_scan_params *params, struct cfg80211_scan_req
 
 	n_ssids = request->n_ssids;
 	n_channels = request->n_channels;
-<<<<<<< HEAD
-
-	if (!request)
-		return;
-
-	n_ssids = request->n_ssids;
-	n_channels = request->n_channels;
-=======
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 	/* Copy channel array if applicable */
 	WL_SCAN(("### List of channelspecs to scan ###\n"));
@@ -1627,7 +1594,9 @@ wl_run_iscan(struct wl_iscan_ctrl *iscan, struct cfg80211_scan_request *request,
 		goto done;
 	}
 
-	wl_scan_prep(&params->params, request);
+	if (request != NULL)
+		wl_scan_prep(&params->params, request);
+
 	params->version = htod32(ISCAN_REQ_VERSION);
 	params->action = htod16(action);
 	params->scan_duration = htod16(0);
@@ -1775,7 +1744,8 @@ wl_run_escan(struct wl_priv *wl, struct net_device *ndev,
 			goto exit;
 		}
 
-		wl_scan_prep(&params->params, request);
+		if (request != NULL)
+			wl_scan_prep(&params->params, request);
 		params->version = htod32(ESCAN_REQ_VERSION);
 		params->action =  htod16(action);
 		params->sync_id = wl->escan_info.cur_sync_id;
@@ -1882,10 +1852,7 @@ wl_do_escan(struct wl_priv *wl, struct wiphy *wiphy, struct net_device *ndev,
 		WL_ERR(("error (%d)\n", err));
 		return err;
 	}
-<<<<<<< HEAD
-=======
 	WL_SCAN2(("scan result set to sync id :%d\n", wl->escan_info.cur_sync_id%2));
->>>>>>> a468aa0... Samsung i9100 update6 sources
 	results = (wl_scan_results_t *) wl->escan_info.escan_buf[wl->escan_info.cur_sync_id%2];
 	results->version = 0;
 	results->count = 0;
@@ -1956,8 +1923,6 @@ __wl_cfg80211_scan(struct wiphy *wiphy, struct net_device *ndev,
 
 	WL_DBG(("scan start\n"));
 
-<<<<<<< HEAD
-=======
 #ifdef WL_CFG80211_VSDB_PRIORITIZE_SCAN_REQUEST
 	if (wl_get_drv_status_all(wl, REMAINING_ON_CHANNEL)) {
 		WL_SCAN2(("request scan abort: %p(%d)\n", ndev, wl->escan_info.cur_sync_id));
@@ -1965,7 +1930,6 @@ __wl_cfg80211_scan(struct wiphy *wiphy, struct net_device *ndev,
 	}
 #endif /* WL_CFG80211_VSDB_PRIORITIZE_SCAN_REQUEST */
 
->>>>>>> a468aa0... Samsung i9100 update6 sources
 	/* Arm scan timeout timer */
 	mod_timer(&wl->scan_timeout, jiffies + WL_SCAN_TIMER_INTERVAL_MS * HZ / 1000);
 	iscan_req = false;
@@ -2725,11 +2689,7 @@ wl_cfg80211_connect(struct wiphy *wiphy, struct net_device *dev,
 	/*
 	 * Cancel ongoing scan to sync up with sme state machine of cfg80211.
 	 */
-<<<<<<< HEAD
-#ifndef ESCAN_RESULT_PATCH
-=======
 #if (defined (BCM4334_CHIP) || !defined(ESCAN_RESULT_PATCH))
->>>>>>> a468aa0... Samsung i9100 update6 sources
 	if (wl->scan_request) {
 		WL_SCAN2(("Abort Scan %p(%d)\n", dev, wl->escan_info.cur_sync_id));
 		wl_cfg80211_scan_abort(wl, dev);
@@ -2741,16 +2701,9 @@ wl_cfg80211_connect(struct wiphy *wiphy, struct net_device *dev,
 	wl->block_gon_req_tx_count = 0;
 	wl->block_gon_req_rx_count = 0;
 #endif /* WL_CFG80211_GON_COLLISION */
-<<<<<<< HEAD
-	WL_DBG(("Connect Request: \"%s\" %02x:%02x:%02x:%02x:%02x:%02x\n",
-		sme->ssid, sme->bssid[0], sme->bssid[1], sme->bssid[2],
-		sme->bssid[3], sme->bssid[4], sme->bssid[5]));
-
-=======
 /*	WL_SCAN2(("Connect Request: \"%s\"" MACSTR "\n",
 		sme->ssid, MAC2STR(sme->bssid)));
 */
->>>>>>> a468aa0... Samsung i9100 update6 sources
 #ifdef ESCAN_RESULT_PATCH
 	memcpy(connect_req_bssid, sme->bssid, ETHER_ADDR_LEN);
 	bzero(broad_bssid, ETHER_ADDR_LEN);
@@ -2782,8 +2735,6 @@ wl_cfg80211_connect(struct wiphy *wiphy, struct net_device *dev,
 			 */
 			WL_DBG(("ASSOC2 p2p index : %d sme->ie_len %d\n",
 				wl_cfgp2p_find_idx(wl, dev), sme->ie_len));
-			wl_cfgp2p_set_management_ie(wl, dev, wl_cfgp2p_find_idx(wl, dev),
-				VNDR_IE_PRBREQ_FLAG, sme->ie, sme->ie_len);
 			wl_cfgp2p_set_management_ie(wl, dev, wl_cfgp2p_find_idx(wl, dev),
 				VNDR_IE_ASSOCREQ_FLAG, sme->ie, sme->ie_len);
 		}
@@ -2832,15 +2783,6 @@ wl_cfg80211_connect(struct wiphy *wiphy, struct net_device *dev,
 	if (chan) {
 #ifdef ROAM_CHANNEL_CACHE
 		wlc_ssid_t ssid;
-<<<<<<< HEAD
-		int band;
-
-		err = wldev_get_band(dev, &band);
-		if (!err) {
-			set_roam_band(band);
-		}
-=======
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 		wl->channel = ieee80211_frequency_to_channel(chan->center_freq);
 		memcpy(ssid.SSID, sme->ssid, sme->ssid_len);
@@ -3022,11 +2964,7 @@ wl_cfg80211_disconnect(struct wiphy *wiphy, struct net_device *dev,
 		/*
 		* Cancel ongoing scan to sync up with sme state machine of cfg80211.
 		*/
-<<<<<<< HEAD
-#ifndef ESCAN_RESULT_PATCH
-=======
 #if (defined (BCM4334_CHIP) || !defined (ESCAN_RESULT_PATCH))
->>>>>>> a468aa0... Samsung i9100 update6 sources
 		/* Let scan aborted by F/W */
 		if (wl->scan_request) {
 			WL_SCAN2(("Abort scan : %p(%d)\n", dev, wl->escan_info.cur_sync_id));
@@ -3506,15 +3444,9 @@ wl_cfg80211_get_station(struct wiphy *wiphy, struct net_device *dev,
 #endif
 	} else if (wl_get_mode_by_netdev(wl, dev) == WL_MODE_BSS) {
 		u8 *curmacp = wl_read_prof(wl, dev, WL_PROF_BSSID);
-		err = -ENODEV;
 		if (!wl_get_drv_status(wl, CONNECTED, dev) ||
-<<<<<<< HEAD
-		    (dhd_is_associated(dhd, NULL, &err) == FALSE)) {
-			WL_ERR(("NOT assoc: %d\n", err));
-=======
 		    (dhd_is_associated(dhd, NULL) == FALSE)) {
 			WL_ERR(("NOT assoc\n"));
->>>>>>> a468aa0... Samsung i9100 update6 sources
 #ifdef ESCAN_RESULT_PATCH
 			return -ENODEV;
 #else
@@ -3552,9 +3484,9 @@ wl_cfg80211_get_station(struct wiphy *wiphy, struct net_device *dev,
 		WL_DBG(("RSSI %d dBm\n", rssi));
 
 get_station_err:
-		if (err && (err != -ETIMEDOUT) && (err != -EIO)) {
+		if (err) {
 			/* Disconnect due to zero BSSID or error to get RSSI */
-			WL_ERR(("force cfg80211_disconnected: %d\n", err));
+			WL_ERR(("force cfg80211_disconnected\n"));
 			wl_clr_drv_status(wl, CONNECTED, dev);
 			cfg80211_disconnected(dev, 0, NULL, 0, GFP_KERNEL);
 			wl_link_down(wl);
@@ -3908,10 +3840,6 @@ wl_cfg80211_remain_on_channel(struct wiphy *wiphy, struct net_device *dev,
 	static ulong saved_jiff = 0;
 	s32 err = BCME_OK;
 	struct wl_priv *wl = wiphy_priv(wiphy);
-<<<<<<< HEAD
-	WL_DBG(("Enter, netdev_ifidx: %d, channel: %d, duration ms (%d) \n",
-		dev->ifindex, ieee80211_frequency_to_channel(channel->center_freq), duration));
-=======
 /* for camp only
 	if(jiffies_to_msecs(jiffies - saved_jiff)>2000) {
 		saved_jiff = jiffies;
@@ -3923,7 +3851,6 @@ wl_cfg80211_remain_on_channel(struct wiphy *wiphy, struct net_device *dev,
 	WL_DBG(("Enter, ifindex: %d, channel: %d, duration ms (%d) SCANNING ?? %s \n",
 		dev->ifindex, ieee80211_frequency_to_channel(channel->center_freq),
 		duration, (wl_get_drv_status(wl, SCANNING, ndev)) ? "YES":"NO"));
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 	if (wl->first_remain) {
 		wl->first_remain = false;
@@ -4006,18 +3933,6 @@ wl_cfg80211_remain_on_channel(struct wiphy *wiphy, struct net_device *dev,
 	}
 
 	if (p2p_is_on(wl)) {
-<<<<<<< HEAD
-		wl_set_drv_status(wl, REMAINING_ON_CHANNEL, ndev);
-#ifdef WL_CFG80211_SYNC_GON_TIME
-		if (wl_get_drv_status_all(wl, WAITING_MORE_TIME_NEXT_ACT_FRM)) {
-			/* do not enter listen mode again if we are in listen mode already for next af.
-			 * remain on channel completion will be returned by waiting next af completion.
-			 */
-			goto exit;
-		}
-#endif /* WL_CFG80211_SYNC_GON_TIME */
-		wl_cfgp2p_discover_listen(wl, target_channel, duration);
-=======
 #ifndef WL_CFG80211_VSDB_PRIORITIZE_SCAN_REQUEST
 		wl_set_drv_status(wl, REMAINING_ON_CHANNEL, ndev);
 #endif /* not WL_CFG80211_VSDB_PRIORITIZE_SCAN_REQUEST */
@@ -4032,7 +3947,6 @@ wl_cfg80211_remain_on_channel(struct wiphy *wiphy, struct net_device *dev,
 			wl_set_drv_status(wl, FAKE_REMAINING_ON_CHANNEL, ndev);
 		}
 #endif /* WL_CFG80211_VSDB_PRIORITIZE_SCAN_REQUEST */
->>>>>>> a468aa0... Samsung i9100 update6 sources
 	}
 
 exit:
@@ -4088,21 +4002,11 @@ wl_cfg80211_afx_handler(struct work_struct *work)
 
 	struct afx_hdl *afx_instance;
 	struct wl_priv *wl = wlcfg_drv_priv;
-<<<<<<< HEAD
-=======
 	s32 ret = BCME_OK;
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 	afx_instance = container_of(work, struct afx_hdl, work);
 	if (afx_instance != NULL) {
 		if (wl->afx_hdl->is_listen && wl->afx_hdl->my_listen_chan) {
-<<<<<<< HEAD
-			wl_cfgp2p_discover_listen(wl, wl->afx_hdl->my_listen_chan, 100);
-		} else {
-		wl_cfgp2p_act_frm_search(wl, wl->afx_hdl->dev,
-				wl->afx_hdl->bssidx, wl->afx_hdl->peer_listen_chan);
-		}
-=======
 			ret = wl_cfgp2p_discover_listen(wl, wl->afx_hdl->my_listen_chan, 100);
 		} else {
 			ret = wl_cfgp2p_act_frm_search(wl, wl->afx_hdl->dev,
@@ -4113,7 +4017,6 @@ wl_cfg80211_afx_handler(struct work_struct *work)
 			if (wl_get_drv_status_all(wl, SCANNING_PEER_CHANNEL))
 				complete(&wl->act_frm_scan);
 		}
->>>>>>> a468aa0... Samsung i9100 update6 sources
 	}
 }
 
@@ -4143,12 +4046,8 @@ wl_cfg80211_send_at_common_channel(struct wl_priv *wl,
 			wl->afx_hdl->retry));
 		/* Do find_peer_for_action */
 		schedule_work(&wl->afx_hdl->work);
-<<<<<<< HEAD
-		wait_for_completion(&wl->act_frm_scan);
-=======
 		wait_for_completion_timeout(&wl->act_frm_scan,
 									msecs_to_jiffies(MAX_WAIT_TIME));
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 		if ((wl->afx_hdl->peer_chan != WL_INVALID) ||
 			!(wl_get_drv_status_all(wl, SCANNING_PEER_CHANNEL)))
@@ -4160,24 +4059,16 @@ wl_cfg80211_send_at_common_channel(struct wl_priv *wl,
 			wl->afx_hdl->is_listen = TRUE;
 			/* Do find_peer_for_action */
 			schedule_work(&wl->afx_hdl->work);
-<<<<<<< HEAD
-			wait_for_completion(&wl->act_frm_scan);
-=======
 			wait_for_completion_timeout(&wl->act_frm_scan,
 									msecs_to_jiffies(MAX_WAIT_TIME));
->>>>>>> a468aa0... Samsung i9100 update6 sources
 		}
 		if (!wl_get_drv_status_all(wl, SCANNING_PEER_CHANNEL))
 			break;
 		wl->afx_hdl->retry++;
 	}
 
-<<<<<<< HEAD
-	wl_clr_drv_status(wl, SCANNING_PEER_CHANNEL, wl->afx_hdl->dev);
-=======
 	wl_clr_drv_status(wl, SCANNING, dev);
 	wl_clr_drv_status(wl, SCANNING_PEER_CHANNEL, dev);
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 	if (wl->afx_hdl->peer_chan != WL_INVALID)
 		wl_cfg80211_send_pending_tx_act_frm(wl);
@@ -4229,15 +4120,8 @@ wl_cfg80211_mgmt_tx(struct wiphy *wiphy, struct net_device *ndev,
 	wifi_p2p_pub_act_frame_t *act_frm = NULL;
 	wifi_p2p_action_frame_t *p2p_act_frm = NULL;
 	wifi_p2psd_gas_pub_act_frame_t *sd_act_frm = NULL;
-<<<<<<< HEAD
-#ifndef VSDB
 	scb_val_t scb_val;
 	s8 eabuf[ETHER_ADDR_STR_LEN];
-#endif
-=======
-	scb_val_t scb_val;
-	s8 eabuf[ETHER_ADDR_STR_LEN];
->>>>>>> a468aa0... Samsung i9100 update6 sources
 #ifdef WL_CFG80211_GON_COLLISION
 	static uint8 saved_af_subtype = 0xff;
 #endif /* WL_CFG80211_GON_COLLISION */
@@ -4311,11 +4195,7 @@ wl_cfg80211_mgmt_tx(struct wiphy *wiphy, struct net_device *ndev,
 					customer_ie_len += add_len;
 					ptr = (u8*)customer_ie + add_len;
 					remain_len -= add_len;
-<<<<<<< HEAD
-                    WL_INFO(("Customer IE exist(len:%d)\n", add_len));
-=======
 					WL_INFO(("Customer IE exist(len:%d)\n", add_len));
->>>>>>> a468aa0... Samsung i9100 update6 sources
 				}
 				else
 					break;
@@ -4334,14 +4214,12 @@ wl_cfg80211_mgmt_tx(struct wiphy *wiphy, struct net_device *ndev,
 			goto exit;
 		} else if (ieee80211_is_disassoc(mgmt->frame_control) ||
 			ieee80211_is_deauth(mgmt->frame_control)) {
-#ifndef VSDB
 			memcpy(scb_val.ea.octet, mgmt->da, ETH_ALEN);
 			scb_val.val = mgmt->u.disassoc.reason_code;
 			wldev_ioctl(dev, WLC_SCB_DEAUTHENTICATE_FOR_REASON, &scb_val,
 				sizeof(scb_val_t), true);
 			WL_DBG(("Disconnect STA : %s\n",
 				bcm_ether_ntoa((const struct ether_addr *)mgmt->da, eabuf)));
-#endif
 			cfg80211_mgmt_tx_status(ndev, *cookie, buf, len, true, GFP_KERNEL);
 			goto exit;
 
@@ -4441,11 +4319,7 @@ wl_cfg80211_mgmt_tx(struct wiphy *wiphy, struct net_device *ndev,
 			wl->block_gon_req_tx_count--;
 			WL_ERR(("Drop gon req tx action frame: count %d\n", wl->block_gon_req_tx_count));
 			cfg80211_mgmt_tx_status(ndev, *cookie, buf, len, true, GFP_KERNEL);
-<<<<<<< HEAD
-            kfree(af_params);
-=======
 			kfree(af_params);
->>>>>>> a468aa0... Samsung i9100 update6 sources
 			goto exit;
 		} else if (act_frm->subtype == P2P_PAF_GON_CONF) {
 			/* if go formation done, clear it */
@@ -4566,16 +4440,6 @@ wl_cfg80211_mgmt_tx(struct wiphy *wiphy, struct net_device *ndev,
 
 		if (extar_listen_time > 50) {
 			wl_set_drv_status(wl, WAITING_MORE_TIME_NEXT_ACT_FRM, dev);
-<<<<<<< HEAD
-			WL_ERR(("Wait more time! actual af time:%d, calculated extar listen:%d\n",
-				af_params->dwell_time, extar_listen_time));
-			wl_cfgp2p_discover_listen(wl, wl->af_sent_channel, extar_listen_time + 100);
-			wait_for_completion(&wl->wait_next_af);
-		}
-	}
-	wl_clr_drv_status(wl, WAITING_NEXT_ACT_FRM, dev);
-	wl_clr_drv_status(wl, WAITING_MORE_TIME_NEXT_ACT_FRM, dev);
-=======
 			WL_DBG(("Wait more time! actual af time:%d, calculated extar listen:%d\n",
 				af_params->dwell_time, extar_listen_time));
 			if (wl_cfgp2p_discover_listen(wl, wl->af_sent_channel,
@@ -4587,7 +4451,6 @@ wl_cfg80211_mgmt_tx(struct wiphy *wiphy, struct net_device *ndev,
 		}
 	}
 	wl_clr_drv_status(wl, WAITING_NEXT_ACT_FRM, dev);
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 	WL_INFO(("-- sending Action Frame is %s, af sent chan: %d, my listen chan: %d\n",
 		(ack) ? "Succeeded!!":"Failed!!", wl->af_sent_channel, wl->afx_hdl->my_listen_chan));
@@ -5447,11 +5310,7 @@ static s32 wl_setup_wiphy(struct wireless_dev *wdev, struct device *sdiofunc_dev
 	err = wiphy_register(wdev->wiphy);
 	if (unlikely(err < 0)) {
 		WL_ERR(("Couldn not register wiphy device (%d)\n", err));
-<<<<<<< HEAD
-	wiphy_free(wdev->wiphy);
-=======
 		wiphy_free(wdev->wiphy);
->>>>>>> a468aa0... Samsung i9100 update6 sources
 	}
 	return err;
 }
@@ -5535,20 +5394,12 @@ static s32 wl_inform_single_bss(struct wl_priv *wl, struct wl_bss_info *bi)
 		band = wiphy->bands[IEEE80211_BAND_2GHZ];
 	else
 		band = wiphy->bands[IEEE80211_BAND_5GHZ];
-<<<<<<< HEAD
-	if (!band) {
-		WL_ERR(("No valid band"));
-		kfree(notif_bss_info);
-		return -EINVAL;
-	}
-=======
 
 	if(band==NULL) {
 		kfree(notif_bss_info);
 		return err;
 	}
 
->>>>>>> a468aa0... Samsung i9100 update6 sources
 	notif_bss_info->rssi = dtoh16(bi->RSSI);
 	memcpy(mgmt->bssid, &bi->BSSID, ETHER_ADDR_LEN);
 	mgmt_type = wl->active_scan ?
@@ -5755,10 +5606,7 @@ wl_notify_connect_status_ap(struct wl_priv *wl, struct net_device *ndev,
 			band = wiphy->bands[IEEE80211_BAND_2GHZ];
 		else
 			band = wiphy->bands[IEEE80211_BAND_5GHZ];
-		if (!band) {
-			WL_ERR(("No valid band"));
-			return -EINVAL;
-		}
+
 #if LINUX_VERSION_CODE == KERNEL_VERSION(2, 6, 38) && !defined(WL_COMPAT_WIRELESS)
 		freq = ieee80211_channel_to_frequency(channel);
 		(void)band->band;
@@ -5823,11 +5671,7 @@ wl_notify_connect_status(struct wl_priv *wl, struct net_device *ndev,
 //chanyun TBD from DHD 15 no p2p firmware exist should change to interface
 		if (strstr(fw_path, "_p2p") == NULL && event == WLC_E_DEAUTH) {
 			WL_DBG(("unexpected event WLC_E_DEAUTH\n"));
-<<<<<<< HEAD
-			return WL_INVALID; 
-=======
 			return WL_INVALID;
->>>>>>> a468aa0... Samsung i9100 update6 sources
 		}
 		if (wl_is_linkup(wl, e, ndev)) {
 			wl_link_up(wl);
@@ -6193,11 +6037,6 @@ wl_bss_connect_done(struct wl_priv *wl, struct net_device *ndev,
 		WL_DBG(("copy bssid\n"));
 		memcpy(curbssid, connect_req_bssid, ETHER_ADDR_LEN);
 	}
-<<<<<<< HEAD
-	WL_DBG(("Connect done bssid=%02x:%02x:%02x:%02x:%02x:%02x\n",
-		curbssid[0], curbssid[1], curbssid[2],
-		curbssid[3], curbssid[4],curbssid[5]));
-=======
 	if (wl_get_drv_status(wl, CONNECTED, ndev)) {
 		if (memcmp(curbssid, connect_req_bssid, ETHER_ADDR_LEN) == 0) {
 			WL_ERR((" Connected event of connected device, ignore it\n"));
@@ -6213,7 +6052,6 @@ wl_bss_connect_done(struct wl_priv *wl, struct net_device *ndev,
 		wl_cfg80211_scan_abort(wl, ndev);
 	}
 #endif
->>>>>>> a468aa0... Samsung i9100 update6 sources
 #else
 	if (wl->scan_request) {
 		WL_SCAN2(("Abort scan : %p(%d)\n", ndev, wl->escan_info.cur_sync_id));
@@ -6243,21 +6081,13 @@ wl_bss_connect_done(struct wl_priv *wl, struct net_device *ndev,
 			completed ? WLAN_STATUS_SUCCESS : WLAN_STATUS_AUTH_TIMEOUT,
 			GFP_KERNEL);
 		if (completed)
-<<<<<<< HEAD
-			WL_INFO(("Report connect result - connection succeeded(%d)\n",
-=======
 			WL_SCAN2(("Report connect result - connection succeeded(%d)\n",
->>>>>>> a468aa0... Samsung i9100 update6 sources
 				conn_info->resp_ie_len));
 		else
 			WL_ERR(("Report connect result - connection failed\n"));
 	}
 #ifdef ESCAN_RESULT_PATCH
-<<<<<<< HEAD
-	else 
-=======
 	else
->>>>>>> a468aa0... Samsung i9100 update6 sources
 		WL_DBG(("wl_bss_connect_done : do nothing\n"));
 #endif /* ESCAN_RESULT_PATCH */
 	return err;
@@ -6443,10 +6273,7 @@ wl_notify_rx_mgmt_frame(struct wl_priv *wl, struct net_device *ndev,
 		band = wiphy->bands[IEEE80211_BAND_2GHZ];
 	else
 		band = wiphy->bands[IEEE80211_BAND_5GHZ];
-	if (!band) {
-		WL_ERR(("No valid band"));
-		return -EINVAL;
-	}
+
 #if LINUX_VERSION_CODE == KERNEL_VERSION(2, 6, 38) && !defined(WL_COMPAT_WIRELESS)
 	freq = ieee80211_channel_to_frequency(channel);
 	(void)band->band;
@@ -6542,33 +6369,20 @@ wl_notify_rx_mgmt_frame(struct wl_priv *wl, struct net_device *ndev,
 					if (wl_get_drv_status_all(wl, SENDING_ACT_FRM) &&
 						(wl_get_p2p_status(wl, ACTION_TX_COMPLETED) ||
 						wl_get_p2p_status(wl, ACTION_TX_NOACK))) {
-<<<<<<< HEAD
-						/* do not wait more time for OFF_CHAN_COMPLETE !!!
-						 * we already have the next frame!!
-						 */
-						WL_DBG(("*** Wake UP ** send_af_done_event ** \n"));
-						wake_up_interruptible(&wl->send_af_done_event);
-=======
 						WL_DBG(("*** Wake UP ** abort actframe ** \n"));
 						//wake_up_interruptible(&wl->send_af_done_event);
 						/* if channel is not zero, "actfame" uses off channel scan.
 						 *  So abort scan for off channel completion. */
 						if (wl->af_sent_channel)
 							wl_cfg80211_scan_abort(wl, dev);
->>>>>>> a468aa0... Samsung i9100 update6 sources
 					} else if (wl_get_drv_status_all(wl, WAITING_MORE_TIME_NEXT_ACT_FRM)) {
 						WL_DBG(("*** Wake UP ** wait_next_af ** \n"));
 						complete(&wl->wait_next_af);
 					}
 					//wake_up_interruptible(&wl->send_af_done_event);
 					//msleep(5);
-<<<<<<< HEAD
-			}
-		}
-=======
 				}
 			}
->>>>>>> a468aa0... Samsung i9100 update6 sources
 #endif /* WL_CFG80211_SYNC_GON_TIME */
 		}
 
@@ -6734,11 +6548,7 @@ static s32 wl_init_priv_mem(struct wl_priv *wl)
 	}
 #ifdef CONFIG_DHD_USE_STATIC_BUF
 	wl->escan_info.escan_buf[0] = dhd_os_prealloc(NULL, DHD_PREALLOC_WIPHY_ESCAN0, 0);
-<<<<<<< HEAD
-    bzero(wl->escan_info.escan_buf[0], ESCAN_BUF_SIZE);
-=======
 	bzero(wl->escan_info.escan_buf[0], ESCAN_BUF_SIZE);
->>>>>>> a468aa0... Samsung i9100 update6 sources
 #else
 	wl->escan_info.escan_buf[0] = (void *)kzalloc(ESCAN_BUF_SIZE, GFP_KERNEL);
 	if (unlikely(!wl->escan_info.escan_buf[0])) {
@@ -6748,11 +6558,7 @@ static s32 wl_init_priv_mem(struct wl_priv *wl)
 #endif
 #ifdef CONFIG_DHD_USE_STATIC_BUF
 	wl->escan_info.escan_buf[1] = dhd_os_prealloc(NULL, DHD_PREALLOC_WIPHY_ESCAN1, 0);
-<<<<<<< HEAD
-    bzero(wl->escan_info.escan_buf[1], ESCAN_BUF_SIZE);
-=======
 	bzero(wl->escan_info.escan_buf[1], ESCAN_BUF_SIZE);
->>>>>>> a468aa0... Samsung i9100 update6 sources
 #else
 	wl->escan_info.escan_buf[1] = (void *)kzalloc(ESCAN_BUF_SIZE, GFP_KERNEL);
 	if (unlikely(!wl->escan_info.escan_buf[1])) {
@@ -7099,15 +6905,9 @@ wl_cfg80211_netdev_notifier_call(struct notifier_block * nb,
 			break;
 
 		case NETDEV_UNREGISTER:
-<<<<<<< HEAD
-				/* after calling list_del_rcu(&wdev->list) */
-				wl_dealloc_netinfo(wl, ndev);
-				break;
-=======
 			/* after calling list_del_rcu(&wdev->list) */
 			wl_dealloc_netinfo(wl, ndev);
 			break;
->>>>>>> a468aa0... Samsung i9100 update6 sources
 		case NETDEV_GOING_DOWN:
 			/* At NETDEV_DOWN state, wdev_cleanup_work work will be called.
 			*  In front of door, the function checks
@@ -7116,10 +6916,7 @@ wl_cfg80211_netdev_notifier_call(struct notifier_block * nb,
 			*  make the scan done forcibly.
 			*/
 			if (wl_get_drv_status(wl, SCANNING, dev)) {
-<<<<<<< HEAD
-=======
 				WL_SCAN2(("Abort Scan and send result\n"));
->>>>>>> a468aa0... Samsung i9100 update6 sources
 				wl_cfg80211_scan_abort(wl, dev);
 				if (wl->escan_on) {
 					wl_notify_escan_complete(wl, dev, true);
@@ -7165,14 +6962,10 @@ static void wl_notify_escan_complete(struct wl_priv *wl,
 		wl->scan_request = NULL;
 		spin_unlock_irqrestore(&wl->cfgdrv_lock, flags);
 	}
-<<<<<<< HEAD
-	spin_unlock_irqrestore(&wl->cfgdrv_lock, flags);
-=======
 	else {
 		spin_unlock_irqrestore(&wl->cfgdrv_lock, flags);
 		WL_SCAN2(("no scan request is existed\n"));
 	}
->>>>>>> a468aa0... Samsung i9100 update6 sources
 	WL_DBG(("Exit \n"));
 }
 
@@ -7232,17 +7025,11 @@ static s32 wl_escan_handler(struct wl_priv *wl,
 			goto exit;
 		}
 
-<<<<<<< HEAD
-		if (escan_result->sync_id != wl->escan_info.cur_sync_id)
-			WL_ERR(("Escan sync id mismatch: status %d cur_sync_id %d coming_sync_id %d\n"
-			, status, wl->escan_info.cur_sync_id, escan_result->sync_id));
-=======
 		if (escan_result->sync_id != wl->escan_info.cur_sync_id) {
 			WL_ERR(("Escan sync id mismatch: status %d cur_sync_id %d coming_sync_id %d\n"
 			, status, wl->escan_info.cur_sync_id, escan_result->sync_id));
 			goto exit;
 		}
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 		if (!(wl_to_wiphy(wl)->interface_modes & BIT(NL80211_IFTYPE_ADHOC))) {
 			if (dtoh16(bi->capability) & DOT11_CAP_IBSS) {
@@ -7299,11 +7086,7 @@ static s32 wl_escan_handler(struct wl_priv *wl,
 				goto exit;
 			}
 		}
-<<<<<<< HEAD
-			memcpy(&(wl->escan_info.escan_buf[wl->escan_info.cur_sync_id%2][list->buflen]), bi, bi_length);
-=======
 		memcpy(&(wl->escan_info.escan_buf[wl->escan_info.cur_sync_id%2][list->buflen]), bi, bi_length);
->>>>>>> a468aa0... Samsung i9100 update6 sources
 		list->version = dtoh32(bi->version);
 		list->buflen += bi_length;
 		list->count++;
@@ -7325,13 +7108,9 @@ static s32 wl_escan_handler(struct wl_priv *wl,
 		} else if (likely(wl->scan_request)) {
 			mutex_lock(&wl->usr_sync);
 			del_timer_sync(&wl->scan_timeout);
-<<<<<<< HEAD
-			WL_INFO(("ESCAN COMPLETED\n"));
-=======
 			WL_SCAN2(("ESCAN COMPLETED\n"));
 #ifndef CUSTOMER_HW_SAMSUNG
 #error bss list is informed at notify function
->>>>>>> a468aa0... Samsung i9100 update6 sources
 			wl->bss_list = (wl_scan_results_t *)wl->escan_info.escan_buf[wl->escan_info.cur_sync_id%2];
 			wl_inform_bss(wl);
 #endif
@@ -7354,13 +7133,9 @@ static s32 wl_escan_handler(struct wl_priv *wl,
 		} else if (likely(wl->scan_request)) {
 			mutex_lock(&wl->usr_sync);
 			del_timer_sync(&wl->scan_timeout);
-<<<<<<< HEAD
-			WL_INFO(("ESCAN ABORTED\n"));
-=======
 			WL_SCAN2(("ESCAN ABORTED\n"));
 #ifndef CUSTOMER_HW_SAMSUNG
 #error bss list is informed at notify function
->>>>>>> a468aa0... Samsung i9100 update6 sources
 			wl->bss_list = (wl_scan_results_t *)wl->escan_info.escan_buf[(wl->escan_info.cur_sync_id+1)%2];
 			wl_inform_bss(wl);
 #endif
@@ -7384,11 +7159,8 @@ static s32 wl_escan_handler(struct wl_priv *wl,
 		} else if (likely(wl->scan_request)) {
 			mutex_lock(&wl->usr_sync);
 			del_timer_sync(&wl->scan_timeout);
-<<<<<<< HEAD
-=======
 #ifndef CUSTOMER_HW_SAMSUNG
 #error bss list is informed at notify function
->>>>>>> a468aa0... Samsung i9100 update6 sources
 			wl->bss_list = (wl_scan_results_t *)wl->escan_info.escan_buf[(wl->escan_info.cur_sync_id+1)%2];
 			wl_inform_bss(wl);
 #endif
@@ -7450,10 +7222,7 @@ static s32 wl_init_priv(struct wl_priv *wl)
 	wl->active_scan = true;
 	wl->rf_blocked = false;
 	wl->first_remain = true;
-<<<<<<< HEAD
-=======
 	wl->wlfc_on = false;
->>>>>>> a468aa0... Samsung i9100 update6 sources
 	spin_lock_init(&wl->cfgdrv_lock);
 	mutex_init(&wl->ioctl_buf_sync);
 	init_waitqueue_head(&wl->netif_change_event);
@@ -7723,19 +7492,10 @@ static s32 wl_event_handler(void *data)
 	struct wl_priv *wl = NULL;
 	struct wl_event_q *e;
 	tsk_ctl_t *tsk = (tsk_ctl_t *)data;
-<<<<<<< HEAD
-	int ret = 0;
-
-	wl = (struct wl_priv *)tsk->parent;
-
-	DAEMONIZE("wl_event_handler");
-
-=======
 	int ret;
 
 	wl = (struct wl_priv *)tsk->parent;
 	DAEMONIZE("dhd_cfg80211_event");
->>>>>>> a468aa0... Samsung i9100 update6 sources
 	complete(&tsk->completed);
 
 	while ((ret = down_interruptible (&tsk->sema)) == 0) {
@@ -7971,11 +7731,7 @@ s32 wl_update_wiphybands(struct wl_priv *wl)
 	nband = bandlist[0];
 	wiphy->bands[IEEE80211_BAND_5GHZ] = NULL;
 	wiphy->bands[IEEE80211_BAND_2GHZ] = NULL;
-<<<<<<< HEAD
-	for (i = 1; i <= nband && i < sizeof(bandlist); i++) {
-=======
 	for (i = 1; i <= nband && i < ARRAYSIZE(bandlist); i++) {
->>>>>>> a468aa0... Samsung i9100 update6 sources
 		if (bandlist[i] == WLC_BAND_5G)
 			wiphy->bands[IEEE80211_BAND_5GHZ] =
 				&__wl_band_5ghz_a;
@@ -8064,10 +7820,7 @@ s32 wl_cfg80211_up(void *para)
 	struct wl_priv *wl;
 	s32 err = 0;
 	int val = 1;
-<<<<<<< HEAD
-=======
 	dhd_pub_t *dhd;
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 	(void)para;
 	WL_TRACE(("In\n"));

@@ -237,11 +237,7 @@ dhdcdc_set_ioctl(dhd_pub_t *dhd, int ifidx, uint cmd, void *buf, uint len, uint8
 		return -EIO;
 	}
 #ifdef CONFIG_CONTROL_PM
-<<<<<<< HEAD
-	if((g_pm_control== TRUE) && (cmd== WLC_SET_PM))
-=======
 	if ((g_pm_control == TRUE) && (cmd == WLC_SET_PM))
->>>>>>> a468aa0... Samsung i9100 update6 sources
 	{
 		DHD_ERROR(("SET PM ignored!!!!!!!!!!!!!!!!!!!!!!\n"));
 		goto done;

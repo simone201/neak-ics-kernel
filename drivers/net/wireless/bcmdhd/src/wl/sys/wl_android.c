@@ -131,7 +131,7 @@ typedef struct android_wifi_priv_cmd {
  */
 void dhd_customer_gpio_wlan_ctrl(int onoff);
 uint dhd_dev_reset(struct net_device *dev, uint8 flag);
-int dhd_dev_init_ioctl(struct net_device *dev);
+void dhd_dev_init_ioctl(struct net_device *dev);
 #ifdef WL_CFG80211
 int wl_cfg80211_get_p2p_dev_addr(struct net_device *net, struct ether_addr *p2pdev_addr);
 int wl_cfg80211_set_btcoex_dhcp(struct net_device *dev, char *command);
@@ -153,17 +153,12 @@ extern bool ap_fw_loaded;
 extern char iface_name[IFNAMSIZ];
 #endif
 
-<<<<<<< HEAD
-/* Flags to indicate if we distingish power off scheme during suspend */
-bool suspend_power_off;
-=======
 /* CSP#505233: Flags to indicate if we distingish power off policy when
  * user set the memu "Keep Wi-Fi on during sleep" to "Never"
  */
 #ifdef WL_CFG80211
 bool suspend_power_off;
 #endif
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 /**
  * Local (static) functions and variables
@@ -549,11 +544,7 @@ int wl_android_wifi_on(struct net_device *dev)
 		do {
 		dhd_customer_gpio_wlan_ctrl(WLAN_RESET_ON);
 		if (dhd_download_fw_on_driverload)
-<<<<<<< HEAD
-			msleep(100);
-=======
 			msleep(300);
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 			ret = sdioh_start(NULL, 0);
 			if (ret == 0)
@@ -568,12 +559,7 @@ int wl_android_wifi_on(struct net_device *dev)
 		}
 		ret = dhd_dev_reset(dev, FALSE);
 		sdioh_start(NULL, 1);
-<<<<<<< HEAD
-		if (dhd_dev_init_ioctl(dev) < 0)
-			ret = -EFAULT;
-=======
 		dhd_dev_init_ioctl(dev);
->>>>>>> a468aa0... Samsung i9100 update6 sources
 		g_wifi_on = TRUE;
 	}
 
@@ -826,11 +812,7 @@ int wl_android_priv_cmd(struct net_device *net, struct ifreq *ifr, int cmd)
 	else if (strnicmp(command, CMD_GETBAND, strlen(CMD_GETBAND)) == 0) {
 		bytes_written = wl_android_get_band(net, command, priv_cmd.total_len);
 	}
-<<<<<<< HEAD
-#ifndef CUSTOMER_SET_COUNTRY /*CUSTOMER_SET_COUNTRY feature is define for only GGSM model */
-=======
 #ifndef GLOBALCONFIG_WLAN_COUNTRY_CODE
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 	else if (strnicmp(command, CMD_COUNTRY, strlen(CMD_COUNTRY)) == 0) {
 		char *country_code = command + strlen(CMD_COUNTRY) + 1;
@@ -909,8 +891,6 @@ int wl_android_priv_cmd(struct net_device *net, struct ifreq *ifr, int cmd)
 		int skip = strlen(CMD_SET_HAPD_MAX_NUM_STA) + 3;
 		wl_android_set_max_num_sta(net, (const char*)command+skip);
 	}
-<<<<<<< HEAD
-=======
 	else if (strnicmp(command, CMD_SET_HAPD_SSID, strlen(CMD_SET_HAPD_SSID)) == 0) {
 		int skip = strlen(CMD_SET_HAPD_SSID) + 3;
 		wl_android_set_ssid(net, (const char*)command+skip);
@@ -919,7 +899,6 @@ int wl_android_priv_cmd(struct net_device *net, struct ifreq *ifr, int cmd)
 		int skip = strlen(CMD_SET_HAPD_HIDE_SSID) + 3;
 		wl_android_set_hide_ssid(net, (const char*)command+skip);
 	}
->>>>>>> a468aa0... Samsung i9100 update6 sources
 #ifdef OKC_SUPPORT
 	else if (strnicmp(command, CMD_OKC_SET_PMK, strlen(CMD_OKC_SET_PMK)) == 0)
 		bytes_written = wl_android_set_pmk(net, command, priv_cmd.total_len);
@@ -1127,13 +1106,9 @@ static int wifi_probe(struct platform_device *pdev)
 	wifi_set_power(1, 200);	/* Power On */
 	wifi_set_carddetect(1);	/* CardDetect (0->1) */
 
-<<<<<<< HEAD
-	suspend_power_off = FALSE;
-=======
 #ifdef WL_CFG80211
 	suspend_power_off = FALSE;
 #endif
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 	up(&wifi_control_sem);
 	return 0;
@@ -1150,15 +1125,10 @@ static int wifi_remove(struct platform_device *pdev)
 	wifi_set_power(0, 0);	/* Power Off */
 	wifi_set_carddetect(0);	/* CardDetect (1->0) */
 
-<<<<<<< HEAD
-	if (suspend_power_off)
-		suspend_power_off = FALSE;
-=======
 #ifdef WL_CFG80211
 	if (suspend_power_off)
 		suspend_power_off = FALSE;
 #endif
->>>>>>> a468aa0... Samsung i9100 update6 sources
 
 	up(&wifi_control_sem);
 	return 0;
@@ -1170,11 +1140,7 @@ static int wifi_suspend(struct platform_device *pdev, pm_message_t state)
 	DHD_ERROR(("##> %s\n", __FUNCTION__));
 #if (LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 39)) && defined(OOB_INTR_ONLY) && 1
 	if (dhd_os_check_if_up(bcmsdh_get_drvdata()))
-<<<<<<< HEAD
-	bcmsdh_oob_intr_set(0);
-=======
 		bcmsdh_oob_intr_set(0);
->>>>>>> a468aa0... Samsung i9100 update6 sources
 #endif /* (OOB_INTR_ONLY) */
 	if (dhd_os_check_if_up(bcmsdh_get_drvdata()) &&
 		dhd_os_check_wakelock(bcmsdh_get_drvdata())) {
@@ -1183,11 +1149,7 @@ static int wifi_suspend(struct platform_device *pdev, pm_message_t state)
 	}
 #if defined(OOB_INTR_ONLY)
 	if (dhd_os_check_if_up(bcmsdh_get_drvdata()))
-<<<<<<< HEAD
-	bcmsdh_oob_intr_set(0);
-=======
 		bcmsdh_oob_intr_set(0);
->>>>>>> a468aa0... Samsung i9100 update6 sources
 #endif	/* defined(OOB_INTR_ONLY) */
 	smp_mb();
 	return 0;
@@ -1196,11 +1158,7 @@ static int wifi_suspend(struct platform_device *pdev, pm_message_t state)
 static int wifi_resume(struct platform_device *pdev)
 {
 	DHD_ERROR(("##> %s\n", __FUNCTION__));
-<<<<<<< HEAD
-	msleep(100);
-=======
 
->>>>>>> a468aa0... Samsung i9100 update6 sources
 #if (LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 39)) && defined(OOB_INTR_ONLY) && 1
 	if (dhd_os_check_if_up(bcmsdh_get_drvdata()))
 		bcmsdh_oob_intr_set(1);

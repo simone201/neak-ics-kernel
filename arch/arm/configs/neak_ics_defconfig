@@ -1317,14 +1317,9 @@ CONFIG_WLAN=y
 CONFIG_WIFI_CONTROL_FUNC=y
 # CONFIG_ATH_COMMON is not set
 # CONFIG_BCM4334 is not set
-<<<<<<< HEAD:arch/arm/configs/neak_ics_defconfig
 CONFIG_BCM4330=m
 CONFIG_BROADCOM_WIFI_RESERVED_MEM=y
-=======
-CONFIG_BCM4330=y
-# CONFIG_BROADCOM_WIFI_RESERVED_MEM is not set
 CONFIG_WLAN_COUNTRY_CODE=y
->>>>>>> a468aa0... Samsung i9100 update6 sources:arch/arm/configs/q1_defconfig
 # CONFIG_HOSTAP is not set
 # CONFIG_IWM is not set
 # CONFIG_LIBERTAS is not set
