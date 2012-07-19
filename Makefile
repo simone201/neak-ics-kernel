@@ -369,7 +369,7 @@ NEAK_FLAGS   = -marm -march=armv7-a -mfloat-abi=hard \
 			   -fgraphite-identity -fsched-spec-load \
 			   -floop-interchange -floop-strip-mine -floop-block \
 			   -ffast-math -ftree-vectorize \
-			   -funswitch-loops -fpredictive-commoning -fgcse-after-reload -fno-tree-vectorize \
+			   -funswitch-loops -fpredictive-commoning -fgcse-after-reload \
 			   -fmodulo-sched -fmodulo-sched-allow-regmoves \
 			   -fipa-cp-clone -pipe \
 			   -Wno-array-bounds
