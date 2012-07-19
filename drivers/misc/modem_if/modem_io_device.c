@@ -338,7 +338,11 @@ static int rx_hdlc_data_check(struct io_device *iod, struct link_device *ld,
 		hdr->frag_len += len;
 
 		/* check if it is final for this packet sequence */
+<<<<<<< HEAD
 		if (!rest_len)
+=======
+		if (!rest_len || !rest)
+>>>>>>> 0c6e131... Samsung i9100 update5 sources
 			break;
 
 		/* more bytes are remain for this packet sequence
