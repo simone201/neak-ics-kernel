@@ -129,11 +129,7 @@ static int s5pc110_start_otg(u32 regs)
 
 	pr_info("%s + regs=0x%x\n", __func__, regs);
 
-<<<<<<< HEAD
-	reset_scheduler_numbers();
-=======
 	/* 1. hcd */
->>>>>>> a468aa0... Samsung i9100 update6 sources
 	g_pUsbHcd = usb_create_hcd(&s5pc110_otg_hc_driver, &pdev->dev,
 					"s3cotg");/*pdev->dev.bus_id*/
 	if (g_pUsbHcd == NULL) {
@@ -166,26 +162,7 @@ static int s5pc110_start_otg(u32 regs)
 
 	pr_info("otg g_pUDCBase 0x%p\n", g_pUDCBase);
 
-<<<<<<< HEAD
-	g_pUsbHcd->self.otg_port = 1;
-
-	otghost = hcd_to_sec_otghost(g_pUsbHcd);
-	if (otghost == NULL) {
-		otg_err(true, "failed to get otghost hcd\n");
-		ret_val = USB_ERR_FAIL;
-		goto err_out_create_hcd;
-	}
-	otghost->otg_data = otg_data;
-
-        if ((s3c_get_drivermode()) & USB_OTG_DRIVER_S3CFSLS) {
-                otghost->is_hs = 0; // force USB 1.x mode
-        } else {
-                otghost->is_hs = 1;
-        }
-
-=======
 	/* 3. workqueue */
->>>>>>> a468aa0... Samsung i9100 update6 sources
 	INIT_WORK(&otghost->work, otg_power_work);
 	otghost->wq = create_singlethread_workqueue("sec_otghostd");
 

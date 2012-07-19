@@ -653,7 +653,6 @@ static int s5pc110_otghcd_urb_dequeue(
 
 	/* otg_dbg(OTG_DBG_OTGHCDI_HCD, "dequeue\n"); */
 
-<<<<<<< HEAD
 	/* Dequeue should be performed only if endpoint is enabled */
 	if (_urb->ep->enabled == 0) {
 		spin_unlock_irqrestore(&otghost->lock, spin_lock_flag);
@@ -664,8 +663,6 @@ static int s5pc110_otghcd_urb_dequeue(
 	//kevinh read this from inside the spinlock
 	cancel_td = (struct td *)_urb->hcpriv;
 
-=======
->>>>>>> a468aa0... Samsung i9100 update6 sources
 	if (cancel_td == NULL) {
 		otg_err(OTG_DBG_OTGHCDI_HCD, "cancel_td is NULL\n");
 		spin_unlock_irqrestore(&otghost->lock, spin_lock_flag);
