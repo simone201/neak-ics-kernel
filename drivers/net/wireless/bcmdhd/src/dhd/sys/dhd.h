@@ -34,6 +34,7 @@
 #ifndef _dhd_h_
 #define _dhd_h_
 
+#include "dhd_sec_feature.h"
 #include <linux/init.h>
 #include <linux/kernel.h>
 #include <linux/slab.h>
@@ -343,25 +344,41 @@ inline static void MUTEX_UNLOCK_SOFTAP_SET(dhd_pub_t * dhdp)
 		printf("call wake_lock: %s %d\n", \
 			__FUNCTION__, __LINE__); \
 		dhd_os_wake_lock(pub); \
+<<<<<<< HEAD
 	} while(0)
+=======
+	} while (0)
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 #define DHD_OS_WAKE_UNLOCK(pub) \
 	do { \
 		printf("call wake_unlock: %s %d\n", \
 			__FUNCTION__, __LINE__); \
 		dhd_os_wake_unlock(pub); \
+<<<<<<< HEAD
 	} while(0)
+=======
+	} while (0)
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 #define DHD_OS_WAKE_LOCK_TIMEOUT(pub) \
 	do { \
 		printf("call wake_lock_timeout: %s %d\n", \
 			__FUNCTION__, __LINE__); \
 		dhd_os_wake_lock_timeout(pub); \
+<<<<<<< HEAD
 	} while(0)
+=======
+	} while (0)
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 #define DHD_OS_WAKE_LOCK_TIMEOUT_ENABLE(pub, val) \
 	do { \
 		printf("call wake_lock_timeout_enable[%d]: %s %d\n", \
 			val, __FUNCTION__, __LINE__); \
 		dhd_os_wake_lock_timeout_enable(pub, val); \
+<<<<<<< HEAD
 	} while(0)
+=======
+	} while (0)
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 #else
 #define DHD_OS_WAKE_LOCK(pub)			dhd_os_wake_lock(pub)
 #define DHD_OS_WAKE_UNLOCK(pub)			dhd_os_wake_unlock(pub)
@@ -653,8 +670,17 @@ extern char fw_path2[MOD_PARAM_PATHLEN];
 /* Flag to indicate if we should download firmware on driver load */
 extern uint dhd_download_fw_on_driverload;
 
+<<<<<<< HEAD
 /* Flags to indicate if we distingish power off scheme during suspend */
 extern bool suspend_power_off;
+=======
+#ifdef WL_CFG80211
+/* CSP#505233: Flags to indicate if we distingish power off policy when
+ * user set the memu "Keep Wi-Fi on during sleep" to "Never"
+ */
+extern bool suspend_power_off;
+#endif /* WL_CFG80211 */
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 
 #ifdef BCM4334_CHECK_CHIP_REV
 /* Check chip revision */

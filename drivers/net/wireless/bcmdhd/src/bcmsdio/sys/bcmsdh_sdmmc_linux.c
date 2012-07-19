@@ -179,8 +179,11 @@ MODULE_DEVICE_TABLE(sdio, bcmsdh_sdmmc_ids);
 static int bcmsdh_sdmmc_suspend(struct device *pdev)
 {
 	struct sdio_func *func = dev_to_sdio_func(pdev);
+<<<<<<< HEAD
 	mmc_pm_flag_t sdio_flags;
 	int ret;
+=======
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 
 	if (func->num != 2)
 		return 0;
@@ -189,6 +192,7 @@ static int bcmsdh_sdmmc_suspend(struct device *pdev)
 
 	if (dhd_os_check_wakelock(bcmsdh_get_drvdata()))
 		return -EBUSY;
+<<<<<<< HEAD
 
 	sdio_flags = sdio_get_host_pm_caps(func);
 
@@ -204,6 +208,8 @@ static int bcmsdh_sdmmc_suspend(struct device *pdev)
 		return ret;
 	}
 
+=======
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 #if defined(OOB_INTR_ONLY)
 	bcmsdh_oob_intr_set(0);
 #endif	/* defined(OOB_INTR_ONLY) */

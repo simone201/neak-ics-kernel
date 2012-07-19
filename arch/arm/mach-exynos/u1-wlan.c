@@ -53,9 +53,15 @@ static void *brcm_wlan_mem_prealloc(int section, unsigned long size)
 	if (section == PREALLOC_WLAN_SEC_NUM)
 		return wlan_static_skb;
 	if (section == WLAN_STATIC_SCAN_BUF0)
+<<<<<<< HEAD
 		return wlan_static_scan_buf0;
 	if (section == WLAN_STATIC_SCAN_BUF1)
 		return wlan_static_scan_buf1;
+=======
+		return wlan_static_scan_buf0;	
+	if (section == WLAN_STATIC_SCAN_BUF1)
+		return wlan_static_scan_buf1;	
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 	if ((section < 0) || (section > PREALLOC_WLAN_SEC_NUM))
 		return NULL;
 
@@ -94,10 +100,17 @@ static int brcm_init_wlan_mem(void)
 			goto err_mem_alloc;
 	}
 	wlan_static_scan_buf0 = kmalloc (65536, GFP_KERNEL);
+<<<<<<< HEAD
 	if(!wlan_static_scan_buf0)
 		goto err_mem_alloc;
 	wlan_static_scan_buf1 = kmalloc (65536, GFP_KERNEL);
 	if(!wlan_static_scan_buf1)
+=======
+	if(!wlan_static_scan_buf0)		
+		goto err_mem_alloc;
+	wlan_static_scan_buf1 = kmalloc (65536, GFP_KERNEL);
+	if(!wlan_static_scan_buf1)		
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 		goto err_mem_alloc;
 
 	printk("%s: WIFI MEM Allocated\n", __FUNCTION__);

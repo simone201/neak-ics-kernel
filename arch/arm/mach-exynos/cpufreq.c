@@ -16,7 +16,6 @@
 #include <linux/clk.h>
 #include <linux/io.h>
 #include <linux/slab.h>
-#include <linux/regulator/consumer.h>
 #include <linux/cpufreq.h>
 #include <linux/suspend.h>
 #include <linux/reboot.h>
@@ -153,13 +152,11 @@ static int exynos_target(struct cpufreq_policy *policy,
 	/* When the new frequency is higher than current frequency */
 	if ((freqs.new > freqs.old) && !safe_arm_volt) {
 		/* Firstly, voltage up to increase frequency */
-		regulator_set_voltage(arm_regulator, arm_volt,
-				     arm_volt + 25000);
+		exynos_info->set_volt(arm_volt);
 	}
 
 	if (safe_arm_volt)
-		regulator_set_voltage(arm_regulator, safe_arm_volt,
-				     safe_arm_volt + 25000);
+		exynos_info->set_volt(safe_arm_volt);
 	if (freqs.new != freqs.old)
 		exynos_info->set_freq(old_index, index);
 
@@ -169,8 +166,7 @@ static int exynos_target(struct cpufreq_policy *policy,
 	if ((freqs.new < freqs.old) ||
 	   ((freqs.new > freqs.old) && safe_arm_volt)) {
 		/* down the voltage after frequency change */
-		regulator_set_voltage(arm_regulator, arm_volt,
-				     arm_volt + 25000);
+		exynos_info->set_volt(arm_volt);
 	}
 
 out:
@@ -268,11 +264,14 @@ int exynos_cpufreq_lock(unsigned int nId,
 	if (!exynos_info)
 		return -EPERM;
 
+<<<<<<< HEAD
 	if (exynos_cpufreq_disable) {
 		pr_info("CPUFreq is already fixed\n");
 		return -EPERM;
 	}
 
+=======
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 	if (cpufreq_level < exynos_info->max_support_idx
 			|| cpufreq_level > exynos_info->min_support_idx) {
 		pr_warn("%s: invalid cpufreq_level(%d:%d)\n", __func__, nId,
@@ -350,12 +349,10 @@ int exynos_cpufreq_lock(unsigned int nId,
 		/* get the voltage value */
 		safe_arm_volt = exynos_get_safe_armvolt(old_idx, cpufreq_level);
 		if (safe_arm_volt)
-			regulator_set_voltage(arm_regulator, safe_arm_volt,
-					     safe_arm_volt + 25000);
+			exynos_info->set_volt(safe_arm_volt);
 
 		arm_volt = volt_table[cpufreq_level];
-		regulator_set_voltage(arm_regulator, arm_volt,
-				     arm_volt + 25000);
+		exynos_info->set_volt(arm_volt);
 
 		exynos_info->set_freq(old_idx, cpufreq_level);
 
@@ -466,11 +463,10 @@ int exynos_cpufreq_upper_limit(unsigned int nId,
 
 		safe_arm_volt = exynos_get_safe_armvolt(old_idx, cpufreq_level);
 		if (safe_arm_volt)
-			regulator_set_voltage(arm_regulator, safe_arm_volt,
-					     safe_arm_volt + 25000);
+			exynos_info->set_volt(safe_arm_volt);
 
 		arm_volt = volt_table[cpufreq_level];
-		regulator_set_voltage(arm_regulator, arm_volt, arm_volt + 25000);
+		exynos_info->set_volt(arm_volt);
 
 		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
 	}
@@ -599,7 +595,6 @@ static int exynos_cpufreq_notifier_event(struct notifier_block *this,
 		if (ret < 0)
 			return NOTIFY_BAD;
 #endif
-
 		exynos_cpufreq_disable = true;
 
 		pr_debug("PM_SUSPEND_PREPARE for CPUFREQ\n");
@@ -745,18 +740,12 @@ static int __init exynos_cpufreq_init(void)
 		pr_err("%s: CPU type not found\n", __func__);
 
 	if (ret)
-		goto err_vdd_arm;
+		goto err_cpufreq_init;
 
 	if (exynos_info->set_freq == NULL) {
 		printk(KERN_ERR "%s: No set_freq function (ERR)\n",
 				__func__);
-		goto err_vdd_arm;
-	}
-
-	arm_regulator = regulator_get(NULL, "vdd_arm");
-	if (IS_ERR(arm_regulator)) {
-		printk(KERN_ERR "failed to get resource %s\n", "vdd_arm");
-		goto err_vdd_arm;
+		goto err_cpufreq_init;
 	}
 
 	exynos_cpufreq_disable = false;
@@ -786,9 +775,7 @@ err_cpufreq:
 	unregister_reboot_notifier(&exynos_cpufreq_reboot_notifier);
 	unregister_pm_notifier(&exynos_cpufreq_notifier);
 
-	if (!IS_ERR(arm_regulator))
-		regulator_put(arm_regulator);
-err_vdd_arm:
+err_cpufreq_init:
 	kfree(exynos_info);
 	pr_debug("%s: failed initialization\n", __func__);
 	return -EINVAL;

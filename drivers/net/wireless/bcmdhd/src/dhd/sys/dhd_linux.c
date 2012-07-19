@@ -194,7 +194,11 @@ extern int dhd_check_module_mac(dhd_pub_t *dhd);
 #endif
 #endif /* CUSTOMER_HW_SAMSUNG */
 
+<<<<<<< HEAD
 #ifdef CUSTOMER_SET_COUNTRY
+=======
+#ifdef GLOBALCONFIG_WLAN_COUNTRY_CODE
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 int dhd_customer_set_country(dhd_pub_t *dhd);
 #endif
 
@@ -213,6 +217,7 @@ typedef struct dhd_if {
 	char			name[IFNAMSIZ+1]; /* linux interface name */
 	uint8			bssidx;			/* bsscfg index for the interface */
 	bool			set_multicast;
+	bool			event2cfg80211;	/* To determine if pass event to cfg80211 */
 } dhd_if_t;
 
 #ifdef WLMEDIA_HTSF
@@ -243,6 +248,16 @@ static uint32 maxdelay = 0, tspktcnt = 0, maxdelaypktno = 0;
 
 #endif  /* WLMEDIA_HTSF */
 
+#if defined(PKT_FILTER_SUPPORT)
+#if defined(CUSTOMER_HW_SAMSUNG)
+#define HEX_PREF_STR	"0x"
+#define UNI_FILTER_STR	"010000000000"
+#define ZERO_ADDR_STR	"000000000000"
+#define ETHER_TYPE_STR	"0000"
+#define IPV6_FILTER_STR	"20"
+#define ZERO_TYPE_STR	"00"
+#endif /* CUSTOMER_HW_SAMSUNG */
+#endif /* PKT_FILTER_SUPPORT */
 /* Local private structure (extension of pub) */
 typedef struct dhd_info {
 #if defined(CONFIG_WIRELESS_EXT)
@@ -538,8 +553,13 @@ static int dhd_wl_host_event(dhd_info_t *dhd, int *ifidx, void *pktdata,
 static int dhd_sleep_pm_callback(struct notifier_block *nfb, unsigned long action, void *ignored)
 {
 	int ret = NOTIFY_DONE;
+<<<<<<< HEAD
 
 //#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 39))
+=======
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 39)) || \
+	defined(CUSTOMER_HW_SAMSUNG)
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 	switch (action) {
 	case PM_HIBERNATION_PREPARE:
 	case PM_SUSPEND_PREPARE:
@@ -553,7 +573,11 @@ static int dhd_sleep_pm_callback(struct notifier_block *nfb, unsigned long actio
 		break;
 	}
 	smp_mb();
+<<<<<<< HEAD
 //#endif
+=======
+#endif
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 	return ret;
 }
 
@@ -575,7 +599,11 @@ static void dhd_set_packet_filter(int value, dhd_pub_t *dhd)
 		int i;
 #ifdef PASS_ALL_MCAST_PKTS
 		char iovbuf[20];
+<<<<<<< HEAD
 		uint32 allmultivar=!value;
+=======
+		uint32 allmultivar = !value;
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 #endif /* PASS_ALL_MCAST_PKTS */
 
 		for (i = 0; i < dhd->pktfilter_count; i++) {
@@ -877,14 +905,20 @@ _dhd_set_multicast_list(dhd_info_t *dhd, int ifidx)
 		if (dhd->iflist[i]) {
 			dev = dhd->iflist[i]->net;
 #else
+<<<<<<< HEAD
 	ASSERT(dhd && dhd->iflist[ifidx]);
 	dev = dhd->iflist[ifidx]->net;
+=======
+			ASSERT(dhd && dhd->iflist[ifidx]);
+			dev = dhd->iflist[ifidx]->net;
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 #endif /* MCAST_LIST_ACCUMULATION */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 27)
-	netif_addr_lock_bh(dev);
+			netif_addr_lock_bh(dev);
 #endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35)
 #ifdef MCAST_LIST_ACCUMULATION
+<<<<<<< HEAD
 			cnt_iface[i]=netdev_mc_count(dev);
 			cnt += cnt_iface[i];
 #else
@@ -895,14 +929,30 @@ _dhd_set_multicast_list(dhd_info_t *dhd, int ifidx)
 			cnt += dev->mc_count;
 #else
 	cnt = dev->mc_count;
+=======
+			cnt_iface[i] = netdev_mc_count(dev);
+			cnt += cnt_iface[i];
+#else
+			cnt = netdev_mc_count(dev);
+#endif /* MCAST_LIST_ACCUMULATION */
+#else
+#ifdef MCAST_LIST_ACCUMULATION
+			cnt += dev->mc_count;
+#else
+			cnt = dev->mc_count;
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 #endif /* MCAST_LIST_ACCUMULATION */
 #endif /* LINUX_VERSION_CODE */
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 27)
-	netif_addr_unlock_bh(dev);
+			netif_addr_unlock_bh(dev);
 #endif
 
+<<<<<<< HEAD
 	/* Determine initial value of allmulti flag */
+=======
+			/* Determine initial value of allmulti flag */
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 #ifdef MCAST_LIST_ACCUMULATION
 			allmulti |= (dev->flags & IFF_ALLMULTI) ? TRUE : FALSE;
 		}
@@ -934,15 +984,20 @@ _dhd_set_multicast_list(dhd_info_t *dhd, int ifidx)
 
 #ifdef MCAST_LIST_ACCUMULATION
 	for (i = 0; i < DHD_MAX_IFS; i++) {
+<<<<<<< HEAD
 		if ( dhd->iflist[i] ) {
+=======
+		if (dhd->iflist[i]) {
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 			DHD_TRACE(("_dhd_set_multicast_list: ifidx %d\n", i));		/* Shinuk */
 			dev = dhd->iflist[i]->net;
 #endif /* MCAST_LIST_ACCUMULATION */
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 27)
-	netif_addr_lock_bh(dev);
+			netif_addr_lock_bh(dev);
 #endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35)
+<<<<<<< HEAD
 	netdev_for_each_mc_addr(ha, dev) {
 #ifdef MCAST_LIST_ACCUMULATION
 				if (!cnt_iface[i])
@@ -972,10 +1027,41 @@ _dhd_set_multicast_list(dhd_info_t *dhd, int ifidx)
 		memcpy(bufp, (void *)mclist->dmi_addr, ETHER_ADDR_LEN);
 		bufp += ETHER_ADDR_LEN;
 	}
+=======
+			netdev_for_each_mc_addr(ha, dev) {
+#ifdef MCAST_LIST_ACCUMULATION
+				if (!cnt_iface[i])
+#else
+				if (!cnt)
+#endif /* MCAST_LIST_ACCUMULATION */
+					break;
+				memcpy(bufp, ha->addr, ETHER_ADDR_LEN);
+				bufp += ETHER_ADDR_LEN;
+#ifdef MCAST_LIST_ACCUMULATION
+				DHD_TRACE(("_dhd_set_multicast_list: cnt %d %02x:%02x:%02x:%02x:%02x:%02x\n",
+					cnt_iface[i],  ha->addr[0],  ha->addr[1],
+					ha->addr[2],  ha->addr[3],  ha->addr[4],
+					ha->addr[5]));	/* Shinuk */
+				cnt_iface[i]--;
+#else
+				cnt--;
+#endif /* MCAST_LIST_ACCUMULATION */
+
+			}
+#else
+#ifdef MCAST_LIST_ACCUMULATION
+			for (mclist = dev->mc_list; (mclist && (cnt_iface[i] > 0)); cnt_iface[i]--, mclist = mclist->next) {
+#else
+			for (mclist = dev->mc_list; (mclist && (cnt > 0)); cnt--, mclist = mclist->next) {
+#endif /* MCAST_LIST_ACCUMULATION */
+				memcpy(bufp, (void *)mclist->dmi_addr, ETHER_ADDR_LEN);
+				bufp += ETHER_ADDR_LEN;
+			}
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 #endif /* LINUX_VERSION_CODE */
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 27)
-	netif_addr_unlock_bh(dev);
+			netif_addr_unlock_bh(dev);
 #endif
 
 #ifdef MCAST_LIST_ACCUMULATION
@@ -1146,6 +1232,7 @@ dhd_op_if(dhd_if_t *ifp)
 				if (!wl_cfg80211_notify_ifadd(ifp->net, ifp->idx, ifp->bssidx,
 					(void*)dhd_net_attach)) {
 					ifp->state = DHD_IF_NONE;
+					ifp->event2cfg80211 = TRUE;
 					return;
 				}
 #endif
@@ -1461,6 +1548,25 @@ dhd_start_xmit(struct sk_buff *skb, struct net_device *net)
 	DHD_OS_WAKE_LOCK(&dhd->pub);
 
 	/* Reject if down */
+#ifdef CUSTOMER_HW_SAMSUNG
+	/*
+	 * CSP #506108
+	 *   kernel panic issue when first bootup time,
+	 *   rmmod without interface down make unnecessary hang event.
+	 */
+	if (dhd->pub.busstate == DHD_BUS_DOWN) {
+		DHD_ERROR(("%s: xmit rejected pub.up=%d busstate=%d \n",
+			__FUNCTION__, dhd->pub.up, dhd->pub.busstate));
+		netif_stop_queue(net);
+		/* Send Event when bus down detected during data session */
+		if (dhd->pub.up) {
+			DHD_ERROR(("%s: Event HANG sent up\n", __FUNCTION__));
+			net_os_send_hang_message(net);
+		}
+		DHD_OS_WAKE_UNLOCK(&dhd->pub);
+		return -ENODEV;
+	}
+#else
 	if (!dhd->pub.up || (dhd->pub.busstate == DHD_BUS_DOWN)) {
 		DHD_ERROR(("%s: xmit rejected pub.up=%d busstate=%d \n",
 			__FUNCTION__, dhd->pub.up, dhd->pub.busstate));
@@ -1473,6 +1579,7 @@ dhd_start_xmit(struct sk_buff *skb, struct net_device *net)
 		DHD_OS_WAKE_UNLOCK(&dhd->pub);
 		return -ENODEV;
 	}
+#endif
 
 	ifidx = dhd_net2idx(dhd, net);
 	if (ifidx == DHD_BAD_IF) {
@@ -2589,9 +2696,15 @@ dhd_stop(struct net_device *net)
 	dhd_prot_stop(&dhd->pub);
 
 #if defined(WL_CFG80211)
+<<<<<<< HEAD
 	if (ifidx == 0 && (!dhd_download_fw_on_driverload || suspend_power_off))
+=======
+	if (ifidx == 0 &&
+		(!dhd_download_fw_on_driverload ||
+		(suspend_power_off && dhd->pub.busstate != DHD_BUS_DOWN)))
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 		wl_android_wifi_off(net);
-#endif
+#endif /* WL_CFG80211 */
 	dhd->pub.hang_was_sent = 0;
 	dhd->pub.rxcnt_timeout = 0;
 	dhd->pub.txcnt_timeout = 0;
@@ -2605,7 +2718,9 @@ static int
 dhd_open(struct net_device *net)
 {
 	dhd_info_t *dhd = *(dhd_info_t **)netdev_priv(net);
-
+#ifdef PROP_TXSTATUS
+	uint up = 0;
+#endif
 #ifdef TOE
 	uint32 toe_ol;
 #endif
@@ -2619,10 +2734,11 @@ dhd_open(struct net_device *net)
 #endif
 	DHD_OS_WAKE_LOCK(&dhd->pub);
 	/* Update FW path if it was changed */
-	if ((firmware_path != NULL) && (firmware_path[0] != '\0')) {
+	if ((strlen(firmware_path) != 0) && (firmware_path[0] != '\0')) {
 		if (firmware_path[strlen(firmware_path)-1] == '\n')
 			firmware_path[strlen(firmware_path)-1] = '\0';
 #ifdef WL_CFG80211
+<<<<<<< HEAD
 		if (dhd_download_fw_on_driverload &&
 					strcmp(fw_path, firmware_path))
 				{
@@ -2630,11 +2746,20 @@ dhd_open(struct net_device *net)
 				fw_path, firmware_path));
 			fw_changed = TRUE;
 		}
+=======
+				if (dhd_download_fw_on_driverload &&
+					strcmp(fw_path, firmware_path))
+				{
+					DHD_ERROR(("firmware path changed:%s --> %s\n",
+						fw_path, firmware_path));
+					fw_changed = TRUE;
+				}
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 #endif
-		strcpy(fw_path, firmware_path);
+			strcpy(fw_path, firmware_path);
 #if defined(BCM4334_CHECK_CHIP_REV)
-		strcpy(fw_down_path, fw_path);
-		strcat(fw_down_path, chipver_tag);
+			strcpy(fw_down_path, fw_path);
+			strcat(fw_down_path, chipver_tag);
 #endif
 		firmware_path[0] = '\0';
 	}
@@ -2675,9 +2800,12 @@ dhd_open(struct net_device *net)
 			}
 		} else {
 			if (fw_changed || suspend_power_off) {
+<<<<<<< HEAD
 #ifdef PROP_TXSTATUS
 				dhd_wlfc_deinit(&dhd->pub);
 #endif
+=======
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 				wl_android_wifi_off(net);
 				msleep(300);
 				ret = wl_android_wifi_on(net);
@@ -2717,6 +2845,12 @@ dhd_open(struct net_device *net)
 			ret = -1;
 			goto exit;
 		}
+
+		/* CSP#505233: Flags to indicate if we distingish power off policy when
+		 * user set the memu "Keep Wi-Fi on during sleep" to "Never"
+		 */
+		if (!suspend_power_off)
+			suspend_power_off = TRUE;
 #endif /* WL_CFG80211 */
 
 		if (!suspend_power_off)
@@ -2819,6 +2953,7 @@ dhd_add_if(dhd_info_t *dhd, int ifidx, void *handle, char *name,
 		}
 
 	memset(ifp, 0, sizeof(dhd_if_t));
+	ifp->event2cfg80211 = FALSE;
 	ifp->info = dhd;
 	dhd->iflist[ifidx] = ifp;
 	strncpy(ifp->name, name, IFNAMSIZ);
@@ -2834,6 +2969,9 @@ dhd_add_if(dhd_info_t *dhd, int ifidx, void *handle, char *name,
 		up(&dhd->thr_sysioc_ctl.sema);
 	} else
 		ifp->net = (struct net_device *)handle;
+	if (ifidx == 0) {
+		ifp->event2cfg80211 = TRUE;
+	}
 
 	return 0;
 }
@@ -2906,9 +3044,9 @@ dhd_attach(osl_t *osh, struct dhd_bus *bus, uint bus_hdrlen)
 #endif /* BCM4334_CHECK_CHIP_REV */
 
 	/* updates firmware nvram path if it was provided as module parameters */
-	if ((firmware_path != NULL) && (firmware_path[0] != '\0'))
+	if ((strlen(firmware_path) != 0) && (firmware_path[0] != '\0'))
 		strcpy(fw_path, firmware_path);
-	if ((nvram_path != NULL) && (nvram_path[0] != '\0'))
+	if ((strlen(nvram_path) != 0) && (nvram_path[0] != '\0'))
 		strcpy(nv_path, nvram_path);
 
 	/* Allocate etherdev, including space for private structure */
@@ -2973,7 +3111,6 @@ dhd_attach(osl_t *osh, struct dhd_bus *bus, uint bus_hdrlen)
 
 #ifdef PROP_TXSTATUS
 	spin_lock_init(&dhd->wlfc_spinlock);
-	dhd->pub.wlfc_enabled = TRUE;
 #endif /* PROP_TXSTATUS */
 
 	/* Initialize other structure content */
@@ -3222,7 +3359,7 @@ dhd_bus_start(dhd_pub_t *dhdp)
 	dhd_check_module_mac(dhdp);
 #endif
 #ifdef READ_MACADDR
-	dhd_read_macaddr(dhd);
+	dhd_read_macaddr(dhd, &dhd->pub.mac);
 #endif
 #ifdef RDWR_MACADDR
 	dhd_check_rdwr_macaddr(dhd, &dhd->pub, &dhd->pub.mac);
@@ -3264,6 +3401,7 @@ dhd_write_rdwr_korics_macaddr(dhd, &dhd->pub.mac);
  * firmware and accordingly enable concurrent mode (Apply P2P settings). SoftAP firmware
  * would still be named as fw_bcmdhd_apsta.
  */
+<<<<<<< HEAD
 static u32
 dhd_concurrent_fw(dhd_pub_t *dhd)
 {
@@ -3284,6 +3422,34 @@ dhd_concurrent_fw(dhd_pub_t *dhd)
 			DHD_TRACE(("%s: P2P is supported\n", __FUNCTION__));
 			return 1;
 		}
+=======
+bool
+dhd_concurrent_fw(dhd_pub_t *dhd)
+{
+	int i, ret = 0;
+	char buf[WLC_IOCTL_SMLEN];
+	char *cap[] = {"p2p", "mchan", "dsta", NULL};
+	if ((!op_mode) && (strstr(fw_path, "_p2p") == NULL) &&
+		(strstr(fw_path, "_apsta") == NULL)) {
+		/* Given path is for the STA firmware. Check whether VSDB + P2P support
+		 * is present in  the firmware. If so, set mode as P2P (concurrent support).
+		 */
+		for (i = 0; cap[i] != NULL; ) {
+			memset(buf, 0, sizeof(buf));
+			bcm_mkiovar(cap[i++], 0, 0, buf, sizeof(buf));
+			if ((ret = dhd_wl_ioctl_cmd(dhd, WLC_GET_VAR, buf, sizeof(buf),
+				FALSE, 0)) < 0) {
+				DHD_TRACE(("%s: Get VSDB Capability(%s) failed (error=%d)\n",
+					__FUNCTION__, cap[i-1], ret));
+				return 0;
+			} else if (buf[0] != 1) {
+				DHD_TRACE(("VSDB(%s) is not supported , ret : %d\n",
+					cap[i-1], buf[0]));
+				return 0;
+			}
+		}
+		return 1;
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 	}
 	return 0;
 }
@@ -3307,7 +3473,11 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 #else
 	uint32 glom = 0;
 #endif
+<<<<<<< HEAD
 #ifdef VSDB
+=======
+#if defined(VSDB) || defined(ROAM_ENABLE)
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 	uint bcn_timeout = 8;
 #else
 	uint bcn_timeout = 4;
@@ -3367,6 +3537,18 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 #ifdef BCM43241_CHIP
 	int mimo_bw_cap = 1;
 #endif /* BCM43241_CHIP */
+<<<<<<< HEAD
+=======
+
+#ifdef PROP_TXSTATUS
+	dhd->wlfc_enabled = FALSE;
+	/* enable WLFC only if the firmware is VSDB */
+#endif /* PROP_TXSTATUS */
+#ifdef AUTOCOUNTRY
+	int autocountry = 1;
+#endif
+
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 	DHD_TRACE(("Enter %s\n", __FUNCTION__));
 	dhd->op_mode = 0;
 #ifdef GET_CUSTOM_MAC_ENABLE
@@ -3427,7 +3609,7 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 		if ((ret = dhd_wl_ioctl_cmd(dhd, WLC_SET_VAR,
 			iovbuf, sizeof(iovbuf), TRUE, 0)) < 0) {
 			DHD_ERROR(("%s APSTA for WFD failed ret= %d\n", __FUNCTION__, ret));
-		} else {
+		} else if (!dhd_concurrent_fw(dhd)) {
 			dhd->op_mode |= WFD_MASK;
 #if defined(ARP_OFFLOAD_SUPPORT)
 			arpoe = 0;
@@ -3444,7 +3626,11 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 			DHD_ERROR(("%s p2p_da_override ret= %d\n", __FUNCTION__, ret));
 		} else {
 			DHD_INFO(("dhd_preinit_ioctls: p2p_da_override succeeded\n"));
+<<<<<<< HEAD
 		}		
+=======
+		}
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 	}
 #endif /* (ARP_OFFLOAD_SUPPORT) */
 
@@ -3492,13 +3678,20 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 		/* STA only operation mode */
 		dhd->op_mode |= STA_MASK;
 		dhd_pkt_filter_enable = TRUE;
+		if (dhd_concurrent_fw(dhd)) {
+			dhd->op_mode |= WFD_MASK;
+		}
 	}
 
+<<<<<<< HEAD
 	DHD_INFO(("Firmware up: op_mode=%d, "
 			"Broadcom Dongle Host Driver mac=%.2x:%.2x:%.2x:%.2x:%.2x:%.2x\n",
 			dhd->op_mode,
 			dhd->mac.octet[0], dhd->mac.octet[1], dhd->mac.octet[2],
 			dhd->mac.octet[3], dhd->mac.octet[4], dhd->mac.octet[5]));
+=======
+	DHD_ERROR(("Firmware up: op_mode=%d", dhd->op_mode));
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 
 	/* Set Country code  */
 	if (dhd->dhd_cspec.ccode[0] != 0) {
@@ -3514,14 +3707,18 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 		DHD_ERROR(("%s assoc_listen failed %d\n", __FUNCTION__, ret));
 
 #ifdef CUSTOMER_HW_SAMSUNG
-/* Disable built-in roaming to allowed ext supplicant to take care of roaming */
+	/* Disable built-in roaming to allowed ext supplicant to take care of roaming */
 	bcm_mkiovar("roam_off", (char *)&roamvar, 4, iovbuf, sizeof(iovbuf));
 	dhd_wl_ioctl_cmd(dhd, WLC_SET_VAR, iovbuf, sizeof(iovbuf), TRUE, 0);
 
 #ifdef ROAM_ENABLE
 	dhd_wl_ioctl_cmd(dhd, WLC_SET_ROAM_TRIGGER, roam_trigger, sizeof(roam_trigger), TRUE, 0);
 	dhd_wl_ioctl_cmd(dhd, WLC_SET_ROAM_SCAN_PERIOD, roam_scan_period,
+<<<<<<< HEAD
 			sizeof(roam_scan_period), TRUE, 0);
+=======
+		sizeof(roam_scan_period), TRUE, 0);
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 	dhd_wl_ioctl_cmd(dhd, WLC_SET_ROAM_DELTA, roam_delta, sizeof(roam_delta), TRUE, 0);
 	bcm_mkiovar("fullroamperiod", (char *)&roam_fullscan_period, 4, iovbuf, sizeof(iovbuf));
 	dhd_wl_ioctl_cmd(dhd, WLC_SET_VAR, iovbuf, sizeof(iovbuf), TRUE, 0);
@@ -3532,6 +3729,14 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 	dhd_wl_ioctl_cmd(dhd, WLC_SET_VAR, iovbuf, sizeof(iovbuf), TRUE, 0);
 #endif
 
+<<<<<<< HEAD
+=======
+#ifdef AUTOCOUNTRY
+	bcm_mkiovar("autocountry", (char *)&autocountry, 4, iovbuf, sizeof(iovbuf));
+	dhd_wl_ioctl_cmd(dhd, WLC_SET_VAR, iovbuf, sizeof(iovbuf), TRUE, 0);
+#endif
+
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 #endif /* CUSTOMER_HW_SAMSUNG */
 
 #ifdef CONFIG_CONTROL_PM
@@ -3582,9 +3787,11 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 #if defined(SOFTAP)
 	if (ap_fw_loaded == FALSE)
 #endif
+	if ((dhd->op_mode & HOSTAPD_MASK) != HOSTAPD_MASK) {
 		if ((res = dhd_keep_alive_onoff(dhd)) < 0)
 			DHD_ERROR(("%s set keeplive failed %d\n",
 			__FUNCTION__, res));
+		}
 	}
 #endif /* defined(KEEP_ALIVE) */
 
@@ -3661,11 +3868,11 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 #else
 	if (arpoe) {
 #endif
-		dhd_arp_offload_set(dhd, dhd_arp_mode);
 		dhd_arp_offload_enable(dhd, arpoe);
+		dhd_arp_offload_set(dhd, dhd_arp_mode);
 	} else {
-		dhd_arp_offload_set(dhd, 0);
 		dhd_arp_offload_enable(dhd, FALSE);
+		dhd_arp_offload_set(dhd, 0);
 	}
 #endif /* ARP_OFFLOAD_SUPPORT */
 
@@ -3680,7 +3887,15 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 	dhd->pktfilter[3] = NULL;
 #else
 	/* Setup filter to allow only unicast */
+#if defined(CUSTOMER_HW_SAMSUNG)
+	dhd->pktfilter[0] = "100 0 0 0 "
+		HEX_PREF_STR UNI_FILTER_STR ZERO_ADDR_STR ETHER_TYPE_STR IPV6_FILTER_STR
+		" "
+		HEX_PREF_STR ZERO_ADDR_STR ZERO_ADDR_STR ETHER_TYPE_STR ZERO_TYPE_STR;
+#else
+#error Customer want to filter out all IPV6 packets
 	dhd->pktfilter[0] = "100 0 0 0 0x01 0x00";
+#endif
 	dhd->pktfilter[1] = NULL;
 	dhd->pktfilter[2] = NULL;
 	dhd->pktfilter[3] = NULL;
@@ -3700,10 +3915,18 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 	bcm_mkiovar("vlan_mode", (char *)&vlanmode, 4, iovbuf, sizeof(iovbuf));
 	dhd_wl_ioctl_cmd(dhd, WLC_SET_VAR, iovbuf, sizeof(iovbuf), TRUE, 0);
 #endif /* VLAN_MODE_OFF */
+<<<<<<< HEAD
 #ifdef CUSTOMER_SET_COUNTRY
   if (dhd_customer_set_country(dhd) < 0)
     DHD_ERROR(("%s: can't set country \n", __FUNCTION__));
 #endif
+=======
+#ifdef GLOBALCONFIG_WLAN_COUNTRY_CODE
+	if (dhd_customer_set_country(dhd) < 0)
+		DHD_ERROR(("%s: can't set country \n", __FUNCTION__));
+#endif
+
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 
 #if !defined(WL_CFG80211)
 	/* Force STA UP */
@@ -3984,12 +4207,17 @@ dhd_net_attach(dhd_pub_t *dhdp, int ifidx)
 		DHD_ERROR(("couldn't register the net device, err %d\n", err));
 		goto fail;
 	}
+<<<<<<< HEAD
 
 	DHD_INFO(("Broadcom Dongle Host Driver: register interface [%s]"
 		" MAC: %.2x:%.2x:%.2x:%.2x:%.2x:%.2x\n",
 			net->name,
 			dhd->pub.mac.octet[0], dhd->pub.mac.octet[1], dhd->pub.mac.octet[2],
 			dhd->pub.mac.octet[3], dhd->pub.mac.octet[4], dhd->pub.mac.octet[5]));
+=======
+	printf("Broadcom Dongle Host Driver: register interface [%s]",
+		net->name);
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 
 #if defined(SOFTAP) && defined(CONFIG_WIRELESS_EXT) && !defined(WL_CFG80211)
 		wl_iw_iscan_set_scan_broadcast_prep(net, 1);
@@ -4057,6 +4285,15 @@ void dhd_detach(dhd_pub_t *dhdp)
 		return;
 
 	DHD_TRACE(("%s: Enter state 0x%x\n", __FUNCTION__, dhd->dhd_state));
+
+#ifdef CUSTOMER_HW_SAMSUNG
+	/*
+	 * CSP #506108
+	 *   kernel panic issue when first bootup time,
+	 *   rmmod without interface down make unnecessary hang event.
+	 */
+	dhd->pub.up = 0;
+#endif
 
 	if (!(dhd->dhd_state & DHD_ATTACH_STATE_DONE)) {
 		/* Give sufficient time for threads to start running in case
@@ -4270,8 +4507,15 @@ dhd_module_init(void)
 		dhd_bus_reg_sdio_notify(&dhd_chipup_sem);
 		dhd_customer_gpio_wlan_ctrl(WLAN_POWER_ON);
 #if defined(CONFIG_WIFI_CONTROL_FUNC)
+<<<<<<< HEAD
 		if (wl_android_wifictrl_func_add() < 0)
 			goto fail_1;
+=======
+		if (wl_android_wifictrl_func_add() < 0) {
+			dhd_bus_unreg_sdio_notify();
+			goto fail_1;
+		}
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 #endif /* defined(CONFIG_WIFI_CONTROL_FUNC) */
 		if (down_timeout(&dhd_chipup_sem,
 			msecs_to_jiffies(POWERUP_WAIT_MS)) == 0) {
@@ -4306,7 +4550,7 @@ dhd_module_init(void)
 	error = dhd_bus_register();
 
 	if (!error)
-		printf("\n%s\n", dhd_version);
+		DHD_TRACE(("%s: \n%s\n", __FUNCTION__, dhd_version));
 	else {
 		DHD_ERROR(("%s: sdio_register_driver failed\n", __FUNCTION__));
 		goto fail_1;
@@ -4674,7 +4918,7 @@ dhd_wl_host_event(dhd_info_t *dhd, int *ifidx, void *pktdata,
 
 	ASSERT(dhd->iflist[*ifidx] != NULL);
 	ASSERT(dhd->iflist[*ifidx]->net != NULL);
-	if (dhd->iflist[*ifidx]->net) {
+	if (dhd->iflist[*ifidx]->event2cfg80211 && dhd->iflist[*ifidx]->net) {
 		wl_cfg80211_event(dhd->iflist[*ifidx]->net, event, *data);
 	}
 #endif /* defined(WL_CFG80211) */
@@ -4881,6 +5125,10 @@ int net_os_rxfilter_add_remove(struct net_device *dev, int add_remove, int num)
 			filterp = "102 0 0 0 0xFFFFFF 0x01005E";
 			break;
 		case DHD_MULTICAST6_FILTER_NUM:
+#if defined(CUSTOMER_HW_SAMSUNG)
+/* customer want to use NO IPV6 packets only */
+			return ret;
+#endif
 			filterp = "103 0 0 0 0xFFFF 0x3333";
 			break;
 		default:
@@ -4980,9 +5228,15 @@ int net_os_send_hang_message(struct net_device *dev)
 #endif
 #if defined(WL_CFG80211)
 			ret = wl_cfg80211_hang(dev, WLAN_REASON_UNSPECIFIED);
+<<<<<<< HEAD
+=======
+#if !defined(CUSTOMER_HW_SAMSUNG)
+#error do not use these it cause kernel panic
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 			dev_close(dev);
 			dev_open(dev);
 #endif
+#endif /* WL_CFG80211 */
 		}
 	}
 	return ret;

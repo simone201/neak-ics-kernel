@@ -75,7 +75,11 @@
 #define CMD_P2P_SET_NOA		"P2P_SET_NOA"
 #define CMD_P2P_SET_PS		"P2P_SET_PS"
 #define CMD_SET_AP_WPS_P2P_IE		"SET_AP_WPS_P2P_IE"
-#define CMD_SET_MAX_NUM_STA	"MAX_NUM_STA"
+
+/* Hostapd private command */
+#define CMD_SET_HAPD_MAX_NUM_STA	"HAPD_MAX_NUM_STA"
+#define CMD_SET_HAPD_SSID			"HAPD_SSID"
+#define CMD_SET_HAPD_HIDE_SSID		"HAPD_HIDE_SSID"
 
 #ifdef PNO_SUPPORT
 #define CMD_PNOSSIDCLR_SET	"PNOSSIDCLR"
@@ -149,8 +153,17 @@ extern bool ap_fw_loaded;
 extern char iface_name[IFNAMSIZ];
 #endif
 
+<<<<<<< HEAD
 /* Flags to indicate if we distingish power off scheme during suspend */
 bool suspend_power_off;
+=======
+/* CSP#505233: Flags to indicate if we distingish power off policy when
+ * user set the memu "Keep Wi-Fi on during sleep" to "Never"
+ */
+#ifdef WL_CFG80211
+bool suspend_power_off;
+#endif
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 
 /**
  * Local (static) functions and variables
@@ -252,7 +265,7 @@ int wl_android_set_roam_trigger(
 	roam_trigger[1] = WLC_BAND_ALL;
 
 	return wldev_ioctl(dev, WLC_SET_ROAM_TRIGGER, roam_trigger,
-			sizeof(roam_trigger), 1);
+		sizeof(roam_trigger), 1);
 }
 
 static int wl_android_get_roam_trigger(
@@ -263,15 +276,15 @@ static int wl_android_get_roam_trigger(
 
 	roam_trigger[1] = WLC_BAND_2G;
 	if (wldev_ioctl(dev, WLC_GET_ROAM_TRIGGER, roam_trigger,
-			sizeof(roam_trigger), 0)) {
+		sizeof(roam_trigger), 0)) {
 		roam_trigger[1] = WLC_BAND_5G;
 		if (wldev_ioctl(dev, WLC_GET_ROAM_TRIGGER, roam_trigger,
-				sizeof(roam_trigger), 0))
+			sizeof(roam_trigger), 0))
 			return -1;
 	}
 
 	bytes_written = snprintf(command, total_len, "%s %d",
-			CMD_ROAMTRIGGER_GET, roam_trigger[0]);
+		CMD_ROAMTRIGGER_GET, roam_trigger[0]);
 
 	return bytes_written;
 }
@@ -285,7 +298,7 @@ int wl_android_set_roam_delta(
 	roam_delta[1] = WLC_BAND_ALL;
 
 	return wldev_ioctl(dev, WLC_SET_ROAM_DELTA, roam_delta,
-			sizeof(roam_delta), 1);
+		sizeof(roam_delta), 1);
 }
 
 static int wl_android_get_roam_delta(
@@ -296,15 +309,15 @@ static int wl_android_get_roam_delta(
 
 	roam_delta[1] = WLC_BAND_2G;
 	if (wldev_ioctl(dev, WLC_GET_ROAM_DELTA, roam_delta,
-			sizeof(roam_delta), 0)) {
+		sizeof(roam_delta), 0)) {
 		roam_delta[1] = WLC_BAND_5G;
 		if (wldev_ioctl(dev, WLC_GET_ROAM_DELTA, roam_delta,
-				sizeof(roam_delta), 0))
+			sizeof(roam_delta), 0))
 			return -1;
 	}
 
 	bytes_written = snprintf(command, total_len, "%s %d",
-			CMD_ROAMDELTA_GET, roam_delta[0]);
+		CMD_ROAMDELTA_GET, roam_delta[0]);
 
 	return bytes_written;
 }
@@ -316,7 +329,7 @@ int wl_android_set_roam_scan_period(
 
 	sscanf(command, "%*s %d", &roam_scan_period);
 	return wldev_ioctl(dev, WLC_SET_ROAM_SCAN_PERIOD, &roam_scan_period,
-			sizeof(roam_scan_period), 1);
+		sizeof(roam_scan_period), 1);
 }
 
 static int wl_android_get_roam_scan_period(
@@ -326,11 +339,11 @@ static int wl_android_get_roam_scan_period(
 	int roam_scan_period = 0;
 
 	if (wldev_ioctl(dev, WLC_GET_ROAM_SCAN_PERIOD, &roam_scan_period,
-			sizeof(roam_scan_period), 0))
+		sizeof(roam_scan_period), 0))
 		return -1;
 
 	bytes_written = snprintf(command, total_len, "%s %d",
-			CMD_ROAMSCANPERIOD_GET, roam_scan_period);
+		CMD_ROAMSCANPERIOD_GET, roam_scan_period);
 
 	return bytes_written;
 }
@@ -339,7 +352,7 @@ int wl_android_set_country_rev(
 	struct net_device *dev, char* command, int total_len)
 {
 	int error = 0;
-	wl_country_t cspec = {{0} , 0, {0} };
+	wl_country_t cspec = {{0}, 0, {0} };
 	char country_code[WLC_CNTRY_BUF_SZ];
 	char smbuf[WLC_IOCTL_SMLEN];
 	int rev = 0;
@@ -347,7 +360,7 @@ int wl_android_set_country_rev(
 	memset(country_code, 0, sizeof(country_code));
 	sscanf(command+sizeof("SETCOUNTRYREV"), "%s %d", country_code, &rev);
 	WL_TRACE(("%s: country_code = %s, rev = %d\n", __func__,
-				country_code, rev));
+		country_code, rev));
 
 	memcpy(cspec.country_abbrev, country_code, sizeof(country_code));
 	memcpy(cspec.ccode, country_code, sizeof(country_code));
@@ -377,11 +390,11 @@ static int wl_android_get_country_rev(
 	wl_country_t cspec;
 
 	error = wldev_iovar_getbuf(dev, "country", &cspec, sizeof(cspec), smbuf,
-			sizeof(smbuf), NULL);
+		sizeof(smbuf), NULL);
 
 	if (error) {
 		DHD_ERROR(("%s: get country failed code %d\n",
-					__func__, error));
+			__func__, error));
 		return -1;
 	} else {
 		DHD_INFO(("%s: get country '%c%c %d'\n",
@@ -389,7 +402,7 @@ static int wl_android_get_country_rev(
 	}
 
 	bytes_written = snprintf(command, total_len, "%c%c %d",
-			cspec.ccode[0], cspec.ccode[1], cspec.rev);
+		cspec.ccode[0], cspec.ccode[1], cspec.rev);
 
 	return bytes_written;
 }
@@ -536,7 +549,11 @@ int wl_android_wifi_on(struct net_device *dev)
 		do {
 		dhd_customer_gpio_wlan_ctrl(WLAN_RESET_ON);
 		if (dhd_download_fw_on_driverload)
+<<<<<<< HEAD
 			msleep(100);
+=======
+			msleep(300);
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 
 			ret = sdioh_start(NULL, 0);
 			if (ret == 0)
@@ -551,8 +568,12 @@ int wl_android_wifi_on(struct net_device *dev)
 		}
 		ret = dhd_dev_reset(dev, FALSE);
 		sdioh_start(NULL, 1);
+<<<<<<< HEAD
 		if (dhd_dev_init_ioctl(dev) < 0)
 			ret = -EFAULT;
+=======
+		dhd_dev_init_ioctl(dev);
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 		g_wifi_on = TRUE;
 	}
 
@@ -617,12 +638,42 @@ static int my_atoi(const char *string_num)
 	return int_val;
 }
 
-static int wl_android_set_max_num_sta(struct net_device *net, const char* string_num)
+static int wl_android_set_max_num_sta(struct net_device *dev, const char* string_num)
 {
 	int max_assoc;
+
 	max_assoc = my_atoi(string_num);
-	DHD_INFO(("%s : SoftAP Max Station => %d\n", __FUNCTION__, max_assoc));
-	wldev_iovar_setint(net, "maxassoc", max_assoc);
+	DHD_INFO(("%s : HAPD_MAX_NUM_STA = %d\n", __FUNCTION__, max_assoc));
+	wldev_iovar_setint(dev, "maxassoc", max_assoc);
+	return 1;
+}
+
+static int wl_android_set_ssid (struct net_device *dev, const char* hapd_ssid)
+{
+	wlc_ssid_t ssid;
+	s32 ret;
+
+	ssid.SSID_len = strlen(hapd_ssid);
+	bcm_strncpy_s(ssid.SSID, sizeof(ssid.SSID), hapd_ssid, ssid.SSID_len);
+	DHD_INFO(("%s: HAPD_SSID = %s\n", __FUNCTION__, ssid.SSID));
+	ret = wldev_ioctl(dev, WLC_SET_SSID, &ssid, sizeof(wlc_ssid_t), true);
+	if (ret < 0) {
+		DHD_ERROR(("%s : WLC_SET_SSID Error:%d\n", __FUNCTION__, ret));
+	}
+	return 1;
+
+}
+
+static int wl_android_set_hide_ssid(struct net_device *dev, const char* string_num)
+{
+	int hide_ssid;
+	int enable = 0;
+
+	hide_ssid = my_atoi(string_num);
+	DHD_INFO(("%s: HAPD_HIDE_SSID = %d\n", __FUNCTION__, hide_ssid));
+	if (hide_ssid)
+		enable = 1;
+	wldev_iovar_setint(dev, "closednet", enable);
 	return 1;
 }
 
@@ -775,7 +826,11 @@ int wl_android_priv_cmd(struct net_device *net, struct ifreq *ifr, int cmd)
 	else if (strnicmp(command, CMD_GETBAND, strlen(CMD_GETBAND)) == 0) {
 		bytes_written = wl_android_get_band(net, command, priv_cmd.total_len);
 	}
+<<<<<<< HEAD
 #ifndef CUSTOMER_SET_COUNTRY /*CUSTOMER_SET_COUNTRY feature is define for only GGSM model */
+=======
+#ifndef GLOBALCONFIG_WLAN_COUNTRY_CODE
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 
 	else if (strnicmp(command, CMD_COUNTRY, strlen(CMD_COUNTRY)) == 0) {
 		char *country_code = command + strlen(CMD_COUNTRY) + 1;
@@ -850,10 +905,21 @@ int wl_android_priv_cmd(struct net_device *net, struct ifreq *ifr, int cmd)
 			priv_cmd.total_len - skip, *(command + skip - 2) - '0');
 	}
 #endif /* WL_CFG80211 */
-	else if (strnicmp(command, CMD_SET_MAX_NUM_STA, strlen(CMD_SET_MAX_NUM_STA)) == 0) {
-		int skip = strlen(CMD_SET_MAX_NUM_STA) + 3;
+	else if (strnicmp(command, CMD_SET_HAPD_MAX_NUM_STA, strlen(CMD_SET_HAPD_MAX_NUM_STA)) == 0) {
+		int skip = strlen(CMD_SET_HAPD_MAX_NUM_STA) + 3;
 		wl_android_set_max_num_sta(net, (const char*)command+skip);
 	}
+<<<<<<< HEAD
+=======
+	else if (strnicmp(command, CMD_SET_HAPD_SSID, strlen(CMD_SET_HAPD_SSID)) == 0) {
+		int skip = strlen(CMD_SET_HAPD_SSID) + 3;
+		wl_android_set_ssid(net, (const char*)command+skip);
+	}
+	else if (strnicmp(command, CMD_SET_HAPD_HIDE_SSID, strlen(CMD_SET_HAPD_HIDE_SSID)) == 0) {
+		int skip = strlen(CMD_SET_HAPD_HIDE_SSID) + 3;
+		wl_android_set_hide_ssid(net, (const char*)command+skip);
+	}
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 #ifdef OKC_SUPPORT
 	else if (strnicmp(command, CMD_OKC_SET_PMK, strlen(CMD_OKC_SET_PMK)) == 0)
 		bytes_written = wl_android_set_pmk(net, command, priv_cmd.total_len);
@@ -1061,7 +1127,13 @@ static int wifi_probe(struct platform_device *pdev)
 	wifi_set_power(1, 200);	/* Power On */
 	wifi_set_carddetect(1);	/* CardDetect (0->1) */
 
+<<<<<<< HEAD
 	suspend_power_off = FALSE;
+=======
+#ifdef WL_CFG80211
+	suspend_power_off = FALSE;
+#endif
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 
 	up(&wifi_control_sem);
 	return 0;
@@ -1078,8 +1150,15 @@ static int wifi_remove(struct platform_device *pdev)
 	wifi_set_power(0, 0);	/* Power Off */
 	wifi_set_carddetect(0);	/* CardDetect (1->0) */
 
+<<<<<<< HEAD
 	if (suspend_power_off)
 		suspend_power_off = FALSE;
+=======
+#ifdef WL_CFG80211
+	if (suspend_power_off)
+		suspend_power_off = FALSE;
+#endif
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 
 	up(&wifi_control_sem);
 	return 0;
@@ -1091,7 +1170,11 @@ static int wifi_suspend(struct platform_device *pdev, pm_message_t state)
 	DHD_ERROR(("##> %s\n", __FUNCTION__));
 #if (LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 39)) && defined(OOB_INTR_ONLY) && 1
 	if (dhd_os_check_if_up(bcmsdh_get_drvdata()))
+<<<<<<< HEAD
 	bcmsdh_oob_intr_set(0);
+=======
+		bcmsdh_oob_intr_set(0);
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 #endif /* (OOB_INTR_ONLY) */
 	if (dhd_os_check_if_up(bcmsdh_get_drvdata()) &&
 		dhd_os_check_wakelock(bcmsdh_get_drvdata())) {
@@ -1100,7 +1183,11 @@ static int wifi_suspend(struct platform_device *pdev, pm_message_t state)
 	}
 #if defined(OOB_INTR_ONLY)
 	if (dhd_os_check_if_up(bcmsdh_get_drvdata()))
+<<<<<<< HEAD
 	bcmsdh_oob_intr_set(0);
+=======
+		bcmsdh_oob_intr_set(0);
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 #endif	/* defined(OOB_INTR_ONLY) */
 	smp_mb();
 	return 0;
@@ -1109,7 +1196,11 @@ static int wifi_suspend(struct platform_device *pdev, pm_message_t state)
 static int wifi_resume(struct platform_device *pdev)
 {
 	DHD_ERROR(("##> %s\n", __FUNCTION__));
+<<<<<<< HEAD
 	msleep(100);
+=======
+
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 #if (LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 39)) && defined(OOB_INTR_ONLY) && 1
 	if (dhd_os_check_if_up(bcmsdh_get_drvdata()))
 		bcmsdh_oob_intr_set(1);

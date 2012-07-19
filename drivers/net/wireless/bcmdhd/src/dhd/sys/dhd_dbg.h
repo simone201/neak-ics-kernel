@@ -29,7 +29,11 @@
 
 #if defined(DHD_DEBUG)
 
+<<<<<<< HEAD
 #define DHD_ERROR(args)		do {if (dhd_msg_level & DHD_ERROR_VAL) printf args;} while (0)
+=======
+#define DHD_ERROR(args)	       do {if (dhd_msg_level & DHD_ERROR_VAL)	printf args;} while (0)
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 #define DHD_TRACE(args)		do {if (dhd_msg_level & DHD_TRACE_VAL) printf args;} while (0)
 #define DHD_INFO(args)		do {if (dhd_msg_level & DHD_INFO_VAL) printf args;} while (0)
 #define DHD_DATA(args)		do {if (dhd_msg_level & DHD_DATA_VAL) printf args;} while (0)

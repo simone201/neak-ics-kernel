@@ -105,7 +105,11 @@
 	(RHEL_MAJOR == 5))
 typedef void (*work_func_t)(void *work);
 #endif
+<<<<<<< HEAD
 #endif	
+=======
+#endif
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 0))
 

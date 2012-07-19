@@ -1934,6 +1934,14 @@ si_socram_srmem_size(si_t *sih)
 	uint32 coreinfo;
 	uint memsize = 0;
 
+<<<<<<< HEAD
+=======
+	if ((CHIPID(sih->chip) == BCM4334_CHIP_ID) && (CHIPREV(sih->chiprev) < 2)) {
+		return (32 * 1024);
+	}
+
+
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 	sii = SI_INFO(sih);
 
 	/* Block ints and save current core */

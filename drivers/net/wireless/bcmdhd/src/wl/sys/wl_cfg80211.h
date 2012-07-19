@@ -52,6 +52,7 @@ struct wl_ibss;
 #define dtohchanspec(i) i
 
 #define WL_DBG_NONE	0
+#define WL_DBG_SCAN2 (1 <<5)
 #define WL_DBG_TRACE	(1 << 4)
 #define WL_DBG_SCAN	(1 << 3)
 #define WL_DBG_DBG	(1 << 2)
@@ -111,12 +112,28 @@ do {									\
 #endif				/* (WL_DBG_LEVEL > 0) */
 
 
+#if (WL_DBG_LEVEL > 0)
+#define	WL_SCAN2(args)								\
+do {									\
+	if (wl_dbg_level & WL_DBG_SCAN2) {			\
+		printk(KERN_ERR "CFG80211-SCAN) %s :", __func__);	\
+		printk args;							\
+	}									\
+} while (0)
+#else				/* !(WL_DBG_LEVEL > 0) */
+#define	WL_DBG(args)
+#endif				/* (WL_DBG_LEVEL > 0) */
+
 #define WL_SCAN_RETRY_MAX	3
 #define WL_NUM_PMKIDS_MAX	MAXPMKID
+<<<<<<< HEAD
 #define WL_SCAN_BUF_MAX			(1024 * 8)
+=======
+#define WL_SCAN_BUF_MAX		(1024 * 8)
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 #define WL_TLV_INFO_MAX 	1500 /* customer want to large size IE, so increase ie length */
 #define WL_SCAN_IE_LEN_MAX      2048
-#define WL_BSS_INFO_MAX			2048
+#define WL_BSS_INFO_MAX		2048
 #define WL_ASSOC_INFO_MAX	512
 #define WL_IOCTL_LEN_MAX	1024
 #define WL_EXTRA_BUF_MAX	2048
@@ -124,7 +141,7 @@ do {									\
 #define WL_ISCAN_TIMER_INTERVAL_MS	3000
 #define WL_SCAN_ERSULTS_LAST	(WL_SCAN_RESULTS_NO_MEM+1)
 #define WL_AP_MAX		256
-#define WL_FILE_NAME_MAX		256
+#define WL_FILE_NAME_MAX	256
 #define WL_DWELL_TIME	200
 #define WL_MED_DWELL_TIME	400
 #define WL_LONG_DWELL_TIME 1000
@@ -147,6 +164,15 @@ enum wl_status {
 	WL_STATUS_SENDING_ACT_FRM,	/* includes scanning peer chan and sending af via "actframe" */
 	WL_STATUS_SCANNING_PEER_CHANNEL, /* scanning peer chan for searching peer's channel */
 	WL_STATUS_REMAINING_ON_CHANNEL,
+<<<<<<< HEAD
+=======
+#ifdef WL_CFG80211_VSDB_PRIORITIZE_SCAN_REQUEST
+	/* it will be set when upper layer requests listen but scan is running.
+	 * it's fake listen state to keep current scan process.
+	 * if set, other scan request will not abort scan. */
+	WL_STATUS_FAKE_REMAINING_ON_CHANNEL,
+#endif /* WL_CFG80211_VSDB_PRIORITIZE_SCAN_REQUEST */
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 #ifdef WL_CFG80211_SYNC_GON_TIME
 	/* waiting for next af to sync time of supplicant.
 	 * it includes SENDING_ACT_FRM and WAITING_MORE_TIME_NEXT_ACT_FRM
@@ -338,10 +364,17 @@ struct wl_pmk_list {
 #define ESCAN_BUF_SIZE (64 * 1024)
 
 struct escan_info {
+<<<<<<< HEAD
     u32 escan_state;
 	u8 *escan_buf[2];
 	u8 cur_sync_id;
     struct wiphy *wiphy;
+=======
+	u32 escan_state;
+	u8 *escan_buf[2];
+	u8 cur_sync_id;
+	struct wiphy *wiphy;
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 	struct net_device *ndev;
 };
 
@@ -448,6 +481,7 @@ struct wl_priv {
 	bool pwr_save;
 	bool roam_on;		/* on/off switch for self-roaming */
 	bool scan_tried;	/* indicates if first scan attempted */
+	bool wlfc_on;
 	u8 *ioctl_buf;	/* ioctl buffer */
 	struct mutex ioctl_buf_sync;
 	u8 *escan_ioctl_buf;
@@ -546,31 +580,90 @@ wl_get_status_all(struct wl_priv *wl, s32 status)
 	return cnt? true: false;
 }
 static inline void
+wl_set_status_all(struct wl_priv *wl, s32 status, u32 op)
+{
+	struct net_info *_net_info, *next;
+	list_for_each_entry_safe(_net_info, next, &wl->net_list, list) {
+		switch (op) {
+			case 1:
+				return; /* set all status is not allowed */
+			case 2:
+				clear_bit(status, &_net_info->sme_state);
+				break;
+			case 4:
+				return; /* change all status is not allowed */
+			default:
+				return; /*unknown operation */
+			}
+		}
+}
+#define wl_set_status_by_netdev(wl, status, _ndev, op) \
+{ \
+	struct net_info *_net_info, *next;\
+	int found = 0;\
+	list_for_each_entry_safe(_net_info, next, &(wl)->net_list, list) {\
+		if(_ndev && ((_net_info->ndev) == _ndev)) {\
+			found = 1;\
+			switch(op){\
+				case 1:\
+					set_bit(status, &(_net_info->sme_state));\
+					if(status == WL_STATUS_SCANNING)\
+						WL_SCAN2(("<<<Set SCANNING bit %p>>>\n", _ndev));\
+					break;\
+				case 2:\
+					 clear_bit(status, &(_net_info->sme_state));\
+					if(status == WL_STATUS_SCANNING)\
+						WL_SCAN2(("<<<Clear SCANNING bit %p>>>\n", _ndev));\
+					break;\
+				case 4:\
+					 change_bit(status, &(_net_info->sme_state));\
+					break;\
+			}\
+		}\
+	}\
+	if(found == 0)\
+		WL_ERR(("<<<Set Status command with not eixst device %p>>>\n", _ndev));\
+}
+
+#if 0
+static inline void
 wl_set_status_by_netdev(struct wl_priv *wl, s32 status,
 	struct net_device *ndev, u32 op)
 {
 
 	struct net_info *_net_info, *next;
+	int found = 0;
 
 	list_for_each_entry_safe(_net_info, next, &wl->net_list, list) {
 		if (ndev && (_net_info->ndev == ndev)) {
+			found = 1;
 			switch (op) {
 				case 1:
 					set_bit(status, &_net_info->sme_state);
+#if (WL_DBG_LEVEL > 0)
+					if(status == WL_STATUS_SCANNING )
+						WL_SCAN2(("<<<Set SCANNING bit %p >>>\n", ndev));
+#endif
 					break;
 				case 2:
 					clear_bit(status, &_net_info->sme_state);
-				break;
+#if (WL_DBG_LEVEL > 0)
+					if(status == WL_STATUS_SCANNING )
+						WL_SCAN2(("<<<Clear SCANNING bit %p >>>\n", ndev));
+#endif
+					break;
 				case 4:
 					change_bit(status, &_net_info->sme_state);
 					break;
 			}
 			}
 
-			}
+	}
+	if(found ==0 )
+		WL_ERR(("<<Set Status command with not exist device %p>>\n", ndev));
 
 }
-
+#endif
 static inline u32
 wl_get_status_by_netdev(struct wl_priv *wl, s32 status,
 	struct net_device *ndev)
@@ -636,6 +729,8 @@ wl_get_profile_by_netdev(struct wl_priv *wl, struct net_device *ndev)
 	(wl_set_status_by_netdev(wl, WL_STATUS_ ## stat, ndev, 1))
 #define wl_clr_drv_status(wl, stat, ndev)  \
 	(wl_set_status_by_netdev(wl, WL_STATUS_ ## stat, ndev, 2))
+#define wl_clr_drv_status_all(wl, stat) \
+	(wl_set_status_all(wl, WL_STATUS_ ## stat, 2))
 #define wl_chg_drv_status(wl, stat, ndev)  \
 	(wl_set_status_by_netdev(wl, WL_STATUS_ ## stat, ndev, 4))
 

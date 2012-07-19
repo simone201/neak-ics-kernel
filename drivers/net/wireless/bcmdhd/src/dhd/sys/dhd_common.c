@@ -93,6 +93,7 @@ extern int dhd_iscan_in_progress(void *h);
 void dhd_iscan_lock(void);
 void dhd_iscan_unlock(void);
 extern int dhd_change_mtu(dhd_pub_t *dhd, int new_mtu, int ifidx);
+extern bool dhd_concurrent_fw(dhd_pub_t *dhd);
 bool ap_cfg_running = FALSE;
 bool ap_fw_loaded = FALSE;
 
@@ -1030,10 +1031,18 @@ wl_host_event(dhd_pub_t *dhd_pub, int *ifidx, void *pktdata,
 				eWLFC_MAC_ENTRY_ACTION_UPDATE,
 				ifevent->ifidx, ifevent->is_AP, ea);
 		else
+<<<<<<< HEAD
 		dhd_wlfc_interface_event(dhd_pub->info,
 			((ifevent->action == WLC_E_IF_ADD) ?
 			eWLFC_MAC_ENTRY_ACTION_ADD : eWLFC_MAC_ENTRY_ACTION_DEL),
 			ifevent->ifidx, ifevent->is_AP, ea);
+=======
+			dhd_wlfc_interface_event(dhd_pub->info,
+				((ifevent->action == WLC_E_IF_ADD) ?
+				eWLFC_MAC_ENTRY_ACTION_ADD : eWLFC_MAC_ENTRY_ACTION_DEL),
+				ifevent->ifidx, ifevent->is_AP, ea);
+
+>>>>>>> a468aa0... Samsung i9100 update6 sources
 
 
 		/* dhd already has created an interface by default, for 0 */
@@ -1047,7 +1056,8 @@ wl_host_event(dhd_pub_t *dhd_pub, int *ifidx, void *pktdata,
 				DHD_ERROR(("%s:  ifidx %d for %s action %d\n",
 					__FUNCTION__, ifevent->ifidx,
 					event->ifname, ifevent->action));
-				if (ifevent->action == WLC_E_IF_ADD)
+				if (ifevent->action == WLC_E_IF_ADD
+					|| ifevent->action == WLC_E_IF_CHANGE)
 					wl_cfg80211_notify_ifchange();
 				return (BCME_OK);
 			}
@@ -1833,6 +1843,8 @@ exit:
 bool dhd_check_ap_wfd_mode_set(dhd_pub_t *dhd)
 {
 #ifdef  WL_CFG80211
+	if (dhd_concurrent_fw(dhd))
+		return FALSE;
 	if (((dhd->op_mode & HOSTAPD_MASK) == HOSTAPD_MASK) ||
 		((dhd->op_mode & WFD_MASK) == WFD_MASK))
 		return TRUE;
