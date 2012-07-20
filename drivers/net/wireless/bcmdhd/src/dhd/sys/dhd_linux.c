@@ -3714,27 +3714,8 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 
 #ifdef PKT_FILTER_SUPPORT
 	/* Setup defintions for pktfilter , enable in suspend */
-<<<<<<< HEAD
-	dhd->pktfilter_count = 4;
-#ifdef GAN_LITE_NAT_KEEPALIVE_FILTER
-	/* Setup filter to block broadcast and NAT Keepalive packets */
-	dhd->pktfilter[0] = "100 0 0 0 0xffffff 0xffffff"; /* discard all broadcast packets */
-	dhd->pktfilter[1] = "102 0 0 36 0xffffffff 0x11940009"; /* discard NAT Keepalive packets */
-	dhd->pktfilter[2] = "104 0 0 38 0xffffffff 0x11940009"; /* discard NAT Keepalive packets */
-	dhd->pktfilter[3] = NULL;
-#else
-	/* Setup filter to allow only unicast */
-#if defined(CUSTOMER_HW_SAMSUNG)
-	dhd->pktfilter[0] = "100 0 0 0 "
-		HEX_PREF_STR UNI_FILTER_STR ZERO_ADDR_STR ETHER_TYPE_STR IPV6_FILTER_STR
-		" "
-		HEX_PREF_STR ZERO_ADDR_STR ZERO_ADDR_STR ETHER_TYPE_STR ZERO_TYPE_STR;
-#else
-#error Customer want to filter out all IPV6 packets
-=======
 	dhd->pktfilter_count = 1;
 	/* Setup filter to allow unicast only */
->>>>>>> 34754c2... bcmdhd: Change packet filter settings to block multicast
 	dhd->pktfilter[0] = "100 0 0 0 0x01 0x00";
 
 #if defined(SOFTAP)
