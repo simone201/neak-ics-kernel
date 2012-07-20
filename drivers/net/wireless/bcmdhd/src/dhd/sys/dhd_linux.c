@@ -3714,6 +3714,7 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 
 #ifdef PKT_FILTER_SUPPORT
 	/* Setup defintions for pktfilter , enable in suspend */
+<<<<<<< HEAD
 	dhd->pktfilter_count = 4;
 #ifdef GAN_LITE_NAT_KEEPALIVE_FILTER
 	/* Setup filter to block broadcast and NAT Keepalive packets */
@@ -3730,12 +3731,12 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 		HEX_PREF_STR ZERO_ADDR_STR ZERO_ADDR_STR ETHER_TYPE_STR ZERO_TYPE_STR;
 #else
 #error Customer want to filter out all IPV6 packets
+=======
+	dhd->pktfilter_count = 1;
+	/* Setup filter to allow unicast only */
+>>>>>>> 34754c2... bcmdhd: Change packet filter settings to block multicast
 	dhd->pktfilter[0] = "100 0 0 0 0x01 0x00";
-#endif
-	dhd->pktfilter[1] = NULL;
-	dhd->pktfilter[2] = NULL;
-	dhd->pktfilter[3] = NULL;
-#endif /* GAN_LITE_NAT_KEEPALIVE_FILTER */
+
 #if defined(SOFTAP)
 	if (ap_fw_loaded) {
 		int i;
