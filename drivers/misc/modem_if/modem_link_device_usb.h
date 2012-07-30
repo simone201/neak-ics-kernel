@@ -25,10 +25,10 @@
 #define IF_USB_RAW_EP		1
 #define IF_USB_RFS_EP		2
 
-#define DEFAULT_AUTOSUSPEND_DELAY_MS		500
+#define AUTOSUSPEND_DELAY_MS			500
 #define HOST_WAKEUP_TIMEOUT_JIFFIES		msecs_to_jiffies(500)
 #define WAIT_ENUMURATION_TIMEOUT_JIFFIES	msecs_to_jiffies(15000)
-#define MAX_RETRY	30
+#define MAX_RETRY	3
 
 #define IOCTL_LINK_CONTROL_ENABLE	_IO('o', 0x30)
 #define IOCTL_LINK_CONTROL_ACTIVE	_IO('o', 0x31)
@@ -38,8 +38,6 @@
 
 #define IOCTL_LINK_PORT_ON		_IO('o', 0x35)
 #define IOCTL_LINK_PORT_OFF		_IO('o', 0x36)
-
-#define IOCTL_LINK_BLOCK_AUTOSUSPEND	_IO('o', 0x37)
 
 enum RESUME_STATUS {
 	CP_INITIATED_RESUME,
@@ -54,6 +52,7 @@ enum IPC_INIT_STATUS {
 enum hub_status {
 	HUB_STATE_OFF,		/* usb3503 0ff*/
 	HUB_STATE_RESUMMING,	/* usb3503 on, but enummerattion was not yet*/
+	HUB_STATE_PREACTIVE,
 	HUB_STATE_ACTIVE,	/* hub and CMC221 enumerate */
 };
 
@@ -69,7 +68,6 @@ struct if_usb_devdata {
 	unsigned int rx_buf_size;
 };
 
-<<<<<<< HEAD
 struct link_pm_data {
 	struct miscdevice miscdev;
 	struct usb_link_device *usb_ld;
@@ -110,8 +108,6 @@ struct link_pm_data {
 	int (*cpufreq_unlock)(void);
 };
 
-=======
->>>>>>> 4a21771... modem_if: new modem driver from update7 sources
 struct usb_link_device {
 	/*COMMON LINK DEVICE*/
 	struct link_device ld;
@@ -156,22 +152,17 @@ struct usb_link_device {
 /* converts from struct link_device* to struct xxx_link_device* */
 #define to_usb_link_device(linkdev) \
 			container_of(linkdev, struct usb_link_device, ld)
+#endif
 
 #define SET_SLAVE_WAKEUP(_pdata, _value)			\
 do {								\
 	gpio_set_value(_pdata->gpio_slave_wakeup, _value);	\
-	mif_debug("> S-WUP %s\n", _value ? "1" : "0");	\
+	pr_debug("> S-WUP %s\n", _value ? "1" : "0");	\
 } while (0)
 
 #define SET_HOST_ACTIVE(_pdata, _value)			\
 do {								\
 	gpio_set_value(_pdata->gpio_host_active, _value);	\
-	mif_debug("> H-ACT %s\n", _value ? "1" : "0");	\
+	pr_debug("> H-ACT %s\n", _value ? "1" : "0");	\
 } while (0)
 
-#define has_hub(usb_ld) ((usb_ld)->link_pm_data->has_usbhub)
-
-irqreturn_t usb_resume_irq(int irq, void *data);
-bool usb_is_enumerated(struct modem_shared *msd);
-
-#endif

@@ -27,10 +27,10 @@
 
 static int xmm6260_on(struct modem_ctl *mc)
 {
-	mif_info("xmm6260_on()\n");
+	pr_info("[MODEM_IF] xmm6260_on()\n");
 
 	if (!mc->gpio_cp_reset || !mc->gpio_cp_on || !mc->gpio_reset_req_n) {
-		mif_err("no gpio data\n");
+		pr_err("[MODEM_IF] no gpio data\n");
 		return -ENXIO;
 	}
 
@@ -66,10 +66,10 @@ static int xmm6260_on(struct modem_ctl *mc)
 
 static int xmm6260_off(struct modem_ctl *mc)
 {
-	mif_info("xmm6260_off()\n");
+	pr_info("[MODEM_IF] xmm6260_off()\n");
 
 	if (!mc->gpio_cp_reset || !mc->gpio_cp_on) {
-		mif_err("no gpio data\n");
+		pr_err("[MODEM_IF] no gpio data\n");
 		return -ENXIO;
 	}
 
@@ -85,7 +85,7 @@ static int xmm6260_off(struct modem_ctl *mc)
 static int xmm6260_reset(struct modem_ctl *mc)
 {
 
-	mif_info("xmm6260_reset()\n");
+	pr_info("[MODEM_IF] xmm6260_reset()\n");
 
 	if (!mc->gpio_cp_reset || !mc->gpio_reset_req_n)
 		return -ENXIO;
@@ -122,10 +122,10 @@ static int xmm6260_reset(struct modem_ctl *mc)
 
 static int xmm6260_boot_on(struct modem_ctl *mc)
 {
-	mif_info("xmm6260_boot_on()\n");
+	pr_info("[MODEM_IF] xmm6260_boot_on()\n");
 
 	if (!mc->gpio_flm_uart_sel) {
-		mif_err("no gpio data\n");
+		pr_err("[MODEM_IF] no gpio data\n");
 		return -ENXIO;
 	}
 
@@ -136,10 +136,10 @@ static int xmm6260_boot_on(struct modem_ctl *mc)
 
 static int xmm6260_boot_off(struct modem_ctl *mc)
 {
-	mif_info("xmm6260_boot_off()\n");
+	pr_info("[MODEM_IF] xmm6260_boot_off()\n");
 
 	if (!mc->gpio_flm_uart_sel) {
-		mif_err("no gpio data\n");
+		pr_err("[MODEM_IF] no gpio data\n");
 		return -ENXIO;
 	}
 
@@ -155,13 +155,12 @@ static irqreturn_t phone_active_irq_handler(int irq, void *_mc)
 	int cp_dump_value = 0;
 	int phone_state = 0;
 	struct modem_ctl *mc = (struct modem_ctl *)_mc;
-	struct link_device *ld;
 
 	disable_irq_nosync(mc->irq_phone_active);
 
 	if (!mc->gpio_cp_reset || !mc->gpio_phone_active ||
 			!mc->gpio_cp_dump_int) {
-		mif_err("no gpio data\n");
+		pr_err("[MODEM_IF] no gpio data\n");
 		return IRQ_HANDLED;
 	}
 
@@ -169,7 +168,7 @@ static irqreturn_t phone_active_irq_handler(int irq, void *_mc)
 	phone_active_value = gpio_get_value(mc->gpio_phone_active);
 	cp_dump_value = gpio_get_value(mc->gpio_cp_dump_int);
 
-	mif_info("PA EVENT : reset =%d, pa=%d, cp_dump=%d\n",
+	pr_info("[MODEM_IF] PA EVENT : reset =%d, pa=%d, cp_dump=%d\n",
 				phone_reset, phone_active_value, cp_dump_value);
 
 	if (phone_reset && phone_active_value)
@@ -181,16 +180,8 @@ static irqreturn_t phone_active_irq_handler(int irq, void *_mc)
 			phone_state = STATE_CRASH_EXIT;
 		else
 			phone_state = STATE_CRASH_RESET;
-<<<<<<< HEAD
 		if (mc->iod && mc->iod->link->terminate_comm)
 			mc->iod->link->terminate_comm(mc->iod->link, mc->iod);
-=======
-		if (mc->iod) {
-			ld = get_current_link(mc->iod);
-			if (ld->terminate_comm)
-				ld->terminate_comm(ld, mc->iod);
-		}
->>>>>>> 4a21771... modem_if: new modem driver from update7 sources
 	} else
 		phone_state = STATE_OFFLINE;
 
@@ -262,23 +253,15 @@ int xmm6260_init_modemctl_device(struct modem_ctl *mc,
 				IRQF_NO_SUSPEND | IRQF_TRIGGER_HIGH,
 				"phone_active", mc);
 	if (ret) {
-<<<<<<< HEAD
 		pr_err("[MODEM_IF] %s: failed to request_irq:%d\n",
 					__func__, ret);
-=======
-		mif_err("failed to request_irq:%d\n", ret);
->>>>>>> 4a21771... modem_if: new modem driver from update7 sources
 		goto err_phone_active_request_irq;
 	}
 
 	ret = enable_irq_wake(mc->irq_phone_active);
 	if (ret) {
-<<<<<<< HEAD
 		pr_err("[MODEM_IF] %s: failed to enable_irq_wake:%d\n",
 					__func__, ret);
-=======
-		mif_err("failed to enable_irq_wake:%d\n", ret);
->>>>>>> 4a21771... modem_if: new modem driver from update7 sources
 		goto err_phone_active_set_wake_irq;
 	}
 
@@ -290,23 +273,15 @@ int xmm6260_init_modemctl_device(struct modem_ctl *mc,
 				IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
 				"sim_detect", mc);
 		if (ret) {
-<<<<<<< HEAD
 			pr_err("[MODEM_IF] %s: failed to request_irq: %d\n",
 					__func__, ret);
-=======
-			mif_err("failed to request_irq: %d\n", ret);
->>>>>>> 4a21771... modem_if: new modem driver from update7 sources
 			goto err_sim_detect_request_irq;
 		}
 
 		ret = enable_irq_wake(mc->irq_sim_detect);
 		if (ret) {
-<<<<<<< HEAD
 			pr_err("[MODEM_IF] %s: failed to enable_irq_wake: %d\n",
 					__func__, ret);
-=======
-			mif_err("failed to enable_irq_wake: %d\n", ret);
->>>>>>> 4a21771... modem_if: new modem driver from update7 sources
 			goto err_sim_detect_set_wake_irq;
 		}
 
