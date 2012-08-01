@@ -6,10 +6,10 @@ export PATH=/sbin
 busybox cd /
 busybox rm /init
 
-mv /init-aosp /init
 if busybox grep -q bootmode=2 /proc/cmdline ; then
 	# recovery boot
-	cd /
+	busybox mv /recovery.rc /init.rc
+	busybox mv /init-sam /init
 	exec /init
 fi
 
@@ -17,8 +17,8 @@ busybox mv -f /init-cyano /init
 
 if busybox grep -q 1 /sys/class/power_supply/battery/batt_lp_charging ; then
 	# low power mode
-	busybox cp lpm.rc init.rc
-	busybox rm init.smdk4210.rc
+	busybox cp -f lpm.rc init.rc
+	busybox rm -f init.smdk4210.rc
 fi
 
 export PATH="${_PATH}"
