@@ -5,15 +5,13 @@ export PATH=/sbin
 
 busybox cd /
 busybox rm /init
+busybox mv /init-cyano /init
 
 if busybox grep -q bootmode=2 /proc/cmdline ; then
 	# recovery boot
 	busybox mv /recovery.rc /init.rc
-	busybox mv /init-sam /init
 	exec /init
 fi
-
-busybox mv -f /init-cyano /init
 
 if busybox grep -q 1 /sys/class/power_supply/battery/batt_lp_charging ; then
 	# low power mode
