@@ -460,10 +460,8 @@ static struct page *dequeue_huge_page_vma(struct hstate *h,
 	struct zonelist *zonelist;
 	struct zone *zone;
 	struct zoneref *z;
-	unsigned int cpuset_mems_cookie;
 
-retry_cpuset:
-	cpuset_mems_cookie = get_mems_allowed();
+	get_mems_allowed();
 	zonelist = huge_zonelist(vma, address,
 					htlb_alloc_mask, &mpol, &nodemask);
 	/*
@@ -490,15 +488,10 @@ retry_cpuset:
 			}
 		}
 	}
-
-	mpol_cond_put(mpol);
-	if (unlikely(!put_mems_allowed(cpuset_mems_cookie) && !page))
-		goto retry_cpuset;
-	return page;
-
 err:
 	mpol_cond_put(mpol);
-	return NULL;
+	put_mems_allowed();
+	return page;
 }
 
 static void update_and_free_page(struct hstate *h, struct page *page)

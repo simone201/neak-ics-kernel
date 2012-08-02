@@ -21,4 +21,6 @@ fi;
 cp -f /lib/modules/* /system/lib/modules
 
 busybox umount /system
+busybox umount /sys
+busybox umount /proc
 exec /sbin/init.cm
