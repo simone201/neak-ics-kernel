@@ -88,7 +88,7 @@ static _mali_osk_errcode_t mali200_subsystem_startup(mali_kernel_subsystem_ident
 #if USING_MMU
 static _mali_osk_errcode_t mali200_subsystem_mmu_connect(mali_kernel_subsystem_identifier id);
 #endif
-//static void mali200_subsystem_terminate(mali_kernel_subsystem_identifier id);
+static void mali200_subsystem_terminate(mali_kernel_subsystem_identifier id);
 static _mali_osk_errcode_t mali200_subsystem_session_begin(struct mali_session_data * mali_session_data, mali_kernel_subsystem_session_slot * slot, _mali_osk_notification_queue_t * queue);
 static void mali200_subsystem_session_end(struct mali_session_data * mali_session_data, mali_kernel_subsystem_session_slot * slot);
 static _mali_osk_errcode_t mali200_subsystem_core_system_info_fill(_mali_system_info* info);
@@ -202,13 +202,11 @@ static _mali_osk_errcode_t mali200_subsystem_mmu_connect(mali_kernel_subsystem_i
 }
 #endif
 
-#if 0
 static void mali200_subsystem_terminate(mali_kernel_subsystem_identifier id)
 {
 	MALI_DEBUG_PRINT(3, ("Mali PP: mali200_subsystem_terminate\n") ) ;
 	mali_core_subsystem_cleanup(&subsystem_mali200);
 }
-#endif
 
 static _mali_osk_errcode_t mali200_subsystem_session_begin(struct mali_session_data * mali_session_data, mali_kernel_subsystem_session_slot * slot, _mali_osk_notification_queue_t * queue)
 {
@@ -915,10 +913,15 @@ static int subsystem_mali200_irq_handler_bottom_half(struct mali_core_renderunit
 			u32 bus_error = mali_core_renderunit_register_read(core, MALI200_REG_ADDR_MGMT_BUS_ERROR_STATUS);
 
 			MALI_PRINT(("Bus error status: 0x%08X\n", bus_error));
+			if (bus_error & 0x01) MALI_PRINT(("Bus write error from id 0x%02x\n", (bus_error>>2) & 0x0F));
+			if (bus_error & 0x02) MALI_PRINT(("Bus read error from id 0x%02x\n", (bus_error>>6) & 0x0F));
+			if (0 == (bus_error & 0x03)) MALI_PRINT(("Bus error but neither read or write was set as the error reason\n"));
+			/*
 			MALI_DEBUG_PRINT_IF(1, (bus_error & 0x01), ("Bus write error from id 0x%02x\n", (bus_error>>2) & 0x0F));
 			MALI_DEBUG_PRINT_IF(1, (bus_error & 0x02), ("Bus read error from id 0x%02x\n", (bus_error>>6) & 0x0F));
 			MALI_DEBUG_PRINT_IF(1, (0 == (bus_error & 0x03)), ("Bus error but neither read or write was set as the error reason\n"));
 			(void)bus_error;
+			*/
 		}
 
 #if MALI_STATE_TRACKING

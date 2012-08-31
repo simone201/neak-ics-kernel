@@ -19,7 +19,8 @@
 #include <linux/interrupt.h>
 #include <linux/platform_device.h>
 #include <linux/videodev2.h>
-#include <linux/videodev2_samsung.h>
+#include <linux/videodev2_exynos_media.h>
+#include <linux/videodev2_exynos_camera.h>
 
 #include <linux/io.h>
 #include <linux/memory.h>
@@ -229,6 +230,7 @@ void s3c_csis_start(int csis_id, int lanes, int settle, int align, int width, \
 {
 	struct platform_device *pdev = NULL;
 	struct s3c_platform_csis *pdata = NULL;
+	int i;
 
 	printk(KERN_INFO "csis width = %d, height = %d\n", width, height);
 
@@ -299,6 +301,7 @@ static irqreturn_t s3c_csis_irq(int irq, void *dev_id)
 	u32 cfg;
 
 	struct platform_device *pdev = (struct platform_device *) dev_id;
+	int bufnum = 0;
 	/* just clearing the pends */
 	cfg = readl(s3c_csis[pdev->id]->regs + S3C_CSIS_INTSRC);
 	writel(cfg, s3c_csis[pdev->id]->regs + S3C_CSIS_INTSRC);
@@ -315,6 +318,7 @@ static irqreturn_t s3c_csis_irq(int irq, void *dev_id)
 #endif
 	if(s3c_csis[pdev->id]->pktdata_enable) {
 		if (unlikely(cfg & S3C_CSIS_INTSRC_NON_IMAGE_DATA)) {
+			/* printk(KERN_INFO "%s NON Image Data bufnum = %d 0x%x\n", __func__, bufnum, cfg); */
 
 			if (cfg & S3C_CSIS_INTSRC_EVEN_BEFORE) {
 				/* printk(KERN_INFO "S3C_CSIS_INTSRC_EVEN_BEFORE\n"); */

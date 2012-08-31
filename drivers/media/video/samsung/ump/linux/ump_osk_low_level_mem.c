@@ -105,6 +105,8 @@ static void ump_vma_close(struct vm_area_struct * vma)
 
 	DBG_MSG(4, ("VMA close, VMA reference count decremented. VMA: 0x%08lx, reference count: %d\n", (unsigned long)vma, new_val));
 
+	vma_usage_tracker->descriptor->process_mapping_info = vma;
+
 	if (0 == new_val)
 	{
 		ump_memory_allocation * descriptor;
@@ -252,7 +254,7 @@ static u32 _ump_osk_virt_to_phys_end(ump_dd_mem * mem, u32 start, u32 address, i
 
 static void _ump_osk_msync_with_virt(ump_dd_mem * mem, ump_uk_msync_op op, u32 start, u32 address, u32 size)
 {
-	int start_index = 0, end_index = 0;
+	int start_index, end_index;
 	u32 start_p, end_p;
 
 	DBG_MSG(3, ("Cache flush with user virtual address. start : 0x%x, end : 0x%x, address 0x%x, size 0x%x\n", start, start+mem->size_bytes, address, size));

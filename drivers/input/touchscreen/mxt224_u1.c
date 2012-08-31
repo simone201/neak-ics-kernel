@@ -1507,11 +1507,36 @@ static int Check_Err_Condition(void)
 
 static void median_err_setting(void)
 {
-	u16 obj_address = 0;
+	u16 obj_address;
 	u16 size_one;
 	u8 value, state;
 	bool ta_status_check;
 	int ret = 0;
+
+	if (cal_check_flag == 1) {
+		printk(KERN_ERR"[TSP] calibration was forcely good\n");
+		cal_check_flag = 0;
+		good_check_flag = 0;
+		qt_timer_state = 0;
+		qt_time_point = jiffies_to_msecs(jiffies);
+		copy_data->palm_chk_flag = 2;
+
+		ret = get_object_info(copy_data,
+			GEN_ACQUISITIONCONFIG_T8,
+			&size_one, &obj_address);
+		write_mem(copy_data,
+		  obj_address + 6, 1,
+		  &copy_data->atchcalst_e);
+		write_mem(copy_data,
+		  obj_address + 7, 1,
+		  &copy_data->atchcalsthr_e);
+		write_mem(copy_data,
+		  obj_address + 8, 1,
+		  &copy_data->atchfrccalthr_e);
+		write_mem(copy_data,
+		  obj_address + 9, 1,
+		  &copy_data->atchfrccalratio_e);
+	}
 
 	copy_data->read_ta_status(&ta_status_check);
 	if (!ta_status_check) {
@@ -3008,8 +3033,8 @@ static ssize_t tsp_threshold_store(struct device *dev,
 		printk(KERN_ERR "[TSP] threshold value %d\n",
 			threshold);
 		ret =
-			get_object_info(copy_data, TOUCH_MULTITOUCHSCREEN_T9,
-					&size_one, &address);
+		    get_object_info(copy_data, TOUCH_MULTITOUCHSCREEN_T9,
+				    &size_one, &address);
 		size_one = 1;
 		value = (u8) threshold;
 		write_mem(copy_data, address + (u16) object_register, size_one,
@@ -3018,7 +3043,7 @@ static ssize_t tsp_threshold_store(struct device *dev,
 			 (u8) size_one, &val);
 
 		printk(KERN_ERR "[TSP] T%d Byte%d is %d\n",
-			   TOUCH_MULTITOUCHSCREEN_T9, object_register, val);
+		       TOUCH_MULTITOUCHSCREEN_T9, object_register, val);
 	}
 
 	return size;
@@ -3460,7 +3485,9 @@ static int __devinit mxt224_probe(struct i2c_client *client,
 	data->gpio_read_done = pdata->gpio_read_done;
 
 	data->power_on();
-
+#if defined(CONFIG_MACH_M0_GRANDECTC)
+	msleep(100);
+#endif
 	ret = mxt224_init_touch_driver(data);
 	if (ret) {
 		dev_err(&client->dev, "chip initialization failed\n");
@@ -3499,8 +3526,8 @@ static int __devinit mxt224_probe(struct i2c_client *client,
 		data->atchcalsthr_e = pdata->atchcalsthr_e;
 		data->noise_suppression_cfg = pdata->t48_config_batt_e + 1;
 		data->noise_suppression_cfg_ta = pdata->t48_config_chrg_e + 1;
-		data->tchthr_batt_e= pdata->tchthr_batt_e;
-		data->tchthr_charging_e= pdata->tchthr_charging_e;
+		data->tchthr_batt_e = pdata->tchthr_batt_e;
+		data->tchthr_charging_e = pdata->tchthr_charging_e;
 		data->calcfg_batt_e = pdata->calcfg_batt_e;
 		data->calcfg_charging_e = pdata->calcfg_charging_e;
 		data->atchfrccalthr_e = pdata->atchfrccalthr_e;
@@ -3824,6 +3851,8 @@ static int __devinit mxt224_probe(struct i2c_client *client,
 #ifdef CONFIG_HAS_EARLYSUSPEND
 #if defined(CONFIG_TARGET_LOCALE_NA) || defined(CONFIG_TARGET_LOCALE_NAATT)
 	data->early_suspend.level = EARLY_SUSPEND_LEVEL_DISABLE_FB + 1;
+#elif defined(CONFIG_TARGET_LOCALE_KOR)
+	data->early_suspend.level = EARLY_SUSPEND_LEVEL_DISABLE_FB + 3;
 #else
 	data->early_suspend.level = EARLY_SUSPEND_LEVEL_BLANK_SCREEN + 1;
 #endif

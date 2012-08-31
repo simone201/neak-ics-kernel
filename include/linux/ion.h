@@ -286,7 +286,7 @@ struct ion_handle *ion_import_uva(struct ion_client *client, unsigned long uva);
 struct ion_handle *ion_exynos_get_user_pages(struct ion_client *client,
 			unsigned long uvaddr, size_t len, unsigned int flags);
 #else
-#include <err.h>
+#include "err.h"
 static inline struct ion_handle *ion_exynos_get_user_pages(
 				struct ion_client *client, unsigned long uvaddr,
 				size_t len, unsigned int flags)

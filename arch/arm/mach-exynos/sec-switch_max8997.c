@@ -47,11 +47,9 @@
 #define MUIC_PRINT_LOG()	{}
 #endif
 
-#if 0
 static struct switch_dev switch_dock = {
 	.name = "dock",
 };
-#endif
 
 extern struct class *sec_class;
 
@@ -211,9 +209,11 @@ static int __init u1_sec_switch_init(void)
 		pr_err("Failed to create device file(.usblock/enable)!\n");
 #endif
 
+#if !defined(CONFIG_MACH_U1CAMERA_BD)
 	ret = uart_switch_init();
 	if (ret)
 		pr_err("Failed to create uart_switch\n");
+#endif /* CONFIG_MACH_U1CAMERA_BD */
 
 	return 0;
 };
