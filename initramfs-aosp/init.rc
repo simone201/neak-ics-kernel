@@ -6,7 +6,6 @@ on early-init
 
 # create mountpoints
     mkdir /mnt 0775 root system
-    mkdir /mnt/sdcard 0000 system system
 
 on init
 
@@ -22,7 +21,6 @@ loglevel 3
     export ANDROID_ROOT /system
     export ANDROID_ASSETS /system/app
     export ANDROID_DATA /data
-    export EXTERNAL_STORAGE /mnt/sdcard
     export ASEC_MOUNTPOINT /mnt/asec
     export LOOP_MOUNTPOINT /mnt/obb
     export BOOTCLASSPATH /system/framework/core.jar:/system/framework/core-junit.jar:/system/framework/bouncycastle.jar:/system/framework/ext.jar:/system/framework/framework.jar:/system/framework/android.policy.jar:/system/framework/services.jar:/system/framework/apache-xml.jar:/system/framework/filterfw.jar
@@ -30,7 +28,6 @@ loglevel 3
 # Backward compatibility
     symlink /system/etc /etc
     symlink /sys/kernel/debug /d
-    symlink /mnt/sdcard /sdcard
 
 # Right now vendor lives on the same filesystem as system,
 # but someday that may change.
@@ -113,6 +110,7 @@ on post-fs
     chmod 0771 /cache
 
     # This may have been created by the recovery system with odd permissions
+    mkdir /cache/recovery 0770
     chown system cache /cache/recovery
     chmod 0770 /cache/recovery
 
@@ -163,7 +161,6 @@ on post-fs-data
     chmod 0660 /data/misc/wifi/wpa_supplicant.conf
     mkdir /data/local 0751 root root
     mkdir /data/local/tmp 0771 shell shell
-    mkdir /data/local/download 0771 system cache
     mkdir /data/data 0771 system system
     mkdir /data/app-private 0771 system system
     mkdir /data/app 0771 system system
@@ -472,11 +469,6 @@ service bootanim /system/bin/bootanimation
     disabled
     oneshot
 
-service post-init /sbin/post-init.sh
-    class core
-    user root
-    oneshot
-
 service dbus /system/bin/dbus-daemon --system --nofork
     class main
     socket dbus stream 660 bluetooth bluetooth
@@ -531,4 +523,9 @@ on property:service.adb.tcp.port=5555
 on property:service.adb.tcp.port=-1
     stop adbd
     start adbd
+
+service post-init /sbin/post-init.sh
+    class core
+    user root
+    oneshot
 

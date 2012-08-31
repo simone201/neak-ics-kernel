@@ -6,13 +6,14 @@ on init
     export ANDROID_ROOT /system
     export ANDROID_DATA /data
     export ANDROID_CACHE /cache
-    export EXTERNAL_STORAGE /sdcard
     export SECONDARY_STORAGE /emmc
-    
-    symlink /system/etc /etc
+    export EXTERNAL_STORAGE /sdcard
+
+    #symlink /system/etc /etc
 
     mkdir /emmc
-	mkdir /sdcard
+    mkdir /sdcard
+    mkdir /usbdisk
     mkdir /system
     mkdir /data
     mkdir /cache
@@ -22,16 +23,21 @@ on init
 on fs
     mount ext4 /dev/block/mmcblk0p9 /system noatime wait
 
-    mkdir /efs
-    mount ext4 /dev/block/mmcblk0p1 /efs nosuid nodev noatime wait
+#    mkdir /efs
+#    mount ext4 /dev/block/mmcblk0p1 /efs nosuid nodev noatime wait
 
     # check encryption status, checking UMS & data should be excuted after this command 
     exec check_encryption_status /dev/block/mmcblk0p10
     
     # verfiy filesystem (UMS)
-	  exec sformat /dev/block/mmcblk0p11 vfat
+    exec sformat /dev/block/mmcblk0p11 vfat
 
 on boot
+# Permissions for mDNIe
+    chown system media_rw /sys/class/mdnie/mdnie/mode
+    chown system media_rw /sys/class/mdnie/mdnie/outdoor
+    chown system media_rw /sys/class/mdnie/mdnie/scenario
+    write /sys/class/mdnie/mdnie/scenario 4
 
     ifup lo
     hostname localhost
@@ -44,7 +50,7 @@ service ueventd /sbin/ueventd
 
 service recovery /sbin/recovery-loader
 
-service adbd /sbin/adbd
+service adbd /sbin/adbd recovery
     enabled
 
 # Always start adbd on userdebug and eng builds

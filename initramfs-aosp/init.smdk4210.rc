@@ -1,8 +1,8 @@
 import init.smdk4210.usb.rc
 
 on early-init
-    export EXTERNAL_STORAGE /mnt/sdcard
     export SECONDARY_STORAGE /mnt/emmc
+    export EXTERNAL_STORAGE /mnt/sdcard
     mkdir /mnt 0775 system system
     mkdir /mnt/emmc 0775 system system
     mkdir /mnt/sdcard 0775 system system
@@ -12,8 +12,8 @@ on early-init
     mkdir /mnt/.lfs 0755 root root
 
     # for backwards compatibility
-    symlink /mnt/sdcard /sdcard
     symlink /mnt/emmc /emmc
+    symlink /mnt/sdcard /sdcard
 
 # Disable CFQ slice idle delay
     write /sys/block/mmcblk0/queue/iosched/slice_idle 0
@@ -31,10 +31,17 @@ on early-init
 
 on fs
 # mount ext4 partitions
-    mount ext4 /dev/block/mmcblk0p9 /system noatime wait ro
-    mount ext4 /dev/block/mmcblk0p7 /cache nosuid nodev noatime wait
-    mount ext4 /dev/block/mmcblk0p10 /data nosuid nodev noatime wait noauto_da_alloc
-    mount ext4 /dev/block/mmcblk0p12 /preload nosuid nodev noatime wait
+    mount ext4 /res/dev/system /system noatime wait ro
+    mount tmpfs tmpfs /system/lib/modules
+    symlink /lib/modules/cifs.ko /system/lib/modules/cifs.ko
+    symlink /lib/modules/dhd.ko /system/lib/modules/dhd.ko
+    symlink /lib/modules/scsi_wait_scan.ko /system/lib/modules/scsi_wait_scan.ko
+    symlink /lib/modules/Si4709_driver.ko /system/lib/modules/Si4709_driver.ko
+    exec sfsck /res/dev/cache ext4
+    mount ext4 /res/dev/cache /cache nosuid nodev noatime wait
+
+    mount ext4 /res/dev/data /data nosuid nodev noatime wait noauto_da_alloc
+#    mount ext4 /dev/block/mmcblk0p12 /preload nosuid nodev noatime wait
     
     mount ext4 /dev/block/mmcblk0p1 /efs nosuid nodev noatime wait
     mkdir /efs/bluetooth
@@ -50,9 +57,10 @@ on fs
 
 on post-fs-data
 # insmod kernel modules
-    insmod /lib/modules/Si4709_driver.ko
+    insmod /system/lib/modules/Si4709_driver.ko
     
 # mount param.lfs
+    insmod /lib/modules/j4fs.ko
     mount j4fs /dev/block/mmcblk0p4 /mnt/.lfs
 
 # GPS
@@ -262,7 +270,7 @@ on post-fs-data
     chown system radio /sys/devices/platform/s5p-ehci/ehci_power
     chown system radio /sys/devices/platform/s5p-ehci/ehci_runtime
     chown system radio /sys/devices/virtual/misc/multipdp/waketime    
-    
+
 # for datarouter
     chown system system /dev/dun
     chown system system /dev/ttyGS0
@@ -271,8 +279,8 @@ on post-fs-data
     chown system system /dev/ttyGS3
 
 # DVFS - cpufreq ondemand
-#   write /sys/devices/system/cpu/cpufreq/ondemand/down_differential 5
-#   write /sys/devices/system/cpu/cpufreq/ondemand/up_threshold 85
+#    write /sys/devices/system/cpu/cpufreq/ondemand/down_differential 5
+#    write /sys/devices/system/cpu/cpufreq/ondemand/up_threshold 85
 
 #panorama directory creation
     mkdir /data/pxtmpdir 0775
