@@ -58,33 +58,21 @@ static struct modem_io_t umts_io_devices[] = {
 		.links = LINKTYPE(LINKDEV_HSIC),
 	},
 	[4] = {
-#ifdef CONFIG_SLP
-		.name = "pdp0",
-#else
 		.name = "rmnet0",
-#endif
 		.id = 0x2A,
 		.format = IPC_RAW,
 		.io_type = IODEV_NET,
 		.links = LINKTYPE(LINKDEV_HSIC),
 	},
 	[5] = {
-#ifdef CONFIG_SLP
-		.name = "pdp1",
-#else
 		.name = "rmnet1",
-#endif
 		.id = 0x2B,
 		.format = IPC_RAW,
 		.io_type = IODEV_NET,
 		.links = LINKTYPE(LINKDEV_HSIC),
 	},
 	[6] = {
-#ifdef CONFIG_SLP
-		.name = "pdp2",
-#else
 		.name = "rmnet2",
-#endif
 		.id = 0x2C,
 		.format = IPC_RAW,
 		.io_type = IODEV_NET,
@@ -171,7 +159,7 @@ static struct modem_data umts_modem_data = {
 	.gpio_cp_dump_int = GPIO_CP_DUMP_INT,
 	.gpio_flm_uart_sel = 0,
 	.gpio_cp_warm_reset = 0,
-#if defined(CONFIG_SIM_DETECT)
+#if defined(GPIO_SIM_DETECT)
 	.gpio_sim_detect = GPIO_SIM_DETECT,
 #endif
 
@@ -252,18 +240,18 @@ void set_slave_wake(void)
 		}
 		gpio_direction_output(
 			modem_link_pm_data.gpio_link_slavewake, 1);
+		mdelay(10);
+		while (spin--) {
+			if (!gpio_get_value(
+				modem_link_pm_data.gpio_link_hostwake))
+				break;
+			mdelay(10);
+		}
 	}
 }
 
 void set_host_states(struct platform_device *pdev, int type)
 {
-	int val = gpio_get_value(umts_modem_data.gpio_cp_reset);
-
-	if (!val) {
-		pr_info("CP not ready, Active State low\n");
-		return;
-	}
-
 	if (active_ctl.gpio_initialized) {
 		if (type)
 			set_slave_wake();
@@ -301,7 +289,8 @@ void set_hsic_lpa_states(int states)
 			break;
 		case STATE_HSIC_LPA_PHY_INIT:
 			gpio_set_value(umts_modem_data.gpio_pda_active, 1);
-			set_slave_wake();
+			gpio_set_value(modem_link_pm_data.gpio_link_slavewake,
+				1);
 			pr_info(LOG_TAG "set hsic lpa phy init: "
 				"slave wake-up (%d)\n",
 				gpio_get_value(

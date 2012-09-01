@@ -19,7 +19,7 @@
 #include <media/v4l2-device.h>
 #include <media/v4l2-subdev.h>
 #ifdef CONFIG_VIDEO_SAMSUNG_V4L2
-#include <linux/videodev2_exynos_camera.h>
+#include <linux/videodev2_samsung.h>
 #endif
 #include <media/s5k5bafx_platform.h>
 
@@ -31,11 +31,11 @@
 
 #define S5K5BAFX_BURST_MODE
 
-#include <linux/slab.h>
 #ifdef CONFIG_LOAD_FILE
 #include <linux/vmalloc.h>
 #include <linux/fs.h>
 #include <linux/mm.h>
+#include <linux/slab.h>
 #include <asm/uaccess.h>
 
 struct test {
@@ -754,11 +754,13 @@ static int s5k5bafx_set_sensor_mode(struct v4l2_subdev *sd,
 	return 0;
 }
 
+#if 0
 static int s5k5bafx_g_fmt(struct v4l2_subdev *sd, struct v4l2_format *fmt)
 {
 	cam_dbg("E\n");
 	return 0;
 }
+#endif
 
 static int s5k5bafx_enum_framesizes(struct v4l2_subdev *sd, \
 					struct v4l2_frmsizeenum *fsize)
@@ -803,6 +805,7 @@ static int s5k5bafx_enum_frameintervals(struct v4l2_subdev *sd,
 }
 #endif
 
+#if 0
 static int s5k5bafx_try_fmt(struct v4l2_subdev *sd, struct v4l2_format *fmt)
 {
 	int err = 0;
@@ -811,6 +814,7 @@ static int s5k5bafx_try_fmt(struct v4l2_subdev *sd, struct v4l2_format *fmt)
 
 	return err;
 }
+#endif
 
 static int s5k5bafx_s_fmt(struct v4l2_subdev *sd, struct v4l2_mbus_framefmt *ffmt)
 {

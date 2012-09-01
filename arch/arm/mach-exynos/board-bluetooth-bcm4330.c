@@ -43,6 +43,7 @@
 static struct rfkill *bt_rfkill;
 
 struct bcm_bt_lpm {
+	int wake;
 	int host_wake;
 
 	struct hrtimer enter_lpm_timer;
@@ -132,6 +133,7 @@ static const struct rfkill_ops bcm4330_bt_rfkill_ops = {
 #ifdef BT_LPM_ENABLE
 static void set_wake_locked(int wake)
 {
+	bt_lpm.wake = wake;
 
 	if (!wake)
 		wake_unlock(&bt_lpm.wake_lock);
@@ -215,11 +217,6 @@ static int bcm_bt_lpm_init(struct platform_device *pdev)
 	bt_lpm.host_wake = 0;
 	bt_is_running = 0;
 
-	snprintf(bt_lpm.wake_lock_name, sizeof(bt_lpm.wake_lock_name),
-			"BTLowPower");
-	wake_lock_init(&bt_lpm.wake_lock, WAKE_LOCK_SUSPEND,
-			 bt_lpm.wake_lock_name);
-
 	irq = IRQ_BT_HOST_WAKE;
 	ret = request_irq(irq, host_wake_isr, IRQF_TRIGGER_HIGH,
 		"bt host_wake", NULL);
@@ -234,6 +231,10 @@ static int bcm_bt_lpm_init(struct platform_device *pdev)
 		return ret;
 	}
 
+	snprintf(bt_lpm.wake_lock_name, sizeof(bt_lpm.wake_lock_name),
+			"BTLowPower");
+	wake_lock_init(&bt_lpm.wake_lock, WAKE_LOCK_SUSPEND,
+			 bt_lpm.wake_lock_name);
 	return 0;
 }
 #endif

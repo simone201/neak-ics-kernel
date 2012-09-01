@@ -1,6 +1,7 @@
-/*
- * Copyright (c) 2012 Samsung Electronics Co., Ltd.
- *		http://www.samsung.com
+/* linux/drivers/media/video/exynos/rotator/rotator-regs.h
+ *
+ * Copyright (c) 2011 Samsung Electronics Co., Ltd.
+ *		http://www.samsung.com/
  *
  * Register header file for Exynos Rotator driver
  *

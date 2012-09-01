@@ -28,18 +28,17 @@ struct platform_device; /* don't need the contents */
 
 void s3c_fimc0_cfg_gpio(struct platform_device *pdev)
 {
-#if defined(CONFIG_MACH_SMDK4212) || defined(CONFIG_MACH_SMDK4210)
+#if defined(CONFIG_MACH_SMDK4212) || defined(CONFIG_MACH_SMDK4210) \
+	|| defined(CONFIG_MACH_PX)
 	if (soc_is_exynos4210()) {
 		/* CAM A port(b0010) : PCLK, VSYNC, HREF, DATA[0-4] */
 		s3c_gpio_cfgrange_nopull(EXYNOS4210_GPJ0(0), 8, S3C_GPIO_SFN(2));
 		/* CAM A port(b0010) : DATA[5-7], CLKOUT(MIPI CAM also), FIELD */
 		s3c_gpio_cfgrange_nopull(EXYNOS4210_GPJ1(0), 5, S3C_GPIO_SFN(2));
-#if !defined(CONFIG_MACH_P8LTE)
 		/* CAM B port(b0011) : DATA[0-7] */
 		s3c_gpio_cfgrange_nopull(EXYNOS4210_GPE1(0), 8, S3C_GPIO_SFN(3));
 		/* CAM B port(b0011) : PCLK, VSYNC, HREF, FIELD, CLKOUT */
 		s3c_gpio_cfgrange_nopull(EXYNOS4210_GPE0(0), 5, S3C_GPIO_SFN(3));
-#endif
 	} else {
 		/* CAM A port(b0010) : PCLK, VSYNC, HREF, DATA[0-4] */
 		s3c_gpio_cfgrange_nopull(EXYNOS4212_GPJ0(0), 8, S3C_GPIO_SFN(2));
@@ -53,21 +52,6 @@ void s3c_fimc0_cfg_gpio(struct platform_device *pdev)
 		s3c_gpio_cfgrange_nopull(EXYNOS4212_GPM2(0), 3, S3C_GPIO_SFN(3));
 	}
 	/* note : driver strength to max is unnecessary */
-#elif defined(CONFIG_MACH_PX)
-	/* CAM A port(b0010) : PCLK, VSYNC, HREF, DATA[0-4] */
-	s3c_gpio_cfgrange_nopull(EXYNOS4210_GPJ0(0), 8, S3C_GPIO_SFN(2));
-	/* CAM A port(b0010) : DATA[5-7], CLKOUT(MIPI CAM also), FIELD */
-	s3c_gpio_cfgrange_nopull(EXYNOS4210_GPJ1(0), 5, S3C_GPIO_SFN(2));
-	/* Disable Mclk */
-	s3c_gpio_cfgpin(EXYNOS4210_GPJ1(3), S3C_GPIO_INPUT);
-	s3c_gpio_setpull(EXYNOS4210_GPJ1(3), S3C_GPIO_PULL_DOWN);
-
-#if !defined(CONFIG_MACH_P8LTE)
-	/* CAM B port(b0011) : DATA[0-7] */
-	s3c_gpio_cfgrange_nopull(EXYNOS4210_GPE1(0), 8, S3C_GPIO_SFN(3));
-	/* CAM B port(b0011) : PCLK, VSYNC, HREF, FIELD, CLKOUT */
-	s3c_gpio_cfgrange_nopull(EXYNOS4210_GPE0(0), 5, S3C_GPIO_SFN(3));
-#endif
 #endif
 }
 

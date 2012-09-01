@@ -39,10 +39,10 @@
  */
 
 enum s3c_cpu_type {
-	TYPE_ADCV1, /* S3C24XX */
-	TYPE_ADCV2, /* S3C64XX, S5P64X0, S5PC100 */
-	TYPE_ADCV3, /* S5PV210, S5PC110, EXYNOS4210 */
-	TYPE_ADCV4, /* EXYNOS4412, EXYNOS5250 */
+	TYPE_S3C24XX,
+	TYPE_S3C64XX,
+	TYPE_S5PV210,
+	TYPE_EXYNOS4412
 };
 
 struct s3c_adc_client {
@@ -70,9 +70,11 @@ struct adc_device {
 	struct s3c_adc_client	*cur;
 	struct s3c_adc_client	*ts_pend;
 	void __iomem		*regs;
+	enum s3c_cpu_type	 cputype;
 	spinlock_t		 lock;
 
 	unsigned int		 prescale;
+	unsigned int		 delay;
 
 	int			 irq;
 };
@@ -95,7 +97,6 @@ static inline void s3c_adc_select(struct adc_device *adc,
 				  struct s3c_adc_client *client)
 {
 	unsigned con = readl(adc->regs + S3C2410_ADCCON);
-	enum s3c_cpu_type cpu = platform_get_device_id(adc->pdev)->driver_data;
 
 	client->select_cb(client, 1);
 
@@ -105,9 +106,9 @@ static inline void s3c_adc_select(struct adc_device *adc,
 	con |=  S3C2410_ADCCON_PRSCEN;
 
 	if (!client->is_ts) {
-		if (cpu >= TYPE_ADCV3)
+		if ((adc->cputype == TYPE_S5PV210) || (adc->cputype == TYPE_EXYNOS4412))
 			writel(S5PV210_ADCCON_SELMUX(client->channel),
-				adc->regs + S5P_ADCMUX);
+				adc->regs + S5PV210_ADCMUX);
 		else
 			con |= S3C2410_ADCCON_SELMUX(client->channel);
 	}
@@ -163,15 +164,17 @@ int s3c_adc_start(struct s3c_adc_client *client,
 
 	BUG_ON(!adc);
 
-	if (client->is_ts && adc->ts_pend)
-		return -EAGAIN;
-
 	if (atomic_xchg(&client->running, 1)) {
 		WARN(1, "%s: %p is already running\n", __func__, client);
 		return -EAGAIN;
 	}
 
 	spin_lock_irqsave(&adc->lock, flags);
+
+	if (client->is_ts && adc->ts_pend) {
+		spin_unlock_irqrestore(&adc->lock, flags);
+		return -EAGAIN;
+	}
 
 	client->convert_cb = s3c_convert_done;
 	client->wait = pwake;
@@ -315,7 +318,6 @@ static irqreturn_t s3c_adc_irq(int irq, void *pw)
 {
 	struct adc_device *adc = pw;
 	struct s3c_adc_client *client = adc->cur;
-	enum s3c_cpu_type cpu = platform_get_device_id(adc->pdev)->driver_data;
 	unsigned data0 = 0, data1 = 0;
 
 	spin_lock(&adc->lock);
@@ -326,7 +328,7 @@ static irqreturn_t s3c_adc_irq(int irq, void *pw)
 	}
 
 	data0 = readl(adc->regs + S3C2410_ADCDAT0);
-	if (cpu != TYPE_ADCV4)
+	if (adc->cputype != TYPE_EXYNOS4412)
 		data1 = readl(adc->regs + S3C2410_ADCDAT1);
 
 	adc_dbg(adc, "read %d: 0x%04x, 0x%04x\n", client->nr_samples, data0, data1);
@@ -334,11 +336,11 @@ static irqreturn_t s3c_adc_irq(int irq, void *pw)
 	if (client->nr_samples > 0)
 		client->nr_samples--;
 
-	if (cpu == TYPE_ADCV1) {
+	if (adc->cputype == TYPE_S3C24XX) {
 		data0 &= 0x3ff;
 		data1 &= 0x3ff;
 	} else {
-		/* S3C64XX/S5P  ADC resolution is 12-bit */
+		/* S3C64XX S5PV210 EXYNOS4412 ADC resolution is 12-bit */
 		data0 &= 0xfff;
 		data1 &= 0xfff;
 	}
@@ -363,7 +365,7 @@ static irqreturn_t s3c_adc_irq(int irq, void *pw)
 	}
 
 exit:
-	if (cpu != TYPE_ADCV1) {
+	if (adc->cputype != TYPE_S3C24XX) {
 		/* Clear ADC interrupt */
 		writel(0, adc->regs + S3C64XX_ADCCLRINT);
 	}
@@ -378,7 +380,6 @@ static int s3c_adc_probe(struct platform_device *pdev)
 	struct device *dev = &pdev->dev;
 	struct adc_device *adc;
 	struct resource *regs;
-	enum s3c_cpu_type cpu = platform_get_device_id(pdev)->driver_data;
 	int ret;
 	unsigned tmp;
 
@@ -392,6 +393,8 @@ static int s3c_adc_probe(struct platform_device *pdev)
 
 	adc->pdev = pdev;
 	adc->prescale = S3C2410_ADCCON_PRSCVL(49);
+	adc->delay = S3C2410_ADCDLY_DELAY(1000);
+	adc->cputype = platform_get_device_id(adc->pdev)->driver_data;
 
 	adc->clk = clk_get(NULL, "adc");
 	if (unlikely(IS_ERR(adc->clk))) {
@@ -424,13 +427,13 @@ static int s3c_adc_probe(struct platform_device *pdev)
 #endif
 
 	tmp = adc->prescale | S3C2410_ADCCON_PRSCEN;
-
-	/* Enable 12-bit ADC resolution */
-	if (cpu != TYPE_ADCV1) {
+	if (adc->cputype != TYPE_S3C24XX) {
+		/* Enable 12-bit ADC resolution */
 		tmp |= S3C64XX_ADCCON_RESSEL;
 	}
 	tmp |= S3C2410_ADCCON_STDBM;
 	writel(tmp, adc->regs + S3C2410_ADCCON);
+	writel(adc->delay, adc->regs + S3C2410_ADCDLY);
 
 	adc->irq = platform_get_irq(pdev, 1);
 	if (unlikely(adc->irq <= 0)) {
@@ -496,7 +499,6 @@ static int s3c_adc_suspend(struct platform_device *pdev, pm_message_t state)
 static int s3c_adc_resume(struct platform_device *pdev)
 {
 	struct adc_device *adc = platform_get_drvdata(pdev);
-	enum s3c_cpu_type cpu = platform_get_device_id(pdev)->driver_data;
 	unsigned int tmp = 0;
 
 	clk_enable(adc->clk);
@@ -511,9 +513,10 @@ static int s3c_adc_resume(struct platform_device *pdev)
 #endif
 	tmp = adc->prescale | S3C2410_ADCCON_PRSCEN;
 	/* Enable 12-bit ADC resolution */
-	if (cpu != TYPE_ADCV1)
+	if (adc->cputype != TYPE_S3C24XX)
 		tmp |= S3C64XX_ADCCON_RESSEL;
 	writel(tmp, adc->regs + S3C2410_ADCCON);
+	writel(adc->delay, adc->regs + S3C2410_ADCDLY);
 
 	return 0;
 }
@@ -526,16 +529,16 @@ static int s3c_adc_resume(struct platform_device *pdev)
 static struct platform_device_id s3c_adc_driver_ids[] = {
 	{
 		.name		= "s3c24xx-adc",
-		.driver_data	= TYPE_ADCV1,
+		.driver_data	= TYPE_S3C24XX,
 	}, {
 		.name		= "s3c64xx-adc",
-		.driver_data	= TYPE_ADCV2,
+		.driver_data	= TYPE_S3C64XX,
 	}, {
-		.name		= "samsung-adc-v3",
-		.driver_data	= TYPE_ADCV3,
+		.name		= "s5pv210-adc",
+		.driver_data	= TYPE_S5PV210,
 	}, {
-		.name		= "samsung-adc-v4",
-		.driver_data	= TYPE_ADCV4,
+		.name		= "exynos4412-adc",
+		.driver_data	= TYPE_EXYNOS4412,
 	},
 	{ }
 };

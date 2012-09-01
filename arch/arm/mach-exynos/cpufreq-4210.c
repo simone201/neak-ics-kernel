@@ -15,12 +15,12 @@
 #include <linux/clk.h>
 #include <linux/io.h>
 #include <linux/cpufreq.h>
+#include <linux/regulator/consumer.h>
 
 #include <mach/map.h>
 #include <mach/regs-clock.h>
 #include <mach/cpufreq.h>
 #include <mach/asv.h>
-#include <mach/sec_debug.h>
 
 #include <plat/clock.h>
 
@@ -264,15 +264,15 @@ bool exynos4210_pms_change(unsigned int old_index, unsigned int new_index)
 	return (old_pm == new_pm) ? 0 : 1;
 }
 
+static void exynos4210_set_arm_volt(unsigned int arm_volt)
+{
+	regulator_set_voltage(arm_regulator, arm_volt, arm_volt + 25000);
+}
+
 static void exynos4210_set_frequency(unsigned int old_index,
 				  unsigned int new_index)
 {
 	unsigned int tmp;
-
-	sec_debug_aux_log(SEC_DEBUG_AUXLOG_CPU_BUS_CLOCK_CHANGE,
-			"%s: old_index=%d, new_index=%d(%ps)",
-			__func__, old_index, new_index,
-			__builtin_return_address(0));
 
 	if (old_index > new_index) {
 		if (!exynos4210_pms_change(old_index, new_index)) {
@@ -320,35 +320,30 @@ static void __init set_volt_table(void)
 	tmp = exynos_result_of_asv;
 
 	asv_group = (tmp & 0xF);
-
-	switch (tmp  & (SUPPORT_FREQ_MASK << SUPPORT_FREQ_SHIFT)) {
-	case SUPPORT_1400MHZ:
-#if defined(CONFIG_EXYNOS4210_1200MHZ_SUPPORT)
-		for_1200 = true;
-		max_support_idx = L1;
-#else
-		for_1400 = true;
-		max_support_idx = L0;
-#endif
-		break;
-	case SUPPORT_1200MHZ:
-		for_1200 = true;
-		max_support_idx = L1;
-		break;
-	case SUPPORT_1000MHZ:
-		for_1000 = true;
-		max_support_idx = L2;
-		break;
-	default:
-		for_1000 = true;
-		max_support_idx = L2;
-		break;
+	
+	switch (tmp & (SUPPORT_FREQ_MASK << SUPPORT_FREQ_SHIFT)) {
+		case SUPPORT_1400MHZ:
+			for_1400 = true;
+			max_support_idx = L0;
+			break;
+		case SUPPORT_1200MHZ:
+			for_1200 = true;
+			max_support_idx = L1;
+			break;
+		case SUPPORT_1000MHZ:
+			for_1000 = true;
+			max_support_idx = L2;
+			break;
+		default:
+			for_1000 = true;
+			max_support_idx = L2;
+			break;
 	}
 
-	/*
-	 * If ASV group is S, can not support 1.4GHz
-	 * Disabling table entry
-	 */
+   /*
+	* If ASV group is S, can not support 1.4GHz
+	* Disabling table entry
+	*/
 	if ((asv_group == 0) || !for_1400)
 		exynos4210_freq_table[L0].frequency = CPUFREQ_ENTRY_INVALID;
 
@@ -447,9 +442,16 @@ int exynos4210_cpufreq_init(struct exynos_dvfs_info *info)
 	info->min_support_idx = min_support_idx;
 	info->cpu_clk = cpu_clk;
 	info->volt_table = exynos4210_volt_table;
+	info->set_volt = exynos4210_set_arm_volt;
 	info->freq_table = exynos4210_freq_table;
 	info->set_freq = exynos4210_set_frequency;
 	info->need_apll_change = exynos4210_pms_change;
+
+	arm_regulator = regulator_get(NULL, "vdd_arm");
+	if (IS_ERR(arm_regulator)) {
+		printk(KERN_ERR "failed to get resource %s\n", "vdd_arm");
+		goto err_mout_apll;
+	}
 
 	return 0;
 

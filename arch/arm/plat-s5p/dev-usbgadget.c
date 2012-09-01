@@ -21,6 +21,7 @@
 #include <plat/usbgadget.h>
 #include <plat/usb-phy.h>
 
+#ifdef CONFIG_USB_GADGET
 /* USB Device (Gadget)*/
 static struct resource s3c_usbgadget_resource[] = {
 	[0] = {
@@ -59,6 +60,7 @@ void __init s5p_usbgadget_set_platdata(struct s5p_usbgadget_platdata *pd)
 	if (!npd->phy_exit)
 		npd->phy_exit = s5p_usb_phy_exit;
 }
+#endif /* CONFIG_USB_GADGET */
 
 #if defined(CONFIG_USB_ANDROID) || defined(CONFIG_USB_G_ANDROID)
 /* default samsung vendor ID */

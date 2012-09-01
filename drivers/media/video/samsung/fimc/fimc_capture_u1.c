@@ -15,8 +15,7 @@
 #include <linux/string.h>
 #include <linux/platform_device.h>
 #include <linux/videodev2.h>
-#include <linux/videodev2_exynos_media.h>
-#include <linux/videodev2_exynos_camera.h>
+#include <linux/videodev2_samsung.h>
 #include <linux/clk.h>
 #include <linux/mm.h>
 #include <linux/io.h>
@@ -454,7 +453,11 @@ int fimc_s_parm(struct file *file, void *fh, struct v4l2_streamparm *a)
 		return 0;
 
 	mutex_lock(&ctrl->v4l2_lock);
+#ifdef CONFIG_MACH_S2PLUS
+	if (ctrl->id == FIMC0)
+#else
 	if (ctrl->id != FIMC2)
+#endif
 		ret = subdev_call(ctrl, video, s_parm, a);
 	mutex_unlock(&ctrl->v4l2_lock);
 
@@ -650,7 +653,11 @@ int fimc_s_input(struct file *file, void *fh, unsigned int i)
 	if (!fimc->camera_isvalid[i])
 		return -EINVAL;
 
+#ifdef CONFIG_MACH_S2PLUS
+	if (fimc->camera[i]->sd && ctrl->id == FIMC0) {
+#else
 	if (fimc->camera[i]->sd && ctrl->id != FIMC2) {
+#endif
 		fimc_err("%s: Camera already in use.\n", __func__);
 		return -EBUSY;
 	}
@@ -677,6 +684,18 @@ int fimc_s_input(struct file *file, void *fh, unsigned int i)
 		printk(KERN_INFO "fimc_s_input activated subdev = %d\n", i);
 	}
 
+#ifdef CONFIG_MACH_S2PLUS
+	if (ctrl->id == FIMC1) {
+		if (i == fimc->active_camera) {
+			ctrl->cam = fimc->camera[i];
+			fimc_info2("fimc_s_input activating subdev FIMC1 %d\n",
+							ctrl->cam->initialized);
+		} else {
+			mutex_unlock(&ctrl->v4l2_lock);
+			return -EINVAL;
+		}
+	}
+#else
 	if (ctrl->id == FIMC2) {
 		if (i == fimc->active_camera) {
 			ctrl->cam = fimc->camera[i];
@@ -687,6 +706,7 @@ int fimc_s_input(struct file *file, void *fh, unsigned int i)
 			return -EINVAL;
 		}
 	}
+#endif
 
 	/*
 	 * The first time alloc for struct cap_info, and will be
@@ -742,12 +762,7 @@ int fimc_enum_fmt_vid_capture(struct file *file, void *fh,
 	struct fimc_control *ctrl = ((struct fimc_prv_data *)fh)->ctrl;
 	int i = f->index;
 
-	/* printk(KERN_INFO "%s++\n", __func__); */
-
-	if (i >= ARRAY_SIZE(capture_fmts)) {
-		fimc_err("%s: There is no support format index %d\n", __func__, i);
-		return -EINVAL;
-	}
+	printk(KERN_INFO "%s++\n", __func__);
 
 	mutex_lock(&ctrl->v4l2_lock);
 
@@ -756,7 +771,7 @@ int fimc_enum_fmt_vid_capture(struct file *file, void *fh,
 
 	mutex_unlock(&ctrl->v4l2_lock);
 
-	/* printk(KERN_INFO "%s--\n", __func__); */
+	printk(KERN_INFO "%s--\n", __func__);
 	return 0;
 }
 
@@ -867,9 +882,6 @@ static int fimc_calc_frame_ratio(struct fimc_control *ctrl,
 		cap->mbus_fmt.width = cap->sensor_output_width;
 		cap->mbus_fmt.height = cap->sensor_output_height;
 		cap->sensor_output_width = cap->sensor_output_height = 0;
-		pr_info("fimc: forced sensor output size: (%d, %d) to (%d, %d)\n",
-			cap->mbus_fmt.width, cap->mbus_fmt.height,
-			cap->fmt.width, cap->fmt.height);
 	} else if (cap->vt_mode) {
 		cap->mbus_fmt.width = 640;
 		cap->mbus_fmt.height = 480;
@@ -883,37 +895,25 @@ static int fimc_check_hd_mode(struct fimc_control *ctrl, struct v4l2_format *f)
 {
 	struct fimc_global *fimc = get_fimc_dev();
 	struct fimc_capinfo *cap = ctrl->cap;
-	u32 hd_mode = 0;
-	int ret = -EINVAL;
 
 	if (!cap->movie_mode || (fimc->active_camera != 0))
 		return 0;
 
-	if (f->fmt.pix.width == 1280 || cap->sensor_output_width == 1280)
-		hd_mode = 1;
+	if (!cap->video_width) {
+		cap->video_width = f->fmt.pix.width;
+		return 0;
+	}
 
-	printk(KERN_DEBUG "%s:movie_mode=%d, hd_mode=%d\n",
-			__func__, cap->movie_mode, hd_mode);
+	printk(KERN_DEBUG "%s: cap->video_width=%d, new width=%d\n",
+			__func__, cap->video_width, f->fmt.pix.width);
 
-	if (((cap->movie_mode == 2) && !hd_mode) ||
-	    ((cap->movie_mode == 1) && hd_mode)) {
-		fimc_warn("%s: mode change, power(%d) down\n",
-			__func__, ctrl->cam->initialized);
-		cap->movie_mode = hd_mode ? 2 : 1;
-
+	if (((cap->video_width == 1280) && (f->fmt.pix.width != 1280)) ||
+	    ((cap->video_width != 1280) && (f->fmt.pix.width == 1280))) {
+		fimc_warn("%s: mode change, power down\n", __func__);
 		if (ctrl->cam->initialized) {
-			struct v4l2_control c;
-
-			subdev_call(ctrl, core, reset, 0);
-			c.id = V4L2_CID_CAMERA_SENSOR_MODE;
-			c.value = cap->movie_mode;
-			subdev_call(ctrl, core, s_ctrl, &c);
-
-			if (ctrl->cam->cam_power) {
-				ret = ctrl->cam->cam_power(0);
-				if (unlikely(ret))
-					return ret;
-			}
+			v4l2_subdev_call(ctrl->cam->sd, core, reset, 0);
+			if (ctrl->cam->cam_power)
+				ctrl->cam->cam_power(0);
 
 			/* shutdown the MCLK */
 			clk_disable(ctrl->cam->clk);
@@ -922,6 +922,8 @@ static int fimc_check_hd_mode(struct fimc_control *ctrl, struct v4l2_format *f)
 			ctrl->cam->initialized = 0;
 		}
 	}
+
+	cap->video_width = f->fmt.pix.width;
 
 	return 0;
 }
@@ -944,7 +946,11 @@ int fimc_s_fmt_vid_capture(struct file *file, void *fh, struct v4l2_format *f)
 
 	/* rotaton, flip, dtp_mode, movie_mode and vt_mode,
 	 * sensor_output_width,height should be maintained.(by TN) */
+#if defined(CONFIG_MACH_PX) && defined(CONFIG_VIDEO_HD_SUPPORT)
+	memset(cap, 0, sizeof(*cap) - sizeof(u32) * 8);
+#else
 	memset(cap, 0, sizeof(*cap) - sizeof(u32) * 7);
+#endif
 
 	mutex_lock(&ctrl->v4l2_lock);
 
@@ -952,16 +958,15 @@ int fimc_s_fmt_vid_capture(struct file *file, void *fh, struct v4l2_format *f)
 	memcpy(&cap->fmt, &f->fmt.pix, sizeof(cap->fmt));
 
 	mbus_fmt = &cap->mbus_fmt;
+#ifdef CONFIG_MACH_S2PLUS
+	if (ctrl->id == FIMC0) {
+#else
 	if (ctrl->id != FIMC2) {
+#endif
 		if (cap->movie_mode || cap->vt_mode ||
 		    cap->fmt.priv == V4L2_PIX_FMT_MODE_HDR) {
 #if defined(CONFIG_MACH_PX) && defined(CONFIG_VIDEO_HD_SUPPORT)
-			ret = fimc_check_hd_mode(ctrl, f);
-			if (unlikely(ret)) {
-				fimc_err("%s: error, check_hd_mode\n",
-					__func__);
-				return ret;
-			}
+			fimc_check_hd_mode(ctrl, f);
 #endif
 			fimc_calc_frame_ratio(ctrl, cap);
 		}
@@ -1028,7 +1033,11 @@ int fimc_s_fmt_vid_capture(struct file *file, void *fh, struct v4l2_format *f)
 		return 0;
 	}
 
+#ifdef CONFIG_MACH_S2PLUS
+	if (ctrl->id == FIMC0)
+#else
 	if (ctrl->id != FIMC2)
+#endif
 		ret = subdev_call(ctrl, video, s_mbus_fmt, mbus_fmt);
 
 	mutex_unlock(&ctrl->v4l2_lock);
@@ -1550,8 +1559,11 @@ int fimc_s_ctrl_capture(void *fh, struct v4l2_control *c)
 #if defined(CONFIG_VIDEO_HD_SUPPORT)
 		printk(KERN_INFO "%s: CAMERA_SENSOR_MODE=%d\n",
 				__func__, c->value);
-		if (!ctrl->cam->initialized)
-			ret = fimc_init_camera(ctrl);
+#ifdef CONFIG_VIDEO_S5K5CCGX_P2
+		if ((fimc->active_camera == 0) && (c->value < 2))
+#endif /* CONFIG_VIDEO_S5K5CCGX_P2 */
+			if (!ctrl->cam->initialized)
+				ret = fimc_init_camera(ctrl);
 #endif /* CONFIG_VIDEO_HD_SUPPORT */
 		break;
 
@@ -1599,6 +1611,9 @@ int fimc_s_ctrl_capture(void *fh, struct v4l2_control *c)
 	case V4L2_CID_CAMERA_SENSOR_OUTPUT_SIZE:
 		ctrl->cap->sensor_output_width = (u32)c->value >> 16;
 		ctrl->cap->sensor_output_height = (u32)c->value & 0x0FFFF;
+		printk(KERN_DEBUG "sensor output size: %dx%d\n",
+			ctrl->cap->sensor_output_width,
+			ctrl->cap->sensor_output_height);
 		break;
 
 	default:
@@ -1608,7 +1623,11 @@ int fimc_s_ctrl_capture(void *fh, struct v4l2_control *c)
 		if ((ctrl->cam->id == CAMERA_WB) || \
 			 (ctrl->cam->id == CAMERA_WB_B))
 			break;
+#ifdef CONFIG_MACH_S2PLUS
+		if (FIMC0 == ctrl->id)
+#else
 		if (FIMC2 != ctrl->id)
+#endif
 			ret = subdev_call(ctrl, core, s_ctrl, c);
 		else
 			ret = 0;
@@ -1811,7 +1830,11 @@ int fimc_streamon_capture(void *fh)
 		cam = ctrl->cam;
 
 	if ((ctrl->cam->id != CAMERA_WB) && (ctrl->cam->id != CAMERA_WB_B)) {
+#ifdef CONFIG_MACH_S2PLUS
+		if (ctrl->id == FIMC0) {
+#else
 		if (ctrl->id != FIMC2) {
+#endif
 			ret = subdev_call(ctrl, video, enum_framesizes, &cam_frmsize);
 			if (ret < 0) {
 				dev_err(ctrl->dev, "%s: enum_framesizes failed\n", __func__);
@@ -2030,7 +2053,11 @@ int fimc_streamoff_capture(void *fh)
 
 #if defined(CONFIG_MACH_PX)
 #ifdef CONFIG_VIDEO_IMPROVE_STREAMOFF
+#ifdef CONFIG_MACH_S2PLUS
+	if ((ctrl->id == FIMC0) && (ctrl->cam->type == CAM_TYPE_MIPI))
+#else
 	if ((ctrl->id != FIMC2) && (ctrl->cam->type == CAM_TYPE_MIPI))
+#endif
 		v4l2_subdev_call(ctrl->cam->sd, video, s_stream,
 			STREAM_MODE_CAM_OFF);
 #endif /* CONFIG_VIDEO_IMPROVE_STREAMOFF */
@@ -2049,7 +2076,11 @@ int fimc_streamoff_capture(void *fh)
 		INIT_LIST_HEAD(&cap->inq);
 
 	ctrl->status = FIMC_STREAMOFF;
+#ifdef CONFIG_MACH_S2PLUS
+	if (ctrl->id == FIMC0) {
+#else
 	if (ctrl->id != FIMC2) {
+#endif
 		if (ctrl->cam->type == CAM_TYPE_MIPI) {
 			if (ctrl->cam->id == CAMERA_CSI_C)
 				s3c_csis_stop(CSI_CH_0);
@@ -2120,8 +2151,7 @@ int fimc_qbuf_capture(void *fh, struct v4l2_buffer *b)
 					FIMC_FRAMECNT_SEQ_ENABLE);
 			cap->bufs[b->index].state = VIDEOBUF_QUEUED;
 			if (ctrl->status == FIMC_BUFFER_STOP) {
-				printk(KERN_INFO "fimc_qbuf_capture start fimc%d again\n",
-					ctrl->id);
+				printk(KERN_INFO "fimc_qbuf_capture start again\n");
 				fimc_start_capture(ctrl);
 				ctrl->status = FIMC_STREAMON;
 			}
@@ -2143,7 +2173,6 @@ int fimc_dqbuf_capture(void *fh, struct v4l2_buffer *b)
 	struct fimc_buf_set *buf;
 	size_t length = 0;
 	int i, pp, ret = 0;
-	phys_addr_t start, end;
 
 	struct s3c_platform_fimc *pdata = to_fimc_plat(ctrl->dev);
 

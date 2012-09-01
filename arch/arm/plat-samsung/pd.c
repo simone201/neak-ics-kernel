@@ -29,7 +29,6 @@ static int samsung_pd_probe(struct platform_device *pdev)
 		return -ENOENT;
 	}
 
-	pdata->id = pdev->id;
 	if (pdata->init) {
 		ret = pdata->init(dev);
 		if (ret) {

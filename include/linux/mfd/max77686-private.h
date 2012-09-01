@@ -233,11 +233,6 @@ struct max77686_dev {
 	struct mutex irqlock;
 	int irq_masks_cur[MAX77686_IRQ_GROUP_NR];
 	int irq_masks_cache[MAX77686_IRQ_GROUP_NR];
-	int wtsr_smpl;
-
-#ifdef CONFIG_HIBERNATION
-	u8 reg_dump[MAX77686_REG_PMIC_END];
-#endif
 };
 
 enum max77686_types {

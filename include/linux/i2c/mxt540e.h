@@ -80,10 +80,6 @@ enum {
 	ADAPTIVE_T55,
 	SPARE_T56,
 	SPT_GENERICDATA_T57,
-	SPARE_T58,
-	SPARE_T59,
-	SPARE_T60,
-	SPT_TIMER_T61,
 	RESERVED_T255 = 255,
 };
 
@@ -129,7 +125,5 @@ enum {
 
 int get_tsp_status(void);
 extern struct class *sec_class;
-#if defined(CONFIG_MACH_T0)
-extern bool is_cable_attached;
-#endif
+
 #endif

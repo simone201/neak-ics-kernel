@@ -33,9 +33,15 @@ struct k3dh_acceldata {
 
 /* k3dh ioctl command label */
 #define K3DH_IOCTL_BASE 'a'
-#define K3DH_IOCTL_SET_DELAY		_IOW(K3DH_IOCTL_BASE, 0, int64_t)
-#define K3DH_IOCTL_GET_DELAY		_IOR(K3DH_IOCTL_BASE, 1, int64_t)
-#define K3DH_IOCTL_READ_ACCEL_XYZ	_IOR(K3DH_IOCTL_BASE, 8, \
+#define K3DH_IOCTL_SET_DELAY       _IOW(K3DH_IOCTL_BASE, 0, int64_t)
+#define K3DH_IOCTL_GET_DELAY       _IOR(K3DH_IOCTL_BASE, 1, int64_t)
+#define K3DH_IOCTL_READ_ACCEL_XYZ  _IOR(K3DH_IOCTL_BASE, 8, \
 						struct k3dh_acceldata)
-#define K3DH_IOCTL_SET_ENABLE		_IOW(K3DH_IOCTL_BASE, 9, int)
+
+#ifdef __KERNEL__
+struct k3dh_platform_data {
+	int gpio_acc_int;  /* gpio for k3dh int output */
+};
+#endif /* __KERNEL__ */
+
 #endif

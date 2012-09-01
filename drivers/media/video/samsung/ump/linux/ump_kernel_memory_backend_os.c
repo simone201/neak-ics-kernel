@@ -142,22 +142,13 @@ static int os_allocate(void* ctx, ump_dd_mem * descriptor)
 
 		if (is_cached)
 		{
-#ifdef CONFIG_SEC_DEBUG_UMP_ALLOC_FAIL
-			new_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
-#else
-			new_page = alloc_page(GFP_KERNEL | __GFP_ZERO | __GFP_NOWARN);
-#endif
+			new_page = alloc_page(GFP_KERNEL | __GFP_ZERO | __GFP_NORETRY | __GFP_NOWARN );
 		} else
 		{
-#ifdef CONFIG_SEC_DEBUG_UMP_ALLOC_FAIL
-			new_page = alloc_page(GFP_KERNEL | __GFP_ZERO | __GFP_COLD);
-#else
-			new_page = alloc_page(GFP_KERNEL | __GFP_ZERO | __GFP_NOWARN | __GFP_COLD);
-#endif
+			new_page = alloc_page(GFP_KERNEL | __GFP_ZERO | __GFP_NORETRY | __GFP_NOWARN | __GFP_COLD);
 		}
 		if (NULL == new_page)
 		{
-			MSG_ERR(("UMP memory allocated: Out of Memory !!\n"));
 			break;
 		}
 
@@ -190,12 +181,7 @@ static int os_allocate(void* ctx, ump_dd_mem * descriptor)
 
 	if (left)
 	{
-		MSG_ERR(("Failed to allocate needed pages\n"));
-		MSG_ERR(("UMP memory allocated:%dkB left:%dkB\n"
-			"  Configured maximum OS memory usage:%dkB\n",
-			(pages_allocated * _MALI_OSK_CPU_PAGE_SIZE)/1024,
-			left/1024,
-			(info->num_pages_max * _MALI_OSK_CPU_PAGE_SIZE)/1024));
+		DBG_MSG(1, ("Failed to allocate needed pages\n"));
 
 		while(pages_allocated)
 		{

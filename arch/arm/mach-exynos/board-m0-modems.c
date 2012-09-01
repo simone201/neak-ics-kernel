@@ -146,10 +146,6 @@ static struct modemlink_pm_link_activectl active_ctl;
 
 static void xmm_gpio_revers_bias_clear(void);
 static void xmm_gpio_revers_bias_restore(void);
-
-#ifndef GPIO_AP_DUMP_INT
-#define GPIO_AP_DUMP_INT 0
-#endif
 static struct modem_data umts_modem_data = {
 	.name = "xmm6262",
 
@@ -159,7 +155,6 @@ static struct modem_data umts_modem_data = {
 	.gpio_pda_active = GPIO_PDA_ACTIVE,
 	.gpio_phone_active = GPIO_PHONE_ACTIVE,
 	.gpio_cp_dump_int = GPIO_CP_DUMP_INT,
-	.gpio_ap_dump_int = GPIO_AP_DUMP_INT,
 	.gpio_flm_uart_sel = 0,
 	.gpio_cp_warm_reset = 0,
 
@@ -179,33 +174,36 @@ static struct modem_data umts_modem_data = {
 /* HSIC specific function */
 void set_slave_wake(void)
 {
+	int spin = 20;
 	if (gpio_get_value(modem_link_pm_data.gpio_link_hostwake)) {
 		pr_info("[MODEM_IF]Slave Wake\n");
 		if (gpio_get_value(modem_link_pm_data.gpio_link_slavewake)) {
-			pr_info("[MODEM_IF]Slave Wake set _-\n");
 			gpio_direction_output(
 			modem_link_pm_data.gpio_link_slavewake, 0);
 			mdelay(10);
 		}
 		gpio_direction_output(
 			modem_link_pm_data.gpio_link_slavewake, 1);
+		mdelay(10);
+		while (spin--) {
+			if (!gpio_get_value(
+				modem_link_pm_data.gpio_link_hostwake))
+				break;
+			mdelay(10);
+		}
 	}
 }
 
 void set_host_states(struct platform_device *pdev, int type)
 {
-	int val = gpio_get_value(umts_modem_data.gpio_cp_reset);
-
-	if (!val) {
-		pr_info("CP not ready, Active State low\n");
-		return;
-	}
-
 	if (active_ctl.gpio_initialized) {
+		if (type)
+			set_slave_wake();
 		pr_err(LOG_TAG "Active States =%d, %s\n", type, pdev->name);
 		gpio_direction_output(modem_link_pm_data.gpio_link_active,
 			type);
-	}
+	} else
+		active_ctl.gpio_request_host_active = 1;
 }
 
 void set_hsic_lpa_states(int states)
@@ -235,7 +233,8 @@ void set_hsic_lpa_states(int states)
 			break;
 		case STATE_HSIC_LPA_PHY_INIT:
 			gpio_set_value(umts_modem_data.gpio_pda_active, 1);
-			set_slave_wake();
+			gpio_set_value(modem_link_pm_data.gpio_link_slavewake,
+				1);
 			pr_info(LOG_TAG "set hsic lpa phy init: "
 				"slave wake-up (%d)\n",
 				gpio_get_value(
@@ -287,7 +286,6 @@ static void umts_modem_cfg_gpio(void)
 	unsigned gpio_pda_active = umts_modem_data.gpio_pda_active;
 	unsigned gpio_phone_active = umts_modem_data.gpio_phone_active;
 	unsigned gpio_cp_dump_int = umts_modem_data.gpio_cp_dump_int;
-	unsigned gpio_ap_dump_int = umts_modem_data.gpio_ap_dump_int;
 	unsigned gpio_flm_uart_sel = umts_modem_data.gpio_flm_uart_sel;
 	unsigned irq_phone_active = umts_modem_res[0].start;
 
@@ -348,15 +346,6 @@ static void umts_modem_cfg_gpio(void)
 		gpio_direction_input(gpio_cp_dump_int);
 	}
 
-	if (gpio_ap_dump_int /*&& system_rev >= 11*/) {    /* MO rev1.0*/
-		err = gpio_request(gpio_ap_dump_int, "AP_DUMP_INT");
-		if (err) {
-			pr_err(LOG_TAG "fail to request gpio %s : %d\n",
-			       "AP_DUMP_INT", err);
-		}
-		gpio_direction_output(gpio_ap_dump_int, 0);
-	}
-
 	if (gpio_flm_uart_sel) {
 		err = gpio_request(gpio_flm_uart_sel, "GPS_UART_SEL");
 		if (err) {
@@ -370,7 +359,6 @@ static void umts_modem_cfg_gpio(void)
 		irq_set_irq_type(gpio_to_irq(gpio_phone_active),
 							IRQ_TYPE_LEVEL_HIGH);
 	/* set low unused gpios between AP and CP */
-#if !defined(CONFIG_MACH_T0)
 	err = gpio_request(GPIO_FLM_RXD, "FLM_RXD");
 	if (err)
 		pr_err(LOG_TAG "fail to request gpio %s : %d\n", "FLM_RXD",
@@ -387,7 +375,6 @@ static void umts_modem_cfg_gpio(void)
 		gpio_direction_output(GPIO_FLM_TXD, 0);
 		s3c_gpio_setpull(GPIO_FLM_TXD, S3C_GPIO_PULL_NONE);
 	}
-#endif /* !defined(CONFIG_MACH_T0) */
 	err = gpio_request(GPIO_SUSPEND_REQUEST, "SUS_REQ");
 	if (err)
 		pr_err(LOG_TAG "fail to request gpio %s : %d\n", "SUS_REQ",
@@ -396,7 +383,6 @@ static void umts_modem_cfg_gpio(void)
 		gpio_direction_output(GPIO_SUSPEND_REQUEST, 0);
 		s3c_gpio_setpull(GPIO_SUSPEND_REQUEST, S3C_GPIO_PULL_NONE);
 	}
-#if !defined(CONFIG_MACH_T0)
 	err = gpio_request(GPIO_GPS_CNTL, "GPS_CNTL");
 	if (err)
 		pr_err(LOG_TAG "fail to request gpio %s : %d\n", "GPS_CNTL",
@@ -405,7 +391,6 @@ static void umts_modem_cfg_gpio(void)
 		gpio_direction_output(GPIO_GPS_CNTL, 0);
 		s3c_gpio_setpull(GPIO_GPS_CNTL, S3C_GPIO_PULL_NONE);
 	}
-#endif /* !defined(CONFIG_MACH_T0) */
 
 	pr_info(LOG_TAG "umts_modem_cfg_gpio done\n");
 }
@@ -481,6 +466,10 @@ static void modem_link_pm_config_gpio(void)
 							IRQ_TYPE_EDGE_BOTH);
 
 	active_ctl.gpio_initialized = 1;
+	if (active_ctl.gpio_request_host_active) {
+		pr_err(LOG_TAG "Active States = 1, %s\n", __func__);
+		gpio_direction_output(modem_link_pm_data.gpio_link_active, 1);
+	}
 
 	pr_info(LOG_TAG "modem_link_pm_config_gpio done\n");
 }
@@ -488,7 +477,7 @@ static void modem_link_pm_config_gpio(void)
 static int __init init_modem(void)
 {
 	int ret;
-	pr_info(LOG_TAG "init_modem, system_rev = %d\n", system_rev);
+	pr_info(LOG_TAG "init_modem\n");
 
 	/* umts gpios configuration */
 	umts_modem_cfg_gpio();

@@ -36,7 +36,7 @@ static char *fimc_clocks[MAX_FIMC_CLOCKS] = {
 static struct fimc_fmt fimc_formats[] = {
 	{
 		.name		= "RGB565",
-		.fourcc		= V4L2_PIX_FMT_RGB565X,
+		.fourcc		= V4L2_PIX_FMT_RGB565,
 		.depth		= { 16 },
 		.color		= S5P_FIMC_RGB565,
 		.memplanes	= 1,
@@ -786,9 +786,6 @@ static void fimc_dma_run(void *priv)
 
 	fimc = ctx->fimc_dev;
 
-	if (!test_and_set_bit(ST_PWR_ON, &fimc->state))
-		fimc_runtime_get(fimc);
-
 	spin_lock_irqsave(&ctx->slock, flags);
 	/* Reconfigure hardware if the context has changed. */
 	if (fimc->m2m.ctx != ctx) {
@@ -800,7 +797,7 @@ static void fimc_dma_run(void *priv)
 	ctx->state &= ~FIMC_CTX_STOP_REQ;
 	if (is_set) {
 		wake_up(&fimc->irq_queue);
-		goto dma_unlock;
+		return;
 	}
 
 	ctx->state |= (FIMC_SRC_ADDR | FIMC_DST_ADDR);
@@ -811,6 +808,8 @@ static void fimc_dma_run(void *priv)
 	}
 
 	set_bit(ST_M2M_RUN, &fimc->state);
+	if (!test_and_set_bit(ST_PWR_ON, &fimc->state))
+		fimc_runtime_get(fimc);
 
 	fimc_hw_set_input_addr(fimc, &ctx->s_frame.paddr);
 	fimc_hw_set_output_addr(fimc, &ctx->d_frame.paddr, -1);

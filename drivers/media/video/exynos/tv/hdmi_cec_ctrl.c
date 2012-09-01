@@ -14,7 +14,6 @@
 #include <linux/slab.h>
 #include <linux/platform_device.h>
 #include <linux/videodev2.h>
-#include <linux/videodev2_exynos_camera.h>
 #include <linux/irqreturn.h>
 #include <linux/stddef.h>
 
@@ -212,7 +211,7 @@ void s5p_cec_get_rx_buf(u32 size, u8 *buffer)
 	}
 }
 
-int __init s5p_cec_mem_probe(struct platform_device *pdev)
+void s5p_cec_mem_probe(struct platform_device *pdev)
 {
 	struct resource *res;
 	size_t	size;
@@ -225,7 +224,7 @@ int __init s5p_cec_mem_probe(struct platform_device *pdev)
 	if (res == NULL) {
 		dev_err(&pdev->dev,
 			"failed to get memory region resource for cec\n");
-		return -ENOENT;
+		ret = -ENOENT;
 	}
 
 	size = (res->end - res->start) + 1;
@@ -234,7 +233,7 @@ int __init s5p_cec_mem_probe(struct platform_device *pdev)
 	if (cec_mem == NULL) {
 		dev_err(&pdev->dev,
 			"failed to get memory region for cec\n");
-		return -ENOENT;
+		ret = -ENOENT;
 	}
 
 	cec_base = ioremap(res->start, size);
@@ -242,10 +241,8 @@ int __init s5p_cec_mem_probe(struct platform_device *pdev)
 	if (cec_base == NULL) {
 		dev_err(&pdev->dev,
 			"failed to ioremap address region for cec\n");
-		return -ENOENT;
+		ret = -ENOENT;
 	}
-
-	return ret;
 }
 
 int __init s5p_cec_mem_release(struct platform_device *pdev)

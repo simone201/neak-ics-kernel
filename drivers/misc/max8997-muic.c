@@ -115,6 +115,7 @@ enum {
 	ADC_DOCK_VOL_DN		= 0x0a, /* 0x01010 14.46K ohm */
 	ADC_DOCK_VOL_UP		= 0x0b, /* 0x01011 17.26K ohm */
 	ADC_DOCK_PLAY_PAUSE_KEY = 0x0d,
+	ADC_ACA_OTG         = 0x0f, /* 36K ohm */
 	ADC_CEA936ATYPE1_CHG	= 0x17,	/* 0x10111 200K ohm */
 	ADC_JIG_USB_OFF		= 0x18, /* 0x11000 255K ohm */
 	ADC_JIG_USB_ON		= 0x19, /* 0x11001 301K ohm */
@@ -219,6 +220,8 @@ static ssize_t max8997_muic_show_device(struct device *dev,
 		return sprintf(buf, "USB\n");
 	case CABLE_TYPE_OTG:
 		return sprintf(buf, "OTG\n");
+	case CABLE_TYPE_OTG_VB:
+		return sprintf(buf, "OTG/VB\n");
 	case CABLE_TYPE_TA:
 		return sprintf(buf, "TA\n");
 	case CABLE_TYPE_DESKDOCK:
@@ -575,7 +578,8 @@ static int max8997_muic_set_usb_path(struct max8997_muic_info *info, int path)
 		gpio_val = 0;
 		accdet = 1;
 
-		if (info->cable_type == CABLE_TYPE_OTG) {
+		if (info->cable_type == CABLE_TYPE_OTG ||
+				info->cable_type == CABLE_TYPE_OTG_VB) {
 			accdet = 0;
 			/* DN1, DP2 */
 			cntl1_val = (1 << COMN1SW_SHIFT) | (1 << COMP2SW_SHIFT);
@@ -604,10 +608,10 @@ static int max8997_muic_set_usb_path(struct max8997_muic_info *info, int path)
 		return -EINVAL;
 	}
 
-#if !defined(CONFIG_TARGET_LOCALE_NA) && !defined(CONFIG_MACH_U1CAMERA_BD)
+#ifndef CONFIG_TARGET_LOCALE_NA
 	if (gpio_is_valid(info->muic_data->gpio_usb_sel))
 		gpio_direction_output(mdata->gpio_usb_sel, gpio_val);
-#endif /* !CONFIG_TARGET_LOCALE_NA && !CONFIG_MACH_U1CAMERA_BD */
+#endif /* CONFIG_TARGET_LOCALE_NA */
 	/* Enable/Disable Factory Accessory Detection State Machine */
 	cntl2_val = accdet << CTRL2_ACCDET_SHIFT;
 	max8997_update_reg(client, MAX8997_MUIC_REG_CTRL2, cntl2_val,
@@ -839,7 +843,7 @@ static int max8997_muic_attach_usb_type(struct max8997_muic_info *info, int adc)
 
 	if ((path == AP_USB_MODE) && (adc == ADC_OPEN)) {
 		if (mdata->usb_cb && info->is_usb_ready)
-			mdata->usb_cb(USB_CABLE_ATTACHED);
+			mdata->usb_cb(USB_CABLE_ATTACHED, 0);
 	}
 
 	return 0;
@@ -899,7 +903,7 @@ static void max8997_muic_attach_mhl(struct max8997_muic_info *info, u8 chgtyp)
 
 	if (info->cable_type == CABLE_TYPE_USB) {
 		if (mdata->usb_cb && info->is_usb_ready)
-			mdata->usb_cb(USB_CABLE_DETACHED);
+			mdata->usb_cb(USB_CABLE_DETACHED, 0);
 
 		max8997_muic_set_charging_type(info, true);
 	}
@@ -932,10 +936,6 @@ static void max8997_muic_handle_jig_uart(struct max8997_muic_info *info,
 	u8 cntl1_val, cntl1_msk;
 
 	dev_info(info->dev, "%s: JIG UART/BOOTOFF(0x%x)\n", __func__, vbvolt);
-
-#if defined(CONFIG_SEC_MODEM_M0_TD)
-	gpio_set_value(GPIO_AP_CP_INT1, 1);
-#endif
 
 	/* UT1, UR2 */
 	cntl1_val = (3 << COMN1SW_SHIFT) | (3 << COMP2SW_SHIFT);
@@ -988,91 +988,54 @@ static int max8997_muic_handle_attach(struct max8997_muic_info *info,
 	vbvolt = status2 & STATUS2_VBVOLT_MASK;
 	chgdetrun = status2 & STATUS2_CHGDETRUN_MASK;
 
-	switch (info->cable_type) {
-	case CABLE_TYPE_JIG_UART_OFF:
-	case CABLE_TYPE_JIG_UART_OFF_VB:
-		/* Workaround for Factory mode.
-		 * Abandon adc interrupt of approximately +-100K range
-		 * if previous cable status was JIG UART BOOT OFF.
-		 */
+	/* Workaround for Factory mode.
+	 * Abandon adc interrupt of approximately +-100K range
+	 * if previous cable status was JIG UART BOOT OFF.
+	 */
+	if (info->cable_type == CABLE_TYPE_JIG_UART_OFF ||
+			info->cable_type == CABLE_TYPE_JIG_UART_OFF_VB) {
 		if (adc == (ADC_JIG_UART_OFF + 1) ||
 				adc == (ADC_JIG_UART_OFF - 1)) {
 			dev_warn(info->dev, "%s: abandon ADC\n", __func__);
 			return 0;
 		}
+	}
 
-		if (adcerr) {
-			dev_warn(info->dev, "%s: current state is jig_uart_off,"
-				"just ignore\n", __func__);
-			return 0;
-		}
+	if (info->cable_type == CABLE_TYPE_DESKDOCK && adc != ADC_DESKDOCK) {
+		dev_warn(info->dev, "%s: assume deskdock detach\n", __func__);
+		info->cable_type = CABLE_TYPE_NONE;
 
-		if (adc != ADC_JIG_UART_OFF) {
-			if (info->cable_type == CABLE_TYPE_JIG_UART_OFF_VB) {
-				dev_info(info->dev, "%s: adc != JIG_UART_OFF, remove JIG UART/OFF/VB\n", __func__);
-				info->cable_type = CABLE_TYPE_NONE;
-				max8997_muic_set_charging_type(info, false);
-			} else {
-				dev_info(info->dev, "%s: adc != JIG_UART_OFF, remove JIG UART/BOOTOFF\n", __func__);
-				info->cable_type = CABLE_TYPE_NONE;
-			}
-		}
-		break;
+		max8997_muic_set_charging_type(info, false);
 
-	case CABLE_TYPE_DESKDOCK:
-		if (adcerr || (adc != ADC_DESKDOCK)) {
-			if (adcerr)
-				dev_err(info->dev, "%s: ADC err occured(DESKDOCK)\n", __func__);
-			else
-				dev_warn(info->dev, "%s: ADC != DESKDOCK, remove DESKDOCK\n", __func__);
+		if (mdata->deskdock_cb)
+			mdata->deskdock_cb(MAX8997_MUIC_DETACHED);
+	} else if (info->cable_type == CABLE_TYPE_CARDOCK
+					&& adc != ADC_CARDOCK) {
+		dev_warn(info->dev, "%s: assume cardock detach\n", __func__);
+		info->cable_type = CABLE_TYPE_NONE;
 
-			info->cable_type = CABLE_TYPE_NONE;
+		max8997_muic_set_charging_type(info, false);
 
-			max8997_muic_set_charging_type(info, false);
-
-			if (mdata->deskdock_cb)
-				mdata->deskdock_cb(MAX8997_MUIC_DETACHED);
-
-			if (adcerr)
-				return 0;
-		}
-		break;
-
-	case CABLE_TYPE_CARDOCK:
-		if (adcerr || (adc != ADC_CARDOCK)) {
-			if (adcerr)
-				dev_err(info->dev, "%s: ADC err occured(CARDOCK)\n", __func__);
-			else
-				dev_warn(info->dev, "%s: ADC != CARDOCK, remove CARDOCK\n", __func__);
-
-			info->cable_type = CABLE_TYPE_NONE;
-
-			max8997_muic_set_charging_type(info, false);
-
-			if (mdata->cardock_cb)
-				mdata->cardock_cb(MAX8997_MUIC_DETACHED);
-
-			if (adcerr)
-				return 0;
-		}
-		break;
-
-	default:
-		break;
+		if (mdata->cardock_cb)
+			mdata->cardock_cb(MAX8997_MUIC_DETACHED);
 	}
 
 	/* 1Kohm ID regiter detection (mHL)
 	 * Old MUIC : ADC value:0x00 or 0x01, ADCLow:1
 	 * New MUIC : ADC value is not set(Open), ADCLow:1, ADCError:1
 	 */
-	if (adclow && adcerr) {
+
+
+	if (adclow && adcerr && \
+		info->cable_type != CABLE_TYPE_DESKDOCK && \
+		info->cable_type != CABLE_TYPE_CARDOCK) {
 		max8997_muic_attach_mhl(info, chgtyp);
 		return 0;
 	}
 
 	switch (adc) {
 	case ADC_GND:
-#if defined(CONFIG_MACH_U1) || defined(CONFIG_MACH_TRATS)
+#if defined(CONFIG_MACH_U1)
 		/* This is for support old MUIC */
 		if (adclow) {
 			max8997_muic_attach_mhl(info, chgtyp);
@@ -1091,7 +1054,7 @@ static int max8997_muic_handle_attach(struct max8997_muic_info *info,
 			info->cable_type = CABLE_TYPE_OTG;
 			max8997_muic_set_usb_path(info, AP_USB_MODE);
 			if (mdata->usb_cb && info->is_usb_ready)
-				mdata->usb_cb(USB_OTGHOST_ATTACHED);
+				mdata->usb_cb(USB_OTGHOST_ATTACHED, 0);
 		} else if (chgtyp == CHGTYP_USB ||
 				chgtyp == CHGTYP_DOWNSTREAM_PORT ||
 				chgtyp == CHGTYP_DEDICATED_CHGR ||
@@ -1102,8 +1065,43 @@ static int max8997_muic_handle_attach(struct max8997_muic_info *info,
 			ret = max8997_muic_set_charging_type(info, false);
 		}
 		break;
+	case ADC_ACA_OTG:
+		if (vbvolt & STATUS2_VBVOLT_MASK) {
+			if (info->cable_type == CABLE_TYPE_OTG_VB) {
+				dev_info(info->dev,
+						"%s: duplicated(OTG/VB)\n",
+						__func__);
+				break;
+			}
+
+			dev_info(info->dev, "%s: OTG ACA detected\n",
+					__func__);
+
+			info->cable_type = CABLE_TYPE_OTG_VB;
+
+			max8997_muic_set_usb_path(info, AP_USB_MODE);
+			if (mdata->usb_cb && info->is_usb_ready)
+				mdata->usb_cb(USB_OTGHOST_ATTACHED, 1);
+
+			ret = max8997_muic_set_charging_type(info, false);
+		} else {
+			dev_info(info->dev, "%s: unpowered OTG ACA detected\n",
+					__func__);
+
+			if (info->cable_type == CABLE_TYPE_OTG_VB) {
+				dev_info(info->dev, "%s: OTG ACA power loss\n",
+						__func__);
+
+				if (mdata->usb_cb && info->is_usb_ready)
+					mdata->usb_cb(USB_OTGHOST_DETACHED, 1);
+			}
+
+			info->cable_type = CABLE_TYPE_NONE;
+			ret = max8997_muic_set_charging_type(info, false);
+		}
+		break;
 	case ADC_MHL:
-#if defined(CONFIG_MACH_U1) || defined(CONFIG_MACH_TRATS)
+#if defined(CONFIG_MACH_U1)
 		/* This is for support old MUIC */
 		max8997_muic_attach_mhl(info, chgtyp);
 #endif
@@ -1181,10 +1179,6 @@ static int max8997_muic_handle_detach(struct max8997_muic_info *info)
 	enum cable_type prev_ct = CABLE_TYPE_NONE;
 	int ret = 0;
 
-#if defined(CONFIG_SEC_MODEM_M0_TD)
-	gpio_set_value(GPIO_AP_CP_INT1, 0);
-#endif
-
 	/*
 	 * MAX8996/8997-MUIC bug:
 	 *
@@ -1229,7 +1223,16 @@ static int max8997_muic_handle_detach(struct max8997_muic_info *info)
 		info->cable_type = CABLE_TYPE_NONE;
 
 		if (mdata->usb_cb && info->is_usb_ready)
-			mdata->usb_cb(USB_OTGHOST_DETACHED);
+			mdata->usb_cb(USB_OTGHOST_DETACHED, 0);
+		break;
+	case CABLE_TYPE_OTG_VB:
+		dev_info(info->dev, "%s: OTG/VB\n", __func__);
+		info->cable_type = CABLE_TYPE_NONE;
+
+		if (mdata->usb_cb && info->is_usb_ready)
+			mdata->usb_cb(USB_OTGHOST_DETACHED, 1);
+
+		max8997_muic_set_charging_type(info, false);
 		break;
 	case CABLE_TYPE_USB:
 	case CABLE_TYPE_JIG_USB_OFF:
@@ -1249,7 +1252,7 @@ static int max8997_muic_handle_detach(struct max8997_muic_info *info)
 			return 0;
 
 		if (mdata->usb_cb && info->is_usb_ready)
-			mdata->usb_cb(USB_CABLE_DETACHED);
+			mdata->usb_cb(USB_CABLE_DETACHED, 0);
 		break;
 	case CABLE_TYPE_DESKDOCK:
 		dev_info(info->dev, "%s: DESKDOCK\n", __func__);
@@ -1355,36 +1358,19 @@ static void max8997_muic_detect_dev(struct max8997_muic_info *info, int irq)
 	adcerr = status[0] & STATUS1_ADCERR_MASK;
 	chgtyp = status[1] & STATUS2_CHGTYP_MASK;
 
-	switch (adc) {
-	case ADC_MHL:
-#if defined(CONFIG_MACH_U1) || defined(CONFIG_MACH_TRATS)
-		break;
-#endif
-	case (ADC_MHL + 1):
-	case (ADC_DOCK_VOL_DN - 1):
-	case (ADC_DOCK_PLAY_PAUSE_KEY + 2) ... (ADC_CEA936ATYPE1_CHG - 1):
-	case (ADC_CARDOCK + 1):
-		dev_warn(info->dev, "%s: unsupported ADC(0x%02x)\n", __func__, adc);
-		intr = INT_DETACH;
-		break;
-	case ADC_OPEN:
-		if (!adcerr) {
-			if (chgtyp == CHGTYP_NO_VOLTAGE)
+	if (!adcerr && adc == ADC_OPEN) {
+		if (chgtyp == CHGTYP_NO_VOLTAGE)
+			intr = INT_DETACH;
+		else if (chgtyp == CHGTYP_USB ||
+				chgtyp == CHGTYP_DOWNSTREAM_PORT ||
+				chgtyp == CHGTYP_DEDICATED_CHGR ||
+				chgtyp == CHGTYP_500MA	||
+				chgtyp == CHGTYP_1A) {
+			if (info->cable_type == CABLE_TYPE_OTG ||
+			    info->cable_type == CABLE_TYPE_DESKDOCK ||
+			    info->cable_type == CABLE_TYPE_CARDOCK)
 				intr = INT_DETACH;
-			else if (chgtyp == CHGTYP_USB ||
-					chgtyp == CHGTYP_DOWNSTREAM_PORT ||
-					chgtyp == CHGTYP_DEDICATED_CHGR ||
-					chgtyp == CHGTYP_500MA	||
-					chgtyp == CHGTYP_1A) {
-				if (info->cable_type == CABLE_TYPE_OTG ||
-					info->cable_type == CABLE_TYPE_DESKDOCK ||
-					info->cable_type == CABLE_TYPE_CARDOCK)
-					intr = INT_DETACH;
-			}
 		}
-		break;
-	default:
-		break;
 	}
 
 #if defined(CONFIG_MUIC_MAX8997_OVPUI)
@@ -1519,10 +1505,13 @@ static void max8997_muic_usb_detect(struct work_struct *work)
 			case CABLE_TYPE_USB:
 			case CABLE_TYPE_JIG_USB_OFF:
 			case CABLE_TYPE_JIG_USB_ON:
-				mdata->usb_cb(USB_CABLE_ATTACHED);
+				mdata->usb_cb(USB_CABLE_ATTACHED, 0);
 				break;
 			case CABLE_TYPE_OTG:
-				mdata->usb_cb(USB_OTGHOST_ATTACHED);
+				mdata->usb_cb(USB_OTGHOST_ATTACHED, 0);
+				break;
+			case CABLE_TYPE_OTG_VB:
+				mdata->usb_cb(USB_OTGHOST_ATTACHED, 1);
 				break;
 			default:
 				break;
@@ -1544,7 +1533,7 @@ static void max8997_muic_mhl_detect(struct work_struct *work)
 
 	mutex_lock(&info->mutex);
 	info->is_mhl_ready = true;
-#if !defined(CONFIG_MACH_U1) || !defined(CONFIG_MACH_TRATS)
+#ifndef CONFIG_MACH_U1
 	if (mdata->is_mhl_attached) {
 		if (!mdata->is_mhl_attached())
 			goto out;
@@ -1555,7 +1544,9 @@ static void max8997_muic_mhl_detect(struct work_struct *work)
 		if (mdata->mhl_cb)
 			mdata->mhl_cb(MAX8997_MUIC_ATTACHED);
 	}
+#ifndef CONFIG_MACH_U1
 out:
+#endif
 	mutex_unlock(&info->mutex);
 }
 extern struct device *switch_dev;
@@ -1622,7 +1613,6 @@ static int __devinit max8997_muic_probe(struct platform_device *pdev)
 		goto err_input;
 	}
 
-#if !defined(CONFIG_MACH_U1CAMERA_BD)
 	if (info->muic_data && gpio_is_valid(info->muic_data->gpio_usb_sel)) {
 		CHECK_GPIO(info->muic_data->gpio_usb_sel, "USB_SEL");
 
@@ -1643,7 +1633,6 @@ static int __devinit max8997_muic_probe(struct platform_device *pdev)
 		}
 #endif /* CONFIG_TARGET_LOCALE_NA */
 	}
-#endif /* CONFIG_MACH_U1CAMERA_BD */
 
 	/* create sysfs group*/
 	ret = sysfs_create_group(&switch_dev->kobj, &max8997_muic_group);
@@ -1714,9 +1703,9 @@ static int __devexit max8997_muic_remove(struct platform_device *pdev)
 		free_irq(info->irq_chgtype, info);
 		free_irq(info->irq_vbvolt, info);
 		free_irq(info->irq_adcerr, info);
-#if !defined(CONFIG_TARGET_LOCALE_NA) && !defined(CONFIG_MACH_U1CAMERA_BD)
+#ifndef CONFIG_TARGET_LOCALE_NA
 		gpio_free(info->muic_data->gpio_usb_sel);
-#endif /* CONFIG_TARGET_LOCALE_NA && CONFIG_MACH_U1CAMERA_BD */
+#endif /* CONFIG_TARGET_LOCALE_NA */
 		mutex_destroy(&info->mutex);
 		kfree(info);
 	}

@@ -17,11 +17,7 @@
 #include <linux/slab.h>
 
 #include <mach/dev.h>
-#ifdef CONFIG_ARCH_EXYNOS4
-#include <mach/busfreq_exynos4.h>
-#else
-#include <mach/busfreq_exynos5.h>
-#endif
+#include <mach/busfreq.h>
 
 static LIST_HEAD(domains_list);
 static DEFINE_MUTEX(domains_mutex);
@@ -77,8 +73,7 @@ void dev_put(const char *name)
 	return;
 }
 
-int dev_lock(struct device *device, struct device *dev,
-		unsigned long freq)
+int dev_lock(struct device *device, struct device *dev, unsigned long freq)
 {
 	struct device_domain *domain;
 	struct domain_lock *lock;
@@ -113,7 +108,7 @@ int dev_lock(struct device *device, struct device *dev,
 
 out:
 	mutex_unlock(&domains_mutex);
-	exynos_request_apply(freq);
+	exynos_request_apply(freq, dev);
 	return ret;
 }
 

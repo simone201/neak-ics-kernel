@@ -13,12 +13,7 @@
 #ifndef __ASM_ARCH_ASV_H
 #define __ASM_ARCH_ASV_H __FILE__
 
-#ifdef CONFIG_EXYNOS4_CPUFREQ
-
 #include <mach/regs-pmu.h>
-#include <mach/regs-pmu5.h>
-
-#include <plat/cpu.h>
 
 #define JUDGE_TABLE_END			NULL
 
@@ -45,16 +40,7 @@ static inline void exynos4x12_set_abb_member(enum exynos4x12_abb_member abb_targ
 
 	tmp |= abb_mode_value;
 
-	if (!soc_is_exynos5250())
-		__raw_writel(tmp, S5P_ABB_MEMBER(abb_target));
-	else if (abb_target == ABB_INT)
-		__raw_writel(tmp, EXYNOS5_ABB_MEMBER(ABB_INT));
-	else if (abb_target == ABB_MIF)
-		__raw_writel(tmp, EXYNOS5_ABB_MEMBER(ABB_MIF));
-	else if (abb_target == ABB_G3D)
-		__raw_writel(tmp, EXYNOS5_ABB_MEMBER(ABB_G3D));
-	else if (abb_target == ABB_ARM)
-		__raw_writel(tmp, EXYNOS5_ABB_MEMBER(ABB_ARM));
+	__raw_writel(tmp, S5P_ABB_MEMBER(abb_target));
 }
 
 static inline void exynos4x12_set_abb(unsigned int abb_mode_value)
@@ -70,22 +56,10 @@ static inline void exynos4x12_set_abb(unsigned int abb_mode_value)
 
 	tmp |= abb_mode_value;
 
-	if (!soc_is_exynos5250()) {
-		__raw_writel(tmp, S5P_ABB_INT);
-		__raw_writel(tmp, S5P_ABB_MIF);
-		__raw_writel(tmp, S5P_ABB_G3D);
-		__raw_writel(tmp, S5P_ABB_ARM);
-	} else {
-		__raw_writel(tmp, EXYNOS5_ABB_MEMBER(ABB_INT));
-		__raw_writel(tmp, EXYNOS5_ABB_MEMBER(ABB_MIF));
-		__raw_writel(tmp, EXYNOS5_ABB_MEMBER(ABB_G3D));
-		__raw_writel(tmp, EXYNOS5_ABB_MEMBER(ABB_ARM));
-	}
-}
-
-static inline int exynos4x12_get_abb_member(enum exynos4x12_abb_member abb_target)
-{
-	return (__raw_readl(S5P_ABB_MEMBER(abb_target)) & 0x1f);
+	__raw_writel(tmp, S5P_ABB_INT);
+	__raw_writel(tmp, S5P_ABB_MIF);
+	__raw_writel(tmp, S5P_ABB_G3D);
+	__raw_writel(tmp, S5P_ABB_ARM);
 }
 
 struct asv_judge_table {
@@ -112,13 +86,6 @@ struct samsung_asv {
 
 extern int exynos4210_asv_init(struct samsung_asv *asv_info);
 extern int exynos4x12_asv_init(struct samsung_asv *asv_info);
-extern int exynos5250_asv_init(struct samsung_asv *asv_info);
 void exynos4x12_set_abb_member(enum exynos4x12_abb_member abb_target, unsigned int abb_mode_value);
-
-#else
-
-/* left empty to invoke build errors */
-
-#endif
 
 #endif /* __ASM_ARCH_ASV_H */

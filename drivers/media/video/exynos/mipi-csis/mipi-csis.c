@@ -36,7 +36,6 @@ MODULE_PARM_DESC(debug, "Debug level (0-1)");
 #define MODULE_NAME			"s5p-mipi-csis"
 #define DEFAULT_CSIS_SINK_WIDTH		800
 #define DEFAULT_CSIS_SINK_HEIGHT	480
-#define CLK_NAME_SIZE			20
 
 enum csis_input_entity {
 	CSIS_INPUT_NONE,
@@ -47,7 +46,6 @@ enum csis_output_entity {
 	CSIS_OUTPUT_NONE,
 	CSIS_OUTPUT_FLITE,
 };
-
 #define CSIS0_MAX_LANES		4
 #define CSIS1_MAX_LANES		2
 /* Register map definition */
@@ -282,11 +280,9 @@ static int s5pcsis_clk_get(struct csis_state *state)
 {
 	struct device *dev = &state->pdev->dev;
 	int i;
-	char clk_name[CLK_NAME_SIZE];
 
 	for (i = 0; i < NUM_CSIS_CLOCKS; i++) {
-		sprintf(clk_name, "%s%d", csi_clock_name[i], state->pdev->id);
-		state->clock[i] = clk_get(dev, clk_name);
+		state->clock[i] = clk_get(dev, csi_clock_name[i]);
 		if (IS_ERR(state->clock[i])) {
 			s5pcsis_clk_put(state);
 			dev_err(dev, "failed to get clock: %s\n",
@@ -476,7 +472,7 @@ static int s5pcsis_init_formats(struct v4l2_subdev *sd,
 	memset(&format, 0, sizeof(format));
 	format.pad = CSIS_PAD_SINK;
 	format.which = fh ? V4L2_SUBDEV_FORMAT_TRY : V4L2_SUBDEV_FORMAT_ACTIVE;
-	format.format.code = s5pcsis_formats[0].code;
+	format.format.code = V4L2_MBUS_FMT_YUYV8_2X8;
 	format.format.width = DEFAULT_CSIS_SINK_WIDTH;
 	format.format.height = DEFAULT_CSIS_SINK_HEIGHT;
 	s5pcsis_set_fmt(sd, fh, &format);
@@ -493,13 +489,13 @@ static int s5pcsis_subdev_close(struct v4l2_subdev *sd,
 
 static int s5pcsis_subdev_registered(struct v4l2_subdev *sd)
 {
-	v4l2_dbg(1, debug, sd, "%s\n", __func__);
+	v4l2_info(sd, "%s\n", __func__);
 	return 0;
 }
 
 static void s5pcsis_subdev_unregistered(struct v4l2_subdev *sd)
 {
-	v4l2_dbg(1, debug, sd, "%s\n", __func__);
+	v4l2_info(sd, "%s\n", __func__);
 }
 
 static const struct v4l2_subdev_internal_ops s5pcsis_v4l2_internal_ops = {
@@ -516,25 +512,20 @@ static int s5pcsis_link_setup(struct media_entity *entity,
 	struct v4l2_subdev *sd = media_entity_to_v4l2_subdev(entity);
 	struct csis_state *state = sd_to_csis_state(sd);
 
+	v4l2_info(sd, "%s\n", __func__);
 	switch (local->index | media_entity_type(remote->entity)) {
 	case CSIS_PAD_SINK | MEDIA_ENT_T_V4L2_SUBDEV:
-		if (flags & MEDIA_LNK_FL_ENABLED) {
-			v4l2_info(sd, "%s : sink link enabled\n", __func__);
+		if (flags & MEDIA_LNK_FL_ENABLED)
 			state->input = CSIS_INPUT_SENSOR;
-		} else {
-			v4l2_info(sd, "%s : sink link disabled\n", __func__);
+		else
 			state->input = CSIS_INPUT_NONE;
-		}
 		break;
 
 	case CSIS_PAD_SOURCE | MEDIA_ENT_T_V4L2_SUBDEV:
-		if (flags & MEDIA_LNK_FL_ENABLED) {
-			v4l2_info(sd, "%s : source link enabled\n", __func__);
+		if (flags & MEDIA_LNK_FL_ENABLED)
 			state->output = CSIS_OUTPUT_FLITE;
-		} else {
-			v4l2_info(sd, "%s : source link disabled\n", __func__);
+		else
 			state->output = CSIS_OUTPUT_NONE;
-		}
 		break;
 
 	default:
@@ -653,14 +644,14 @@ static int __devinit s5pcsis_probe(struct platform_device *pdev)
 		srclk = clk_get(&state->pdev->dev, CSIS_SRC_CLK);
 		if (IS_ERR_OR_NULL(srclk)) {
 			dev_err(&state->pdev->dev, "failed to get csis src clk\n");
-			goto e_unmap;
+			return -ENXIO;
 		}
 		clk_set_parent(state->clock[CSIS_CLK_MUX], srclk);
 		clk_put(srclk);
 		clk_set_rate(state->clock[CSIS_CLK_MUX], pdata->clk_rate);
-	} else {
-		dev_WARN(&pdev->dev, "No clock frequency specified!\n");
 	}
+	else
+		dev_WARN(&pdev->dev, "No clock frequency specified!\n");
 
 	state->irq = platform_get_irq(pdev, 0);
 	if (state->irq < 0) {
@@ -707,8 +698,6 @@ static int __devinit s5pcsis_probe(struct platform_device *pdev)
 	if (IS_ERR_OR_NULL(state->mdev))
 		goto e_irqfree;
 
-	state->mdev->csis_sd[pdev->id] = &state->sd;
-	state->sd.grp_id = CSIS_GRP_ID;
 	ret = v4l2_device_register_subdev(&state->mdev->v4l2_dev, &state->sd);
 	if (ret)
 		goto e_irqfree;
