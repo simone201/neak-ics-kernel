@@ -22,11 +22,11 @@ void init_reg(void __iomem *base)
 
 void write_reg(unsigned int data, unsigned int offset)
 {
-	__raw_writel(data, regs + offset);
+	writel(data, regs + offset);
 }
 
 unsigned int read_reg(unsigned int offset)
 {
-	return __raw_readl(regs + offset);
+	return readl(regs + offset);
 }
 

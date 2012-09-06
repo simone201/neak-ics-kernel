@@ -40,11 +40,6 @@
 
 #define SAMSUNG_MFC_DEV_NAME           "/dev/s3c-mfc"
 
-#if defined(CONFIG_CPU_EXYNOS4212) || defined(CONFIG_CPU_EXYNOS4412)
-#define SUPPORT_SLICE_ENCODING        1
-#else
-#define SUPPORT_SLICE_ENCODING        0
-#endif
 
 /*--------------------------------------------------------------------------------*/
 /* Structure and Type                                                             */
@@ -79,13 +74,6 @@ typedef enum {
     NV12_TILE,
     NV21_LINEAR,
 } SSBSIP_MFC_INSTRM_MODE_TYPE;
-
-#if SUPPORT_SLICE_ENCODING
-typedef enum {
-    FRAME = 0,
-    SLICE = 1,
-} SSBSIP_MFC_OUTSTRM_MODE_TYPE;
-#endif
 
 typedef enum {
 	NO_CACHE = 0,
@@ -252,9 +240,6 @@ typedef struct {
     int CbPadVal;                       /* [IN] CB pel value used to fill padding area */
     int CrPadVal;                       /* [IN] CR pel value used to fill padding area */
     int FrameMap;                       /* [IN] Encoding input mode(tile mode or linear mode) */
-#if SUPPORT_SLICE_ENCODING
-    int OutputMode;                     /* [IN] Output mode: Frame/Slice */
-#endif
 
     /* H.264 specific parameters */
     int ProfileIDC;                     /* [IN] profile */
@@ -298,9 +283,6 @@ typedef struct {
     int CbPadVal;                       /* [IN] CB pel value used to fill padding area */
     int CrPadVal;                       /* [IN] CR pel value used to fill padding area */
     int FrameMap;                       /* [IN] Encoding input mode(tile mode or linear mode) */
-#if SUPPORT_SLICE_ENCODING
-    int OutputMode;                     /* [IN] Output mode: Frame/Slice */
-#endif
 
     /* MPEG4 specific parameters */
     int ProfileIDC;                     /* [IN] profile */
@@ -333,9 +315,6 @@ typedef struct {
     int CbPadVal;                       /* [IN] CB pel value used to fill padding area */
     int CrPadVal;                       /* [IN] CR pel value used to fill padding area */
     int FrameMap;                       /* [IN] Encoding input mode(tile mode or linear mode) */
-#if SUPPORT_SLICE_ENCODING
-    int OutputMode;                     /* [IN] Output mode: Frame/Slice */
-#endif
 
     /* H.263 specific parameters */
     int FrameRate;                      /* [IN] rate control parameter(frame rate) */
