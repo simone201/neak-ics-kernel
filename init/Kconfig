@@ -29,6 +29,9 @@ config IRQ_WORK
 
 menu "General setup"
 
+config AOSP_ROM
+	bool "Support for AOSP ROMs features"
+
 config EXPERIMENTAL
 	bool "Prompt for development and/or incomplete code/drivers"
 	---help---
